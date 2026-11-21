@@ -29,4 +29,6 @@ Alpine.data( 'nwApp', () => shell() );
 
 window.Alpine = Alpine;
 Alpine.start();
-mountViews( sync );
+// Alpine reveals the page (x-cloak) in a microtask; draw the views on the
+// next frame, once things have a size (scroll positions, tab indicators).
+requestAnimationFrame( () => mountViews( sync ) );
