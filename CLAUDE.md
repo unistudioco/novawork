@@ -34,11 +34,13 @@ one); the app document must have it.
 
 - PHP 8.1+ typed code, PSR-4 via Composer, WordPress Coding Standards.
 - WordPress 6.4+ ("Tested up to" 7.1; the dev site runs 7.1.5).
-- Front end: **Alpine.js 3 + Vite 5. No React, Vue or any SPA framework.**
+- Front end: **Alpine.js 3 + Vite 8** (Rolldown; owner approved the move from
+  Vite 5 on 2026-11-21; needs Node `^20.19` or `>=22.12`). Config uses
+  `build.rolldownOptions`, not the deprecated `rollupOptions`. **No React, Vue
+  or any SPA framework.**
 - CSS: plain CSS with custom properties, ported from the prototype, bundled by
   Vite. Not Tailwind.
-- No new runtime or dev dependency without asking. Vite 5's dev-server advisories
-  (esbuild, launch-editor) are known and accepted: they never ship.
+- No new runtime or dev dependency without asking.
 
 ## Architecture (decided)
 

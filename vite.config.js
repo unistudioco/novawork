@@ -12,7 +12,7 @@ export default defineConfig( {
 		emptyOutDir: true,
 		manifest: 'manifest.json',
 		sourcemap: false,
-		rollupOptions: {
+		rolldownOptions: {
 			input: {
 				app: 'assets/src/js/app.js',
 			},
