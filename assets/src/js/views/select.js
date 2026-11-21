@@ -110,6 +110,12 @@ function openSel( sel, box ) {
 		ul.appendChild( li );
 	} );
 	box.appendChild( ul );
+	// Long lists (owner decision): show seven and a half rows, so a cut-off
+	// row always says "there is more"; the rest scrolls.
+	if ( ul.children.length > 8 ) {
+		const row = ul.children[ 7 ];
+		ul.style.maxHeight = Math.round( row.offsetTop + row.offsetHeight / 2 ) + 'px';
+	}
 	box.classList.add( 'nw-open' );
 	box.firstChild.setAttribute( 'aria-expanded', 'true' );
 	openBox = box;
