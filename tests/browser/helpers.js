@@ -45,3 +45,23 @@ export async function deleteTask( page, title ) {
 	await page.click( '#nw-dlg [data-del]' );
 	await page.click( '#nw-dlg [data-del]' );
 }
+
+/** A title no other test run can collide with. */
+export const unique = ( label ) => `E2E ${ label } ${ Date.now().toString( 36 ) }`;
+
+/**
+ * Delete every task a test run left behind (titles start with "E2E "), even
+ * when the test failed halfway. Runs in the page, through the API.
+ */
+export const cleanUp = ( page ) =>
+	page.evaluate( async () => {
+		if ( ! window.novawork ) {
+			return;
+		}
+		const h = { 'X-WP-Nonce': window.novawork.nonce };
+		const r = await fetch( window.novawork.restUrl + 'sync', { headers: h } );
+		const d = await r.json();
+		for ( const t of d.data.tasks.filter( ( x ) => x.title.startsWith( 'E2E ' ) ) ) {
+			await fetch( window.novawork.restUrl + 'tasks/' + t.id, { method: 'DELETE', headers: h } );
+		}
+	} );

@@ -11,6 +11,7 @@ import { ic, icf, swapInner } from './lib/icons.js';
 import { __, _n, sprintf } from './lib/i18n.js';
 import { clock, dur, esc, initials, dayStart, longDate, shortTitle, ago } from './lib/format.js';
 import { serverNow } from './store.js';
+import { orderTeam } from './lib/team.js';
 import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
 import { isPhone, PHONE, placeInd, lockBgScroll, unlockBgScroll, sheetOut, swipeToClose, toast } from './lib/ui.js';
 
@@ -119,8 +120,14 @@ export default () => ( {
 	meMember() {
 		return this.member( this.$store.nw.me ) || { id: this.$store.nw.me, name: '', color: 'slate', avatar: '' };
 	},
+	/** Everyone but you, in the admin's chosen order (the same as Team today). */
 	others() {
-		return this.$store.nw.members.filter( ( m ) => m.id !== this.$store.nw.me );
+		const nw = this.$store.nw;
+		const today = this.dayStart();
+		return orderTeam(
+			nw.members.filter( ( m ) => m.id !== nw.me ),
+			{ order: nw.settings.teamOrder || 'dynamic', status: ( id ) => this.status( id ), today: ( id ) => this.tracked( id, today ), me: nw.me }
+		);
 	},
 	crew() {
 		return [ this.meMember() ].concat( this.others() );
@@ -135,7 +142,7 @@ export default () => ( {
 	},
 	/**
 	 * The header's members strip (owner decision): you, then up to two others
-	 * who are here (tracking first, then online), then "+N" for the rest who
+	 * who are here (in the Team today order), then "+N" for the rest who
 	 * are here. Away members are not shown. In the markup you come first; CSS
 	 * lays it out right to left, so you sit next to the chevron and the left
 	 * avatar is on top. Phones show only the first child: you.
@@ -144,10 +151,7 @@ export default () => ( {
 	 * sibling rules that an Alpine <template> inside the strip would break.
 	 */
 	crewHtml() {
-		const rank = { tracking: 0, online: 1 };
-		const here = this.others()
-			.filter( ( m ) => this.status( m.id ) !== 'away' )
-			.sort( ( a, b ) => rank[ this.status( a.id ) ] - rank[ this.status( b.id ) ] );
+		const here = this.others().filter( ( m ) => this.status( m.id ) !== 'away' );
 		const shown = here.slice( 0, 2 );
 		const extra = here.length - shown.length;
 		let html = this.presAvatar( this.meMember() ) + shown.map( ( m ) => this.presAvatar( m ) ).join( '' );
