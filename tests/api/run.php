@@ -444,6 +444,14 @@ try {
 	@unlink( $php );
 	@unlink( $svg );
 
+	$sam_name = get_userdata( $sam )->display_name;
+	list( $s, $mm ) = $t->call( $alex, 'POST', '/messages', array( 'text' => "Can you look, @{$sam_name}?", 'mentions' => array( $sam, (int) $outsider, $admin ) ) );
+	$t->ok( 201 === $s && array( $sam ) === array_column( $mm['mentions'], 'id' ), 'a mention is kept only when @Name is in the text, and only for members', $mm['mentions'] ?? $mm );
+	$kinds = array_column( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $sam, 100 ), fn( $n ) => (int) $n['object_id'] === $mm['id'] && 'message' === $n['object_type'] ), 'type' );
+	$t->ok( array( 'mention' ) === array_values( $kinds ), 'the mentioned member gets a mention, not a chat notification', $kinds );
+	$kinds = array_column( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $admin, 100 ), fn( $n ) => (int) $n['object_id'] === $mm['id'] && 'message' === $n['object_type'] ), 'type' );
+	$t->ok( array( 'chat' ) === array_values( $kinds ), 'everyone else gets the usual chat notification', $kinds );
+
 	list( , $hist ) = $t->call( $sam, 'GET', '/messages', array( 'q' => 'waitlist' ) );
 	$t->ok( 1 === count( $hist ) && $m1['id'] === $hist[0]['id'], 'chat search finds the message' );
 	list( , $hist ) = $t->call( $sam, 'GET', '/messages', array( 'from' => wp_date( 'Y-m-d', time() + DAY_IN_SECONDS ) ) );

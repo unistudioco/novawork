@@ -41,6 +41,7 @@ final class MessageRepository extends Repository {
 			'user_id'    => '%d',
 			'agent'      => '%s',
 			'body'       => '%s',
+			'mentions'   => '%s',
 			'created_at' => '%s',
 			'updated_at' => '%s',
 		);
@@ -53,9 +54,10 @@ final class MessageRepository extends Repository {
 	 */
 	protected function defaults(): array {
 		return array(
-			'user_id' => 0,
-			'agent'   => '',
-			'body'    => '',
+			'user_id'  => 0,
+			'agent'    => '',
+			'body'     => '',
+			'mentions' => '[]',
 		);
 	}
 
@@ -81,13 +83,34 @@ final class MessageRepository extends Repository {
 		foreach ( $rows as $row ) {
 			$id    = (int) $row['id'];
 			$out[] = array(
-				'id'    => $id,
-				'by'    => (int) $row['user_id'],
-				'agent' => (string) $row['agent'],
-				'text'  => (string) $row['body'],
-				'at'    => Db::to_ms( $row['created_at'] ),
-				'files' => $files[ $id ] ?? array(),
+				'id'       => $id,
+				'by'       => (int) $row['user_id'],
+				'agent'    => (string) $row['agent'],
+				'text'     => (string) $row['body'],
+				'mentions' => self::mentions( $row ),
+				'at'       => Db::to_ms( $row['created_at'] ),
+				'files'    => $files[ $id ] ?? array(),
 			);
+		}
+		return $out;
+	}
+
+	/**
+	 * Members a message mentions: [ { id, name } ] (the name as typed).
+	 *
+	 * @param array<string, mixed> $row Database row.
+	 * @return list<array{id: int, name: string}>
+	 */
+	public static function mentions( array $row ): array {
+		$list = json_decode( (string) ( $row['mentions'] ?? '[]' ), true );
+		$out  = array();
+		foreach ( is_array( $list ) ? $list : array() as $m ) {
+			if ( is_array( $m ) && isset( $m['id'], $m['name'] ) ) {
+				$out[] = array(
+					'id'   => (int) $m['id'],
+					'name' => (string) $m['name'],
+				);
+			}
 		}
 		return $out;
 	}

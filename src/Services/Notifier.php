@@ -22,7 +22,8 @@ use NovaWork\Settings;
  *
  * - assign:   a member added to a task (not when you add yourself).
  * - comment:  everyone involved in the task or decision, except the writer.
- * - chat:     every other member.
+ * - chat:     every other member; a member mentioned with @Name gets a
+ *             "mention" instead.
  * - due:      assignees of an open task due soon (the due_soon_days setting,
  *             3 by default) or late; once per due date.
  * - decision: who decides (everyone if no one is named) when the decide-by
@@ -149,9 +150,25 @@ final class Notifier {
 	 * @param array<string, mixed> $message Message row.
 	 */
 	public static function chatted( array $message ): void {
-		$author = (int) $message['user_id'];
+		$author    = (int) $message['user_id'];
+		$mentioned = array_column( \NovaWork\Data\MessageRepository::mentions( $message ), 'id' );
 		foreach ( Members::ids() as $user_id ) {
 			if ( $user_id === $author ) {
+				continue;
+			}
+			if ( in_array( $user_id, $mentioned, true ) ) {
+				// Owner request: a mention is its own notification.
+				self::send(
+					$user_id,
+					array(
+						'type'        => 'mention',
+						'actor_id'    => $author,
+						'agent'       => (string) $message['agent'],
+						'object_type' => 'message',
+						'object_id'   => (int) $message['id'],
+						'data'        => array( 'excerpt' => self::excerpt( (string) $message['body'] ) ),
+					)
+				);
 				continue;
 			}
 			self::send(

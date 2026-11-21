@@ -98,6 +98,10 @@ export default () => ( {
 		document.addEventListener( 'pointerdown', ( e ) => this.onPointerDown( e ) );
 		document.addEventListener( 'keydown', ( e ) => this.onKey( e ) );
 		window.addEventListener( 'resize', () => document.querySelectorAll( '.nw-tabs' ).forEach( ( n ) => placeInd( n, true ) ) );
+		// The chat window reports whether it is open (for the header button).
+		window.addEventListener( 'nw:chat-state', ( e ) => {
+			this.chatOpen = !! ( e.detail && e.detail.open );
+		} );
 
 		this.$watch( '$store.nw.view', () => this.$nextTick( () => placeInd( this.$refs.tabs ) ) );
 		this.$watch( 'stuck', () => this.$nextTick( () => placeInd( this.$refs.tabs, true ) ) );
@@ -312,6 +316,9 @@ export default () => ( {
 	},
 	openChat() {
 		emit( 'nw:chat', { open: true } );
+	},
+	toggleChat() {
+		emit( 'nw:chat', { open: ! this.chatOpen } );
 	},
 	setTheme( key ) {
 		this.theme = key;

@@ -45,7 +45,7 @@ wp_print_styles( Assets::styles() );
 					<button class="nw-tplay" type="button" x-html="myRun() ? icf('pause') : icf('play')" :aria-label="myRun() ? t.pauseTracking : t.startTracking" :title="trackTitle()" @click="toggleTracking()"></button>
 					<button class="nw-ttime" type="button" :title="myRun() ? t.timerRunningOpen : t.trackedTodayOpen" @click="go('time')"><span data-since x-show="myRun()" x-text="myRun() ? clock($store.nw.now - myRun().start) : ''"></span><span x-show="!myRun()" x-text="dur(tracked($store.nw.me, dayStart()))"></span></button>
 				</div>
-				<button class="nw-iconbtn nw-box" id="nw-chat-btn" type="button" aria-label="<?php esc_attr_e( 'Team chat', 'novawork' ); ?>" :class="{ 'nw-on': chatOpen }" x-html="(chatOpen ? icf('chat-circle-dots', 17) : ic('chat-circle-dots', 17)) + ($store.nw.chat.unread ? '<i class=&quot;nw-dot-alert&quot;></i>' : '')"></button>
+				<button class="nw-iconbtn nw-box" id="nw-chat-btn" type="button" aria-label="<?php esc_attr_e( 'Team chat', 'novawork' ); ?>" :aria-expanded="String(chatOpen)" @click="toggleChat()" :class="{ 'nw-on': chatOpen }" x-html="(chatOpen ? icf('chat-circle-dots', 17) : ic('chat-circle-dots', 17)) + ($store.nw.chat.unread ? '<i class=&quot;nw-dot-alert&quot;></i>' : '')"></button>
 				<button class="nw-iconbtn nw-box" id="nw-bell-btn" type="button" aria-haspopup="dialog" :aria-expanded="String(notesOpen)" :aria-label="bellLabel()" :class="{ 'nw-on': notesOpen }" x-html="bellHtml()"></button>
 				<span class="nw-sepv" aria-hidden="true"></span>
 				<button class="nw-crew" id="nw-crew-btn" type="button" aria-haspopup="dialog" :aria-expanded="String(pop.open)" aria-label="<?php esc_attr_e( 'Team', 'novawork' ); ?>" @click.stop="togglePop()">
@@ -108,6 +108,29 @@ wp_print_styles( Assets::styles() );
 	<button class="nw-fab" id="nw-fab" type="button" aria-label="<?php esc_attr_e( 'Create', 'novawork' ); ?>" aria-haspopup="dialog" :aria-expanded="String(fab.open)" x-html="ic('plus', 26)" @click.stop="toggleFab()"></button>
 </div>
 <div class="nw-sheet-scrim2" id="nw-scrim2" x-ref="scrim2" x-show="scrim2Shown()"></div>
+
+<div class="nw-snapzone nw-left" id="nw-snap-l"></div><div class="nw-snapzone nw-right" id="nw-snap-r"></div>
+<div class="nw-sheet-scrim" id="nw-scrim" hidden></div>
+<aside class="nw-drawer nw-dock-right" id="nw-chat" hidden aria-label="<?php esc_attr_e( 'Team chat', 'novawork' ); ?>">
+	<div class="nw-grab" id="nw-grab" aria-hidden="true"></div>
+	<header id="nw-chat-head"><h2><?php esc_html_e( 'Team chat', 'novawork' ); ?><small><?php esc_html_e( 'Drag to move. Drop at an edge to dock.', 'novawork' ); ?></small></h2><button class="nw-iconbtn" type="button" id="nw-chat-find" aria-label="<?php esc_attr_e( 'Search messages', 'novawork' ); ?>" aria-expanded="false"></button><button class="nw-iconbtn" type="button" id="nw-chat-dock"></button><button class="nw-iconbtn" type="button" id="nw-chat-close" aria-label="<?php esc_attr_e( 'Close chat', 'novawork' ); ?>"></button></header>
+	<div class="nw-chat-tools" id="nw-chat-tools" hidden>
+		<label class="nw-qs-field nw-sm"><span id="nw-chat-q-icon"></span><input id="nw-chat-q" type="search" autocomplete="off" placeholder="<?php esc_attr_e( 'Search messages', 'novawork' ); ?>" aria-label="<?php esc_attr_e( 'Search messages', 'novawork' ); ?>"></label>
+		<select id="nw-chat-when" data-nw-sel data-right="1" aria-label="<?php esc_attr_e( 'When', 'novawork' ); ?>"><option value="all"><?php esc_html_e( 'Any time', 'novawork' ); ?></option><option value="today"><?php esc_html_e( 'Today', 'novawork' ); ?></option><option value="yesterday"><?php esc_html_e( 'Yesterday', 'novawork' ); ?></option><option value="7"><?php esc_html_e( 'Last 7 days', 'novawork' ); ?></option><option value="30"><?php esc_html_e( 'Last 30 days', 'novawork' ); ?></option><option value="date"><?php esc_html_e( 'On a date…', 'novawork' ); ?></option></select>
+		<input class="nw-input" type="date" id="nw-chat-date" aria-label="<?php esc_attr_e( 'Date', 'novawork' ); ?>" hidden>
+		<div class="nw-count" id="nw-chat-count" aria-live="polite"></div>
+	</div>
+	<div class="nw-msgs" id="nw-msgs"></div>
+	<form class="nw-composer" id="nw-chat-form">
+		<div class="nw-pending" id="nw-pending"></div>
+		<div class="nw-line">
+			<button class="nw-iconbtn" type="button" id="nw-attach" aria-label="<?php esc_attr_e( 'Attach files', 'novawork' ); ?>"></button>
+			<input type="file" id="nw-file-in" multiple hidden>
+			<label for="nw-chat-in" class="nw-vh"><?php esc_html_e( 'Message', 'novawork' ); ?></label><input class="nw-input" id="nw-chat-in" autocomplete="off" maxlength="2000" placeholder="<?php esc_attr_e( 'Message the team', 'novawork' ); ?>" aria-autocomplete="list" aria-controls="nw-mention-list">
+			<button class="nw-btn nw-primary" type="submit" aria-label="<?php esc_attr_e( 'Send', 'novawork' ); ?>" id="nw-chat-send"></button>
+		</div>
+	</form>
+</aside>
 
 <div class="nw-pop" x-ref="fabSheet" x-show="fab.open" role="dialog" aria-label="<?php esc_attr_e( 'Create', 'novawork' ); ?>" @pointerdown.stop>
 	<div class="nw-sgrab" data-grab aria-hidden="true"></div>

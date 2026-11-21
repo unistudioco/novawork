@@ -59,6 +59,7 @@ final class ChatController extends Controller {
 			array(
 				'text'          => self::text( 2000 ),
 				'attachmentIds' => self::refs( self::MAX_FILES ),
+				'mentions'      => self::refs( 20 ),
 			)
 		);
 		$this->route( '/attachments', WP_REST_Server::CREATABLE, array( $this, 'upload' ) );
@@ -103,8 +104,9 @@ final class ChatController extends Controller {
 		$repo = new MessageRepository();
 		$id   = $repo->insert(
 			array(
-				'user_id' => self::me(),
-				'body'    => $text,
+				'user_id'  => self::me(),
+				'body'     => $text,
+				'mentions' => (string) wp_json_encode( self::mentions( $text, (array) ( $request->get_param( 'mentions' ) ?? array() ) ) ),
 			)
 		);
 		if ( ! $id ) {
@@ -133,6 +135,27 @@ final class ChatController extends Controller {
 		do_action( 'novawork_message_created', $message );
 
 		return self::respond( $repo->present( $message ), 201 );
+	}
+
+	/**
+	 * Mentions to keep: members whose "@Name" really is in the text.
+	 *
+	 * @param string $text Message text.
+	 * @param mixed  $ids  Member ids the app says were mentioned.
+	 * @return list<array{id: int, name: string}>
+	 */
+	private static function mentions( string $text, mixed $ids ): array {
+		$out = array();
+		foreach ( self::members_only( $ids ) as $id ) {
+			$user = get_userdata( $id );
+			if ( $user && false !== mb_stripos( $text, '@' . $user->display_name ) ) {
+				$out[] = array(
+					'id'   => $id,
+					'name' => $user->display_name,
+				);
+			}
+		}
+		return $out;
 	}
 
 	/**

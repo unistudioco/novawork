@@ -21,6 +21,7 @@ import { viewFocus } from './focus.js';
 import { viewRoadmap, wireRoadmap, scrollToToday, forgetRoadmapScroll, rememberRoadmapScroll } from './roadmap.js';
 import { viewTime, wireTime } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
+import { mountChat } from './chat.js';
 import { patch } from '../lib/api.js';
 
 const VIEWS = {
@@ -193,6 +194,7 @@ export function mountViews( sync ) {
 	bindSync( sync );
 	mountDialog();
 	mountIdle();
+	mountChat();
 	main = document.getElementById( 'nw-main' );
 	main.addEventListener( 'nw:painted', tick );
 
