@@ -50,7 +50,7 @@ export async function deleteTask( page, title ) {
 export const unique = ( label ) => `E2E ${ label } ${ Date.now().toString( 36 ) }`;
 
 /**
- * Delete every task a test run left behind (titles start with "E2E "), even
+ * Delete every task and decision a test run left behind ("E2E …"), even
  * when the test failed halfway. Runs in the page, through the API.
  */
 export const cleanUp = ( page ) =>
@@ -63,5 +63,8 @@ export const cleanUp = ( page ) =>
 		const d = await r.json();
 		for ( const t of d.data.tasks.filter( ( x ) => x.title.startsWith( 'E2E ' ) ) ) {
 			await fetch( window.novawork.restUrl + 'tasks/' + t.id, { method: 'DELETE', headers: h } );
+		}
+		for ( const x of d.data.decisions.filter( ( y ) => y.question.startsWith( 'E2E ' ) ) ) {
+			await fetch( window.novawork.restUrl + 'decisions/' + x.id, { method: 'DELETE', headers: h } );
 		}
 	} );

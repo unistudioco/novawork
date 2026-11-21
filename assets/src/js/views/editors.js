@@ -219,5 +219,77 @@ export function openProject( id ) {
 	}
 }
 
+/* ---------- decision ---------- */
+
+/**
+ * @param {number|null} id        Decision id, or null for a new one.
+ * @param {boolean}     decideNow Open on the answer ("Decide").
+ */
+export function openDecision( id, decideNow ) {
+	const S = store();
+	const d = id ? S.decisions[ id ] : { question: '', context: '', projectId: 0, ownerId: me(), decideBy: '', status: 'open', answer: '' };
+	if ( ! d ) {
+		return;
+	}
+	const showAnswer = decideNow || d.status === 'decided';
+	const L = ( s ) => esc( s );
+	openDialog(
+		decideNow ? __( 'Record decision', 'novawork' ) : id ? __( 'Edit decision', 'novawork' ) : __( 'New decision', 'novawork' ),
+		`<div class="nw-field"><label for="nw-d-q" class="nw-vh">${ L( __( 'Question', 'novawork' ) ) }</label><input class="nw-input nw-big" id="nw-d-q" name="question" required maxlength="240" ${ decideNow ? '' : 'autofocus ' }value="${ esc( d.question ) }" placeholder="${ L(
+			__( 'What needs deciding?', 'novawork' )
+		) }"></div>` +
+			`<div class="nw-field"><label for="nw-d-o">${ L( __( 'Options and context', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-d-o" name="context" maxlength="2000">${ esc( d.context || '' ) }</textarea></div>` +
+			`<div class="nw-two"><div class="nw-field"><label for="nw-d-p">${ L( __( 'Project', 'novawork' ) ) }</label><select id="nw-d-p" data-nw-sel data-block="1" name="projectId">${ projOpts( d.projectId ) }</select></div><div class="nw-field"><label for="nw-d-by">${ L(
+				__( 'Decide by', 'novawork' )
+			) }</label><input class="nw-input" id="nw-d-by" type="date" name="decideBy" value="${ esc( d.decideBy || '' ) }"></div></div>` +
+			`<div class="nw-field"><label for="nw-d-own">${ L( __( 'Who decides', 'novawork' ) ) }</label><select id="nw-d-own" data-nw-sel data-block="1" name="ownerId">${ personOpts( d.ownerId, __( 'Anyone', 'novawork' ) ) }</select></div>` +
+			( showAnswer
+				? `<div class="nw-field"><label for="nw-d-a">${ L( __( 'Decision', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-d-a" name="answer" maxlength="2000" ${ decideNow ? 'autofocus required ' : '' }placeholder="${ L(
+					__( 'What we decided, and why', 'novawork' )
+				) }">${ esc( d.answer || '' ) }</textarea></div>` +
+				  ( id && d.status === 'decided' ? `<label class="nw-checkline"><input type="checkbox" name="reopen" value="1"> ${ L( __( 'Reopen this decision', 'novawork' ) ) }</label>` : '' )
+				: '' ) +
+			( id ? commentBox( 'decision', id ) : '' ) +
+			actions( !! id ),
+		async ( fd ) => {
+			const data = {
+				question: String( fd.get( 'question' ) || '' ).trim(),
+				context: String( fd.get( 'context' ) || '' ),
+				projectId: Number( fd.get( 'projectId' ) || 0 ),
+				decideBy: String( fd.get( 'decideBy' ) || '' ),
+				ownerId: Number( fd.get( 'ownerId' ) || 0 ),
+			};
+			if ( ! data.question ) {
+				return false;
+			}
+			if ( showAnswer ) {
+				data.answer = String( fd.get( 'answer' ) || '' );
+			}
+			if ( decideNow ) {
+				if ( ! data.answer.trim() ) {
+					return false;
+				}
+				data.status = 'decided';
+			}
+			if ( fd.get( 'reopen' ) ) {
+				data.status = 'open';
+			}
+			const ok = decideNow ? __( 'Decision recorded', 'novawork' ) : id ? __( 'Saved', 'novawork' ) : __( 'Decision added', 'novawork' );
+			const saved = await write( () => ( id ? patch( 'decisions/' + id, data ) : post( 'decisions', data ) ), ok );
+			if ( saved && saved.id ) {
+				store().upsert( 'decisions', saved );
+			}
+			return !! saved;
+		}
+	);
+	if ( id ) {
+		commentsFor( 'decision', id );
+		onDelete( () => {
+			deleteWithUndo( 'decisions', id, 'decisions/' + id );
+			return true;
+		} );
+	}
+}
+
 // Exposed for views that sort projects the same way.
 export { byOrder, routeUrl };

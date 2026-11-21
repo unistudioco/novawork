@@ -130,8 +130,10 @@ final class Members {
 	/**
 	 * The member's Gravatar (or avatar plugin) URL, or '' to show initials.
 	 *
-	 * Asks for a 404 when the member has no Gravatar, so the app can fall back
-	 * to their initial. Respects Settings → Discussion → Show Avatars.
+	 * Asks Gravatar for a transparent image when the member has none
+	 * (d=blank), so the initials underneath show through: no 404s in the
+	 * console, and the browser can cache the answer. Respects Settings →
+	 * Discussion → Show Avatars.
 	 *
 	 * @param int $user_id User id.
 	 */
@@ -143,7 +145,7 @@ final class Members {
 			$user_id,
 			array(
 				'size'    => 96,
-				'default' => '404',
+				'default' => 'blank',
 			)
 		);
 		return is_string( $url ) ? $url : '';

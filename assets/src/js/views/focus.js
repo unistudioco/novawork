@@ -122,7 +122,7 @@ export function viewFocus() {
 		( openDec.length
 			? `<div class="nw-list">${ openDec
 				.slice( 0, 4 )
-				.map( ( d ) => `<div class="nw-row">${ ic( 'scales', 17 ) }<span class="nw-grow" data-act="edit-decision" data-id="${ d.id }">${ esc( d.question ) }</span>${ dueHTML( d.decideBy, 'open' ) }</div>` )
+				.map( ( d ) => `<div class="nw-row">${ ic( 'scales', 17 ) }<span class="nw-grow" data-act="decide" data-id="${ d.id }" title="${ esc( __( 'Decide', 'novawork' ) ) }">${ esc( d.question ) }</span>${ dueHTML( d.decideBy, 'open' ) }</div>` )
 				.join( '' ) }</div>`
 			: `<div class="nw-empty">${ ic( 'scales' ) }${ esc( __( 'Nothing waiting on a decision.', 'novawork' ) ) }</div>` ) +
 		'</section>';
