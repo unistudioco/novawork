@@ -4,6 +4,7 @@
 
 	<file>novawork.php</file>
 	<file>src</file>
+	<file>views</file>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>

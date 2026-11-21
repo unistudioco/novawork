@@ -63,6 +63,8 @@ final class Plugin {
 	 */
 	public static function register(): void {
 		Cron::register();
+		App\Route::register();
+		Admin\Menu::register();
 
 		add_action( 'rest_api_init', array( self::class, 'register_routes' ) );
 		add_action( 'deleted_user', array( Members::class, 'deleted' ) );

@@ -150,6 +150,66 @@ one); the app document must have it.
   `(user_id, dedupe_key)`. Due dates are checked hourly by cron and at most
   every 10 minutes on polls.
 
+## App shell conventions (Phase 3)
+
+- Code map: `src/App/Route.php` (rewrite `/{slug}/` + `?novawork=1` fallback,
+  `auth_redirect()` for visitors), `src/App/Page.php` (prints the document,
+  embeds the first sync as `window.novawork`), `src/App/Assets.php` (Vite
+  manifest, `wp_print_scripts/styles`, `type="module"`, Fontshare),
+  `src/Admin/Menu.php` (top-level menu that redirects to the app),
+  `views/app.php` + `views/no-access.php`, `assets/src/js/` (`app.js` entry,
+  `store.js`, `sync.js`, `shell.js`, `lib/`), `assets/src/css/`.
+- **CSS is the prototype's, mechanically namespaced:** every class, id, custom
+  property and keyframe gained `nw-` (`.nw-btn`, `#nw-qs-cancel`,
+  `--nw-bg`, `nw-sheet-up`); values and rule order are untouched (the
+  conversion round-trips to the original). `tokens.css` holds the tokens,
+  `app.css` the rest in the original order. Anything the prototype didn't
+  have goes in `additions.css` with a reason. Never hand-edit a ported value.
+- **Alpine `<template x-for>` stays in the DOM as its parent's first child.**
+  Prototype CSS that uses `:first-child`, `+` or `* + *` on that parent breaks
+  (it hid every avatar in the phone header). For such containers build the
+  children as an HTML string with `x-html` (escape with `esc()`), as the
+  prototype did.
+- **Show-then-focus must be synchronous.** Alpine applies `:class` a moment
+  later, and focusing a still-hidden field fails, so the next key reaches the
+  page (T started the timer). Add the class directly, then focus (`qsShow()`).
+- The shell announces intents for Phase 4 as window events: `nw:create`
+  `{kind}`, `nw:open` `{kind,id}`, `nw:chat` `{open,search}`.
+- Dev server: `define( 'NOVAWORK_DEV_SERVER', 'http://localhost:5175' );` in
+  wp-config.php + `npm run dev`. Otherwise the built files load.
+- Outside hosts the app contacts: `api.fontshare.com`, `cdn.fontshare.com`
+  (setting) and `secure.gravatar.com` (when Settings → Discussion → Show
+  Avatars is on). Gravatar answers 404 for members without one; the image is
+  then removed and the initials show. All three go in readme "External services".
+- i18n (Phase 5): JS strings use `wp.i18n` with a literal 'novawork' domain;
+  `wp i18n make-json` must map the source files to the built bundle, or the
+  JSON translations won't load for the hashed dist file.
+- Demo content for parity screenshots: `bin/seed-dev.sh` (generic studio data,
+  refuses to run on a non-empty workspace).
+
+## Owner marks, 2026-11-21 (build with the Phase 5 settings screen)
+
+1. **Workspace name.** "NovaWork" is the plugin's name only. A `workspace_name`
+   setting (default: the site title) replaces every visible "NovaWork" in the
+   app: header logo text, browser title, login page, no-access page.
+2. **Where it lives.** Setting `location`:
+   - `path` (default): `site.com/{app_slug}`; the slug is editable (`work`, `team`…).
+   - `home`: the workspace is the site's home page (`work.unistudio.co/`). The
+     public theme is no longer shown; wp-admin and the REST API are untouched.
+     This is the answer for a subdomain: a WordPress install on the subdomain
+     with `home` chosen. Serving a subdomain from another install needs
+     Multisite/domain mapping, which is out of v1 scope.
+   Changing either flushes rewrite rules (FLUSH_OPTION) and keeps old links
+   working where possible.
+3. **Members' login page** at `{workspace}/login`, in NovaWork's own UI with
+   the workspace name: email/username, password, remember me, "Forgot
+   password?" (WordPress's reset flow), errors that don't reveal which part was
+   wrong. Signs in with `wp_signon()` so login-limiting and 2FA plugins that
+   hook core authentication still apply; nonce-protected; rate-limiting left to
+   core/security plugins. Signed-out app visits go here instead of
+   wp-login.php; logout returns here. A signed-in non-member sees the
+   no-access page.
+
 ## Design rules that bite (full list in the log)
 
 - Tokens: copy the block from `v3.src.html` exactly, light and dark. Blue
@@ -178,6 +238,7 @@ composer run analyse       # PHPStan level 6 + WordPress stubs
 composer run plugin-check  # bin/plugin-check.sh: Plugin Check on the release copy
 composer run test:api      # bin/test-api.sh: REST integration tests, rolled back
 bash bin/test-http.sh      # real HTTP: nonce, two-member sync, upload/download
+bash bin/seed-dev.sh       # generic demo data on an empty dev workspace
 npm run build              # Vite → assets/dist (manifest.json)
 npm run dev                # Vite dev server on :5175
 ```
@@ -222,6 +283,6 @@ npm run dev                # Vite dev server on :5175
 
 ## Phases
 
-0 Understand ✓ · **1 Scaffold** · 2 Data and API · 3 App shell · 4 Features
+0 Understand ✓ · 1 Scaffold ✓ · 2 Data and API ✓ · 3 App shell ✓ · 4 Features
 (Board+Projects → Focus+Time → Roadmap → Decisions+Comments → Chat →
 Notifications → Search) · 5 Product layer · 6 Release.

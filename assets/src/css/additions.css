@@ -1,0 +1,19 @@
+/*
+ * Rules the prototype did not need, kept apart from app.css so the port of
+ * the approved stylesheet stays exact. Each one says why it exists.
+ */
+
+/* Hide the markup until Alpine has rendered it, so the first paint is whole. */
+[x-cloak] { display: none !important; }
+
+/* Gravatar (owner decision): the photo covers the initials; if the member has
+   no Gravatar the image errors and is removed, and the initials show. */
+.nw-avatar { position: relative; }
+.nw-avatar > img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+/* Signed in, but not a member: one calm card in the middle of the page. */
+.nw-gate { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding-block: 24px; }
+.nw-gate .nw-empty { max-width: 440px; gap: 10px; border-style: solid; background: var(--nw-surface); padding: 32px 28px; }
+.nw-gate h1 { font-size: 20px; letter-spacing: -.02em; color: var(--nw-fg); }
+.nw-gate p { margin: 0; }
+.nw-gate a.nw-btn { text-decoration: none; margin-top: 6px; }
