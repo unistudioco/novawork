@@ -14,7 +14,7 @@ let offset = 0;
 export const serverNow = () => Date.now() + offset;
 
 /** Members' fields that change what the app shows (not "last seen"). */
-const memberSig = ( list ) => JSON.stringify( ( list || [] ).map( ( m ) => [ m.id, m.name, m.color, m.avatar, m.online ] ) );
+const memberSig = ( list ) => JSON.stringify( ( list || [] ).map( ( m ) => [ m.id, m.name, m.color, m.avatar, m.online, m.onlineSince ] ) );
 
 /*
  * Rows deleted on this device but not yet on the server (the Undo window).

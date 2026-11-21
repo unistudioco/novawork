@@ -120,6 +120,16 @@ wp_print_styles( Assets::styles() );
 	</div>
 </div>
 
+<dialog id="nw-idle-dlg" aria-labelledby="nw-idle-title" aria-describedby="nw-idle-text"><div class="nw-idle-in"><span class="nw-nic" id="nw-idle-icon" style="--nw-c:var(--nw-c-amber);--nw-ci:var(--nw-ci-amber)"></span><h2 id="nw-idle-title"><?php esc_html_e( 'Still working?', 'novawork' ); ?></h2><p id="nw-idle-text">
+<?php
+printf(
+	/* translators: 1: time without activity, e.g. "10m"; 2: seconds left. */
+	esc_html__( 'No activity for %1$s. The timer pauses in %2$ss, and the time you were away won’t be counted.', 'novawork' ),
+	'<b id="nw-idle-for">10m</b>',
+	'<b id="nw-idle-left">60</b>'
+);
+?>
+</p><div class="nw-idle-acts"><button class="nw-btn" type="button" data-idle="pause"><?php esc_html_e( 'Pause now', 'novawork' ); ?></button><button class="nw-btn nw-primary" type="button" data-idle="resume"><?php esc_html_e( 'I’m still working', 'novawork' ); ?></button></div></div></dialog>
 <dialog id="nw-dlg" aria-labelledby="nw-dlg-title"><form class="nw-dlg" id="nw-dlg-form" method="dialog"></form></dialog>
 
 <?php wp_print_scripts( array( Assets::SCRIPT ) ); ?>

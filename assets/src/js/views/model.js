@@ -20,8 +20,15 @@ export const store = () => S;
 
 export const COLORS = [ 'blue', 'indigo', 'grape', 'violet', 'pink', 'rose', 'salmon', 'red', 'peach', 'amber', 'gold', 'sand', 'lime', 'mint', 'emerald', 'aqua', 'teal', 'sky', 'slate' ];
 
+/** The Now limit per person (a setting, 3 by default). */
+export const nowLimit = () => Math.max( 1, Number( S && S.settings.nowLimit ) || 3 );
+
 export const STATUSES = () => [
-	{ key: 'now', label: __( 'Now', 'novawork' ), hint: __( 'Three at most, per person', 'novawork' ) },
+	{
+		key: 'now',
+		label: __( 'Now', 'novawork' ),
+		hint: nowLimit() === 3 ? __( 'Three at most, per person', 'novawork' ) : sprintf( /* translators: %d: tasks per person. */ __( '%d at most, per person', 'novawork' ), nowLimit() ),
+	},
 	{ key: 'next', label: __( 'Next', 'novawork' ), hint: __( 'Ready to start', 'novawork' ) },
 	{ key: 'later', label: __( 'Later', 'novawork' ), hint: __( 'Parked on purpose', 'novawork' ) },
 	{ key: 'done', label: __( 'Done', 'novawork' ), hint: __( 'Woohoo, well done!', 'novawork' ) },

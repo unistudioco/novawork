@@ -32,6 +32,12 @@ final class Settings {
 			'upload_types'   => array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'mp4', 'mov', 'mp3', 'm4a' ),
 			'load_fontshare' => true,
 			'delete_data'    => false,
+			'now_limit'      => 3,
+			'due_soon_days'  => 3,
+			'idle_grace'     => 60,
+			'log_days'       => 30,
+			'read_note_days' => 90,
+			'team_order'     => 'dynamic',
 		);
 	}
 
@@ -52,6 +58,31 @@ final class Settings {
 	 */
 	public static function get( string $key ): mixed {
 		return self::all()[ $key ] ?? null;
+	}
+
+	/**
+	 * Orders for "Team today": dynamic (here first, most tracked first; away
+	 * last), tracked (most tracked today), online (first to come online;
+	 * away last), fixed (account order).
+	 */
+	public const TEAM_ORDERS = array( 'dynamic', 'tracked', 'online', 'fixed' );
+
+	/**
+	 * The "Team today" order, falling back to dynamic.
+	 */
+	public static function team_order(): string {
+		$order = (string) self::get( 'team_order' );
+		return in_array( $order, self::TEAM_ORDERS, true ) ? $order : 'dynamic';
+	}
+
+	/**
+	 * A whole-number setting, never below a floor.
+	 *
+	 * @param string $key   Setting name.
+	 * @param int    $floor Smallest allowed value.
+	 */
+	public static function int( string $key, int $floor = 1 ): int {
+		return max( $floor, (int) self::get( $key ) );
 	}
 
 	/**

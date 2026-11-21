@@ -38,6 +38,11 @@ final class Members {
 	public const MEMBER_COLORS = array( 'violet', 'teal', 'amber', 'rose', 'sky', 'lime', 'red', 'gold' );
 
 	/**
+	 * User meta: when the member last came online (epoch seconds).
+	 */
+	public const ONLINE_SINCE_META = 'novawork_online_since';
+
+	/**
 	 * Seconds since the last poll within which a member counts as online.
 	 */
 	public const ONLINE_WINDOW = 45;
@@ -86,14 +91,17 @@ final class Members {
 		if ( ! $user ) {
 			return null;
 		}
-		$seen = (int) get_user_meta( $user_id, self::SEEN_META, true );
+		$seen   = (int) get_user_meta( $user_id, self::SEEN_META, true );
+		$online = $seen && ( time() - $seen ) <= self::ONLINE_WINDOW;
+		$since  = (int) get_user_meta( $user_id, self::ONLINE_SINCE_META, true );
 		return array(
-			'id'       => $user_id,
-			'name'     => $user->display_name,
-			'color'    => self::color( $user_id ),
-			'avatar'   => self::avatar_url( $user_id ),
-			'lastSeen' => $seen ? $seen * 1000 : null,
-			'online'   => $seen && ( time() - $seen ) <= self::ONLINE_WINDOW,
+			'id'          => $user_id,
+			'name'        => $user->display_name,
+			'color'       => self::color( $user_id ),
+			'avatar'      => self::avatar_url( $user_id ),
+			'lastSeen'    => $seen ? $seen * 1000 : null,
+			'online'      => $online,
+			'onlineSince' => $online && $since ? $since * 1000 : null,
 		);
 	}
 
@@ -148,6 +156,10 @@ final class Members {
 	 */
 	public static function touch( int $user_id ): void {
 		$seen = (int) get_user_meta( $user_id, self::SEEN_META, true );
+		if ( time() - $seen > self::ONLINE_WINDOW ) {
+			// Back after being away: they came online now ("first online" order).
+			update_user_meta( $user_id, self::ONLINE_SINCE_META, time() );
+		}
 		if ( time() - $seen >= 15 ) {
 			update_user_meta( $user_id, self::SEEN_META, time() );
 		}

@@ -8,6 +8,7 @@ import { dur, dayStart } from '../lib/format.js';
 import { serverNow } from '../store.js';
 import { toast } from '../lib/ui.js';
 import { store, task, myRun, tracked, me } from './model.js';
+import { askIdlePermission } from './idle.js';
 
 let sync = null;
 export function bindSync( s ) {
@@ -47,6 +48,8 @@ export async function startTracking( taskId ) {
 		toast( __( 'Add a task to Now first, then start tracking.', 'novawork' ), 'clock' );
 		return;
 	}
+	// Still inside the click, where Chrome allows asking for idle detection.
+	askIdlePermission();
 	const res = await write( () => post( 'timer/start', { taskId: Number( taskId ) } ) );
 	if ( ! res ) {
 		return;
