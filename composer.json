@@ -1,0 +1,50 @@
+{
+	"name": "unistudioco/novawork",
+	"description": "A calm team workspace inside WordPress: projects, a board, a roadmap, decisions, time tracking and team chat.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://github.com/unistudioco/novawork",
+	"require": {
+		"php": ">=8.1"
+	},
+	"require-dev": {
+		"wp-coding-standards/wpcs": "^3.3",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"phpstan/phpstan": "^2.1",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"phpstan/extension-installer": "^1.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"NovaWork\\": "src/"
+		}
+	},
+	"config": {
+		"platform": {
+			"php": "8.1.0"
+		},
+		"optimize-autoloader": true,
+		"sort-packages": true,
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true,
+			"phpstan/extension-installer": true
+		}
+	},
+	"scripts": {
+		"lint": "phpcs",
+		"lint:fix": "phpcbf",
+		"analyse": "phpstan analyse --memory-limit=1G",
+		"plugin-check": "bash bin/plugin-check.sh",
+		"test": [
+			"@lint",
+			"@analyse"
+		]
+	},
+	"scripts-descriptions": {
+		"lint": "PHPCS with WordPress Coding Standards and PHP 8.1 compatibility.",
+		"lint:fix": "Fix what PHPCBF can fix automatically.",
+		"analyse": "PHPStan level 6 with WordPress stubs.",
+		"plugin-check": "Run the official Plugin Check against the dev site (see bin/plugin-check.sh).",
+		"test": "Both static gates."
+	}
+}
