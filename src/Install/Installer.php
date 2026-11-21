@@ -10,6 +10,7 @@ declare( strict_types = 1 );
 namespace NovaWork\Install;
 
 use NovaWork\Access\Capabilities;
+use NovaWork\App\Route;
 use NovaWork\Services\Cron;
 use NovaWork\Services\Files;
 
@@ -45,6 +46,9 @@ final class Installer {
 	 */
 	public static function deactivate(): void {
 		Cron::unschedule();
+		// Our rewrite rule is still registered during this request, so rather
+		// than flush now, let WordPress rebuild the rules on the next load.
+		delete_option( 'rewrite_rules' );
 	}
 
 	/**
@@ -71,6 +75,7 @@ final class Installer {
 		Capabilities::install();
 		Files::ensure_folder();
 		Cron::schedule();
+		update_option( Route::FLUSH_OPTION, 1, false );
 
 		update_option( self::VERSION_OPTION, Schema::VERSION, false );
 	}

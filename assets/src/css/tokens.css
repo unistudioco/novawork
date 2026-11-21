@@ -1,0 +1,67 @@
+/*
+ * NovaWork design tokens: light, dark (system), and dark (forced).
+ *
+ * Ported from the approved prototype (design/prototype/src/v3.src.html) with
+ * every value unchanged; only the names gained the nw- namespace. Change a
+ * value here only with the owner's approval: the prototype is the spec.
+ */
+/* Layout: floating app header (logo, tracker, team) over view tabs; one working column (max 1180px); phones get a bottom tab bar. */
+:root {
+  --nw-flow: #5b63d6, #7b66ec, #9b5fef, #bd5ac0, #dc598e, #e46d4f, #e88537, #eda23d;
+  /* Palette: core blue #2065f5, cream #f7f5f2, ink #1d1919; accents in deep/bright pairs; warm greys #1a1918 to #f7f6f5. */
+  --nw-bg: #f7f5f2; --nw-surface: #ffffff; --nw-raised: #ffffff; --nw-sunken: #ebe9e6;
+  --nw-line: #dfdcd8; --nw-line-strong: #c6c1bc; --nw-field: rgb(126 119 112 / .10); --nw-field-hover: rgb(126 119 112 / .32);
+  --nw-fg: #1d1919; --nw-muted: #5a5651; --nw-faint: #7e7770;
+  --nw-accent: #2065f5; --nw-accent-ink: #2065f5; --nw-accent-fg: #ffffff; --nw-accent-soft: #e5edfe; --nw-accent-line: #b4cafb; --nw-accent-on-soft: #2065f5; --nw-inv: 0%;
+  --nw-now: #2065f5; --nw-next: #d4661c; --nw-later: #7e7770; --nw-done: #2e7d4f;
+  --nw-lane: #ebe9e6; --nw-card: #ffffff; --nw-neutral: #2d2b29; --nw-neutral-fg: #ffffff; --nw-p-urgent: #e0322f;
+  --nw-warn: #b15223; --nw-warn-soft: #fbeadf; --nw-warn-on-soft: #b15223; --nw-danger: #8e1b34; --nw-danger-soft: #f8e1e5; --nw-danger-on-soft: #8e1b34; --nw-done-soft: #e8f0ea; --nw-done-on-soft: #1d1919;
+  --nw-av-ink: 100%; --nw-av-fg: #ffffff;
+  --nw-c-violet: #c4b1eb; --nw-c-teal: #5ac6e7; --nw-c-amber: #f0913c; --nw-c-rose: #bd3f79; --nw-c-sky: #b7c8df; --nw-c-lime: #bcd94a; --nw-c-slate: #a39b94; --nw-c-red: #e86034; --nw-c-gold: #f4d264;
+  --nw-ci-violet: #6f2f6b; --nw-ci-teal: #32778e; --nw-ci-amber: #b15223; --nw-ci-rose: #bd3f79; --nw-ci-sky: #2b374e; --nw-ci-lime: #244f3d; --nw-ci-slate: #5a5651; --nw-ci-red: #8e1b34; --nw-ci-gold: #946621;
+  --nw-c-blue: #2065f5; --nw-c-indigo: #6b7bff; --nw-c-grape: #a77bff; --nw-c-pink: #ff8fb4; --nw-c-salmon: #f4b2a8; --nw-c-peach: #ffb27a; --nw-c-sand: #d9c3a3; --nw-c-mint: #7fdcb8; --nw-c-emerald: #2fb37f; --nw-c-aqua: #3cc8c6;
+  --nw-ci-blue: #1a4fc4; --nw-ci-indigo: #3743b8; --nw-ci-grape: #5b30b0; --nw-ci-pink: #a8325e; --nw-ci-salmon: #a8483a; --nw-ci-peach: #a5561c; --nw-ci-sand: #6e5a3f; --nw-ci-mint: #1f6e57; --nw-ci-emerald: #17674a; --nw-ci-aqua: #1b6c6c;
+  --nw-p-low: #5ac6e7; --nw-p-med: #f0913c; --nw-p-high: #e86034;
+  --nw-shadow-sm: 0 1px 2px rgb(29 25 25 / .05);
+  --nw-shadow: 0 1px 2px rgb(29 25 25 / .04), 0 10px 30px -12px rgb(29 25 25 / .16);
+  --nw-shadow-pop: 0 2px 6px rgb(29 25 25 / .06), 0 18px 48px -12px rgb(29 25 25 / .24);
+  --nw-glass: rgb(247 245 242 / .78);
+  --nw-scrim: rgb(29 25 25 / .36);
+  --nw-font-head: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --nw-font-body: "Supreme", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --nw-r: 12px; --nw-ease: cubic-bezier(.22, .9, .24, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --nw-bg: #1a1918; --nw-surface: #242321; --nw-raised: #2d2b29; --nw-sunken: #1d1919;
+    --nw-line: #393633; --nw-line-strong: #4e4a46; --nw-field: rgb(150 143 135 / .14); --nw-field-hover: rgb(150 143 135 / .38);
+    --nw-fg: #f7f6f5; --nw-muted: #bab5af; --nw-faint: #8a827a;
+    --nw-accent: #2065f5; --nw-accent-ink: #8fb0ff; --nw-accent-fg: #ffffff; --nw-accent-soft: #2065f5; --nw-accent-line: #4d84ff; --nw-accent-on-soft: #eef3ff; --nw-inv: 100%;
+    --nw-now: #8fb0ff; --nw-next: #f0913c; --nw-later: #a39b94; --nw-done: #6fcf8f;
+    --nw-lane: #242321; --nw-card: #2d2b29; --nw-neutral: #f7f6f5; --nw-neutral-fg: #1d1919; --nw-p-urgent: #ff6b66;
+    --nw-warn: #f0913c; --nw-warn-soft: #b15223; --nw-warn-on-soft: #ffe7d4; --nw-danger: #e86034; --nw-danger-soft: #8e1b34; --nw-danger-on-soft: #ffe0e5; --nw-done-soft: #244f3d; --nw-done-on-soft: #eef7dc;
+    --nw-av-ink: 0%; --nw-av-fg: #1d1919;
+    --nw-shadow-sm: 0 1px 2px rgb(0 0 0 / .4);
+    --nw-shadow: 0 1px 2px rgb(0 0 0 / .4), 0 12px 32px -12px rgb(0 0 0 / .65);
+    --nw-shadow-pop: 0 2px 6px rgb(0 0 0 / .45), 0 22px 56px -14px rgb(0 0 0 / .75);
+    --nw-glass: rgb(36 35 33 / .78);
+    --nw-scrim: rgb(10 9 8 / .62);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --nw-bg: #1a1918; --nw-surface: #242321; --nw-raised: #2d2b29; --nw-sunken: #1d1919;
+  --nw-line: #393633; --nw-line-strong: #4e4a46; --nw-field: rgb(150 143 135 / .14); --nw-field-hover: rgb(150 143 135 / .38);
+  --nw-fg: #f7f6f5; --nw-muted: #bab5af; --nw-faint: #8a827a;
+  --nw-accent: #2065f5; --nw-accent-ink: #8fb0ff; --nw-accent-fg: #ffffff; --nw-accent-soft: #2065f5; --nw-accent-line: #4d84ff; --nw-accent-on-soft: #eef3ff; --nw-inv: 100%;
+  --nw-now: #8fb0ff; --nw-next: #f0913c; --nw-later: #a39b94; --nw-done: #6fcf8f;
+    --nw-lane: #242321; --nw-card: #2d2b29; --nw-neutral: #f7f6f5; --nw-neutral-fg: #1d1919; --nw-p-urgent: #ff6b66;
+  --nw-warn: #f0913c; --nw-warn-soft: #b15223; --nw-warn-on-soft: #ffe7d4; --nw-danger: #e86034; --nw-danger-soft: #8e1b34; --nw-danger-on-soft: #ffe0e5; --nw-done-soft: #244f3d; --nw-done-on-soft: #eef7dc;
+  --nw-av-ink: 0%; --nw-av-fg: #1d1919;
+  --nw-shadow-sm: 0 1px 2px rgb(0 0 0 / .4);
+  --nw-shadow: 0 1px 2px rgb(0 0 0 / .4), 0 12px 32px -12px rgb(0 0 0 / .65);
+  --nw-shadow-pop: 0 2px 6px rgb(0 0 0 / .45), 0 22px 56px -14px rgb(0 0 0 / .75);
+  --nw-glass: rgb(36 35 33 / .78);
+  --nw-scrim: rgb(10 9 8 / .62);
+  color-scheme: dark;
+}

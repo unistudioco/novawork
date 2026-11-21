@@ -310,7 +310,8 @@ try {
 	$run = $entries->running_for( $alex );
 	$entries->update( (int) $run['id'], array( 'started_at' => gmdate( 'Y-m-d H:i:s', time() - 20 * MINUTE_IN_SECONDS ) ) );
 	list( , $stop ) = $t->call( $sam, 'POST', '/timer/stop' );
-	$t->ok( null === $stop['entry'] && null !== $entries->running_for( $alex ), "sam cannot stop alex's timer" );
+	$still = $entries->running_for( $alex );
+	$t->ok( null !== $still && (int) $still['id'] === (int) $run['id'] && ( null === $stop['entry'] || $sam === $stop['entry']['by'] ), "sam's stop only ever touches sam's own timer, never alex's" );
 	$idle_end = ( time() - 8 * MINUTE_IN_SECONDS ) * 1000;
 	list( , $stop ) = $t->call( $alex, 'POST', '/timer/stop', array( 'endedAt' => $idle_end ) );
 	$t->ok( is_array( $stop['entry'] ) && abs( $stop['entry']['end'] - $idle_end ) < 1000, 'idle pause ends the entry at the last activity' );
