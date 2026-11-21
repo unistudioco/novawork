@@ -23,3 +23,16 @@
 .nw-toast-act { margin-left: 4px; padding: 4px 8px; border: 0; border-radius: 6px; background: color-mix(in srgb, var(--nw-bg) 16%, transparent); color: var(--nw-bg); font: 600 13px/1 var(--nw-font-head); cursor: pointer; }
 .nw-toast-act:hover { background: color-mix(in srgb, var(--nw-bg) 26%, transparent); }
 .nw-toast-act:focus-visible { outline: 2px solid var(--nw-bg); outline-offset: 2px; }
+
+/* Toasts stack (owner decision): one fixed column at the prototype's toast
+   position, newest at the bottom. Each toast rises in and fades out; the
+   others glide (JS) to their new places. */
+.nw-toasts { position: fixed; z-index: 50; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: max-content; max-width: calc(100vw - 32px); pointer-events: none; }
+.nw-toasts .nw-toast { position: static; transform: none; left: auto; bottom: auto; pointer-events: auto; }
+@media (max-width: 719px) { .nw-toasts { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .nw-toasts .nw-toast { animation: nw-toast-in .32s cubic-bezier(.22, .9, .24, 1) backwards; }
+  .nw-toasts .nw-toast.nw-toast-out { animation: nw-toast-out .2s ease forwards; }
+  @keyframes nw-toast-in { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+  @keyframes nw-toast-out { to { opacity: 0; } }
+}
