@@ -17,6 +17,7 @@ import { mountDialog } from './dialog.js';
 import { openTask, openProject } from './editors.js';
 import { viewBoard, wireBoard, toggleAllDone, place } from './board.js';
 import { viewFocus } from './focus.js';
+import { viewRoadmap, wireRoadmap, scrollToToday, forgetRoadmapScroll, rememberRoadmapScroll } from './roadmap.js';
 import { viewTime, wireTime } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
 import { patch } from '../lib/api.js';
@@ -27,11 +28,11 @@ const head = ( title, text ) => `<div class="nw-view-head"><div><h1>${ esc( titl
 const VIEWS = {
 	focus: viewFocus,
 	board: viewBoard,
-	roadmap: () => head( __( 'Roadmap', 'novawork' ), __( 'Each bar runs from a project’s start to its target date and fills as its tasks get done. The dashed red line is a hard deadline.', 'novawork' ) ),
+	roadmap: viewRoadmap,
 	time: viewTime,
 	decisions: () => head( __( 'Decisions', 'novawork' ), __( 'Questions that block work. Record the answer so nobody has to ask twice.', 'novawork' ) ),
 };
-const WIRE = { board: wireBoard, time: wireTime };
+const WIRE = { board: wireBoard, time: wireTime, roadmap: wireRoadmap };
 
 let main = null;
 let pending = null;
@@ -48,6 +49,11 @@ function paint( html ) {
 		return;
 	}
 	pending = null;
+	if ( store().view !== 'roadmap' ) {
+		forgetRoadmapScroll();
+	} else {
+		rememberRoadmapScroll( main );
+	}
 	main.innerHTML = html;
 	enhance( main );
 	const wire = WIRE[ store().view ];
@@ -64,7 +70,11 @@ export const rerender = () => {
 	state.force++;
 };
 
-/** Fill in running clocks and live "today" totals; runs every second. */
+/**
+ * Fill in running clocks ([data-since]) and members' live totals for today
+ * ([data-today] = a member id); runs every second. Never use these attribute
+ * names for anything else: the ticker overwrites the element's text.
+ */
 export function tick() {
 	const now = serverNow();
 	document.querySelectorAll( '[data-since]' ).forEach( ( el ) => {
@@ -166,6 +176,8 @@ function onClick( e ) {
 		openProject( null );
 	} else if ( act === 'all-done' ) {
 		toggleAllDone( rerender );
+	} else if ( act === 'tl-today' ) {
+		scrollToToday( true );
 	}
 }
 
