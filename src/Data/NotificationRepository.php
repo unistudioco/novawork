@@ -20,7 +20,7 @@ namespace NovaWork\Data;
  */
 final class NotificationRepository extends Repository {
 
-	public const TYPES = array( 'assign', 'comment', 'chat', 'due', 'decision' );
+	public const TYPES = array( 'assign', 'comment', 'chat', 'due', 'decision', 'vote' );
 
 	/**
 	 * Table name without prefix.

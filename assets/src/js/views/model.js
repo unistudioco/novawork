@@ -195,6 +195,48 @@ export function tbtn( t ) {
 export const checkBtn = ( t ) =>
 	`<button class="nw-check" type="button" data-act="done" data-id="${ t.id }" aria-label="${ esc( sprintf( /* translators: %s: task title. */ __( 'Mark %s done', 'novawork' ), t.title ) ) }">${ ic( 'check' ) }</button>`;
 
+/**
+ * Whether you may record (or reopen) a decision: administrators always;
+ * otherwise the person named in "Who decides", or anyone when no one is
+ * named (or when the decide_rule setting is "anyone"). The server enforces
+ * the same rule.
+ */
+export function canDecide( d ) {
+	return !! ( S.canManage || S.settings.decideRule === 'anyone' || ! d.ownerId || d.ownerId === S.me );
+}
+
+/**
+ * A decision's options with their votes (owner decision: votes advise the
+ * person who decides). Each row shows its share as a soft fill, the voters'
+ * avatars and the count; yours is highlighted. Buttons when you can vote.
+ *
+ * @param {Object} d      Decision.
+ * @param {string} act    data-act for the rows ("vote" or "pick").
+ * @param {boolean} live  Whether the rows are clickable.
+ */
+export function votesHTML( d, act, live ) {
+	const votes = d.votes || {};
+	const counts = {};
+	Object.values( votes ).forEach( ( k ) => {
+		counts[ k ] = ( counts[ k ] || 0 ) + 1;
+	} );
+	const total = Object.keys( votes ).length;
+	const mine = votes[ S.me ];
+	const rows = ( d.options || [] )
+		.map( ( o ) => {
+			const n = counts[ o.key ] || 0;
+			const pct = total ? Math.round( ( n / total ) * 100 ) : 0;
+			const who = Object.keys( votes ).filter( ( uid ) => votes[ uid ] === o.key );
+			const label = esc( sprintf( /* translators: 1: option, 2: number of votes. */ __( '%1$s, %2$d votes', 'novawork' ), o.label, n ) );
+			return `<button class="nw-vote${ mine === o.key ? ' nw-on' : '' }" type="button" data-act="${ act }" data-id="${ d.id }" data-opt="${ esc( o.key ) }" aria-pressed="${ mine === o.key }" aria-label="${ label }"${ live ? '' : ' disabled' }><span class="nw-vote-fill" style="width:${ pct }%"></span><span class="nw-vote-lbl">${ esc( o.label ) }</span>${
+				who.length ? `<span class="nw-avs">${ who.map( ( uid ) => avatar( uid ) ).join( '' ) }</span>` : ''
+			}<span class="nw-vote-n">${ n }</span></button>`;
+		} )
+		.join( '' );
+	const voted = sprintf( /* translators: 1: members who voted, 2: all members. */ __( '%1$d of %2$d voted', 'novawork' ), total, S.members.length );
+	return `<div class="nw-votes">${ rows }<span class="nw-votes-meta">${ esc( voted ) }</span></div>`;
+}
+
 /** A running clock; the one-second ticker fills it in. */
 export const since = ( start ) => `<span data-since="${ Number( start ) }"></span>`;
 

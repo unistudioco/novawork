@@ -38,6 +38,8 @@ final class Settings {
 			'log_days'       => 30,
 			'read_note_days' => 90,
 			'team_order'     => 'dynamic',
+			'decide_rule'    => 'named',
+			'decision_votes' => true,
 		);
 	}
 
@@ -73,6 +75,14 @@ final class Settings {
 	public static function team_order(): string {
 		$order = (string) self::get( 'team_order' );
 		return in_array( $order, self::TEAM_ORDERS, true ) ? $order : 'dynamic';
+	}
+
+	/**
+	 * Who may record a decision: "named" (the person named in Who decides;
+	 * anyone when no one is named) or "anyone". Administrators always may.
+	 */
+	public static function decide_rule(): string {
+		return 'anyone' === self::get( 'decide_rule' ) ? 'anyone' : 'named';
 	}
 
 	/**

@@ -117,21 +117,24 @@ final class SyncController extends Controller {
 
 		$read_id = ReadState::get( $me );
 		$body   += array(
-			'now'      => Db::now_ms(),
-			'me'       => $me,
-			'nonce'    => wp_create_nonce( 'wp_rest' ),
-			'members'  => Members::all(),
-			'agents'   => Members::agents(),
-			'chat'     => array(
+			'now'       => Db::now_ms(),
+			'me'        => $me,
+			'canManage' => current_user_can( \NovaWork\Access\Capabilities::MANAGE ),
+			'nonce'     => wp_create_nonce( 'wp_rest' ),
+			'members'   => Members::all(),
+			'agents'    => Members::agents(),
+			'chat'      => array(
 				'readId' => $read_id,
 				'unread' => ( new MessageRepository() )->count_unread( $read_id, $me ),
 			),
-			'settings' => array(
+			'settings'  => array(
 				'pollSeconds'    => Settings::int( 'poll_seconds', 2 ),
 				'idleMinutes'    => Settings::int( 'idle_minutes' ),
 				'idleGrace'      => Settings::int( 'idle_grace', 10 ),
 				'nowLimit'       => Settings::int( 'now_limit' ),
 				'teamOrder'      => Settings::team_order(),
+				'decideRule'     => Settings::decide_rule(),
+				'decisionVotes'  => (bool) Settings::get( 'decision_votes' ),
 				'dueSoonDays'    => Settings::int( 'due_soon_days', 0 ),
 				'weekStart'      => (int) Settings::get( 'week_start' ),
 				'timezone'       => wp_timezone_string(),

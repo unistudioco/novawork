@@ -65,6 +65,22 @@ final class Capabilities {
 	}
 
 	/**
+	 * Whether a member may record (or reopen) a decision: administrators
+	 * always; otherwise the person named in "Who decides", or anyone when no
+	 * one is named. The decide_rule setting "anyone" lets every member decide.
+	 *
+	 * @param array<string, mixed> $decision Decision row.
+	 * @param int                  $user_id  Member.
+	 */
+	public static function can_decide( array $decision, int $user_id ): bool {
+		if ( user_can( $user_id, self::MANAGE ) || 'anyone' === \NovaWork\Settings::decide_rule() ) {
+			return true;
+		}
+		$owner = (int) $decision['owner_id'];
+		return 0 === $owner || $owner === $user_id;
+	}
+
+	/**
 	 * Whether a user is a member.
 	 *
 	 * @param int $user_id User id.

@@ -27,6 +27,7 @@ final class Db {
 		'task_assignees',
 		'comments',
 		'decisions',
+		'decision_votes',
 		'time_entries',
 		'messages',
 		'attachments',

@@ -42,6 +42,7 @@ export function createStore( boot ) {
 		timeEntries: {},
 		notifications: {},
 		cursor: null,
+		canManage: false,
 		now: Date.now(),
 		view: 'focus',
 
@@ -84,6 +85,9 @@ export function createStore( boot ) {
 			}
 			if ( payload.settings && ! same( payload.settings, this.settings ) ) {
 				this.settings = payload.settings;
+			}
+			if ( typeof payload.canManage === 'boolean' && payload.canManage !== this.canManage ) {
+				this.canManage = payload.canManage;
 			}
 			if ( payload.cursor !== this.cursor ) {
 				this.cursor = payload.cursor;

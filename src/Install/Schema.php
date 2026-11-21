@@ -23,7 +23,7 @@ use NovaWork\Data\Db;
  */
 final class Schema {
 
-	public const VERSION = 1;
+	public const VERSION = 2;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -100,6 +100,8 @@ owner_id bigint(20) unsigned NOT NULL DEFAULT 0,
 decide_by date DEFAULT NULL,
 status varchar(10) NOT NULL DEFAULT 'open',
 answer text NOT NULL,
+voting tinyint(1) NOT NULL DEFAULT 0,
+vote_options text NOT NULL,
 decided_at datetime DEFAULT NULL,
 decided_by bigint(20) unsigned NOT NULL DEFAULT 0,
 sort_order bigint(20) NOT NULL DEFAULT 0,
@@ -110,6 +112,13 @@ updated_at datetime NOT NULL,
 PRIMARY KEY  (id),
 KEY status (status),
 KEY decide_by (decide_by)
+) $c;",
+			"CREATE TABLE {$t( 'decision_votes' )} (
+decision_id bigint(20) unsigned NOT NULL,
+user_id bigint(20) unsigned NOT NULL,
+option_key varchar(20) NOT NULL DEFAULT '',
+updated_at datetime NOT NULL,
+PRIMARY KEY  (decision_id,user_id)
 ) $c;",
 			"CREATE TABLE {$t( 'time_entries' )} (
 id bigint(20) unsigned NOT NULL AUTO_INCREMENT,

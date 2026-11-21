@@ -56,3 +56,48 @@ test( 'open, decide, comment, reopen and delete a decision', async ( { page } ) 
 	await expect( page.locator( '.nw-dec', { hasText: Q } ) ).toHaveCount( 1 );
 	expect( errors ).toEqual( [] );
 } );
+
+test( 'team votes: vote, change, withdraw; the decider sees the tally', async ( { page } ) => {
+	const Q = unique( 'vote' );
+	const find = async () => ( await serverData( page ) ).decisions.find( ( d ) => d.question === Q );
+	await page.click( '[data-act="new-decision"]' );
+	await page.fill( '#nw-d-q', Q );
+	await page.check( '#nw-d-vote' );
+	await page.fill( '#nw-d-ol', 'Plan A\nPlan B\nPlan A' );
+	await page.click( '#nw-dlg button[value="save"]' );
+	const card = page.locator( '.nw-dec', { hasText: Q } );
+	await expect( card.locator( '.nw-vote' ) ).toHaveCount( 2 ); // duplicate line dropped
+	const me = await page.evaluate( () => window.novawork.me );
+
+	await card.locator( '.nw-vote', { hasText: 'Plan B' } ).click();
+	await expect( card.locator( '.nw-vote.nw-on' ) ).toHaveText( /Plan B/ );
+	await expect.poll( async () => ( await find() )?.votes[ me ] ).toBe( 'o2' );
+	await card.locator( '.nw-vote', { hasText: 'Plan A' } ).click();
+	await expect.poll( async () => ( await find() )?.votes[ me ] ).toBe( 'o1' );
+	await card.locator( '.nw-vote', { hasText: 'Plan A' } ).click(); // again: withdraw
+	await expect.poll( async () => ( await find() )?.votes[ me ] ).toBeUndefined();
+
+	// You named yourself as the decider (the default), so you see Decide and the tally.
+	await card.locator( '.nw-vote', { hasText: 'Plan B' } ).click();
+	await card.locator( '[data-act="decide"]' ).click();
+	await expect( page.locator( '#nw-dlg .nw-votes .nw-vote' ) ).toHaveCount( 2 );
+	await page.locator( '#nw-dlg [data-act="pick"]', { hasText: 'Plan B' } ).click();
+	await expect( page.locator( '#nw-d-a' ) ).toHaveValue( /^Plan B\. / );
+	await page.click( '#nw-dlg button[value="save"]' );
+	await expect.poll( async () => ( await find() )?.status ).toBe( 'decided' );
+	await expect( page.locator( '.nw-dec.nw-decided', { hasText: Q } ).locator( '.nw-vote[disabled]' ) ).toHaveCount( 2 ); // voting closed
+} );
+
+test( 'someone else decides: you see "Waiting on …", not Decide', async ( { page } ) => {
+	const Q = unique( 'waiting' );
+	const other = await page.evaluate( () => {
+		const nw = window.Alpine.store( 'nw' );
+		return nw.members.find( ( m ) => m.id !== nw.me && m.id !== 1 );
+	} );
+	await page.evaluate( async ( [ q, owner ] ) => {
+		await fetch( window.novawork.restUrl + 'decisions', { method: 'POST', headers: { 'X-WP-Nonce': window.novawork.nonce, 'Content-Type': 'application/json' }, body: JSON.stringify( { question: q, ownerId: owner } ) } );
+	}, [ Q, other.id ] );
+	const card = page.locator( '.nw-dec', { hasText: Q } );
+	await expect( card.locator( '.nw-waiting' ) ).toHaveText( 'Waiting on ' + other.name );
+	await expect( card.locator( '[data-act="decide"]' ) ).toHaveCount( 0 );
+} );

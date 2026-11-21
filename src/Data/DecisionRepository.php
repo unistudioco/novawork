@@ -39,20 +39,22 @@ final class DecisionRepository extends Repository {
 	 */
 	protected function formats(): array {
 		return array(
-			'project_id' => '%d',
-			'question'   => '%s',
-			'context'    => '%s',
-			'owner_id'   => '%d',
-			'decide_by'  => '%s',
-			'status'     => '%s',
-			'answer'     => '%s',
-			'decided_at' => '%s',
-			'decided_by' => '%d',
-			'sort_order' => '%d',
-			'is_sample'  => '%d',
-			'created_by' => '%d',
-			'created_at' => '%s',
-			'updated_at' => '%s',
+			'project_id'   => '%d',
+			'question'     => '%s',
+			'context'      => '%s',
+			'owner_id'     => '%d',
+			'decide_by'    => '%s',
+			'status'       => '%s',
+			'answer'       => '%s',
+			'voting'       => '%d',
+			'vote_options' => '%s',
+			'decided_at'   => '%s',
+			'decided_by'   => '%d',
+			'sort_order'   => '%d',
+			'is_sample'    => '%d',
+			'created_by'   => '%d',
+			'created_at'   => '%s',
+			'updated_at'   => '%s',
 		);
 	}
 
@@ -63,9 +65,10 @@ final class DecisionRepository extends Repository {
 	 */
 	protected function defaults(): array {
 		return array(
-			'context' => '',
-			'answer'  => '',
-			'status'  => 'open',
+			'context'      => '',
+			'answer'       => '',
+			'status'       => 'open',
+			'vote_options' => '[]',
 		);
 	}
 
@@ -76,22 +79,145 @@ final class DecisionRepository extends Repository {
 	 * @return array<string, mixed>
 	 */
 	public function present( array $row ): array {
-		return array(
-			'id'        => (int) $row['id'],
-			'question'  => (string) $row['question'],
-			'context'   => (string) $row['context'],
-			'projectId' => (int) $row['project_id'],
-			'ownerId'   => (int) $row['owner_id'],
-			'decideBy'  => Db::date_out( $row['decide_by'] ),
-			'status'    => (string) $row['status'],
-			'answer'    => (string) $row['answer'],
-			'decidedAt' => Db::to_ms( $row['decided_at'] ),
-			'decidedBy' => (int) $row['decided_by'],
-			'order'     => (int) $row['sort_order'],
-			'sample'    => (bool) $row['is_sample'],
-			'createdBy' => (int) $row['created_by'],
-			'createdAt' => Db::to_ms( $row['created_at'] ),
-			'updatedAt' => Db::to_ms( $row['updated_at'] ),
+		return $this->present_many( array( $row ) )[0];
+	}
+
+	/**
+	 * API shapes, with every decision's votes loaded in one query.
+	 *
+	 * Votes are advisory (owner decision): members pick one option each and
+	 * can change their mind; the person who decides sees the tally.
+	 *
+	 * @param list<array<string, mixed>> $rows Database rows.
+	 * @return list<array<string, mixed>>
+	 */
+	public function present_many( array $rows ): array {
+		$votes = $this->votes_of( array_map( static fn( $row ) => (int) $row['id'], $rows ) );
+		$out   = array();
+		foreach ( $rows as $row ) {
+			$id    = (int) $row['id'];
+			$out[] = array(
+				'id'        => $id,
+				'question'  => (string) $row['question'],
+				'context'   => (string) $row['context'],
+				'projectId' => (int) $row['project_id'],
+				'ownerId'   => (int) $row['owner_id'],
+				'decideBy'  => Db::date_out( $row['decide_by'] ),
+				'status'    => (string) $row['status'],
+				'answer'    => (string) $row['answer'],
+				'voting'    => (bool) $row['voting'],
+				'options'   => self::options( $row ),
+				'votes'     => (object) ( $votes[ $id ] ?? array() ),
+				'decidedAt' => Db::to_ms( $row['decided_at'] ),
+				'decidedBy' => (int) $row['decided_by'],
+				'order'     => (int) $row['sort_order'],
+				'sample'    => (bool) $row['is_sample'],
+				'createdBy' => (int) $row['created_by'],
+				'createdAt' => Db::to_ms( $row['created_at'] ),
+				'updatedAt' => Db::to_ms( $row['updated_at'] ),
+			);
+		}
+		return $out;
+	}
+
+	/**
+	 * A decision's vote options: [ { key, label }, … ].
+	 *
+	 * @param array<string, mixed> $row Database row.
+	 * @return list<array{key: string, label: string}>
+	 */
+	public static function options( array $row ): array {
+		$list = json_decode( (string) ( $row['vote_options'] ?? '[]' ), true );
+		$out  = array();
+		foreach ( is_array( $list ) ? $list : array() as $o ) {
+			if ( is_array( $o ) && isset( $o['key'], $o['label'] ) ) {
+				$out[] = array(
+					'key'   => (string) $o['key'],
+					'label' => (string) $o['label'],
+				);
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Votes per decision: [ decision_id => [ user_id => option_key ] ].
+	 *
+	 * @param int[] $ids Decision ids.
+	 * @return array<int, array<int, string>>
+	 */
+	public function votes_of( array $ids ): array {
+		global $wpdb;
+		$ids = self::ids( $ids );
+		if ( ! $ids ) {
+			return array();
+		}
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT decision_id, user_id, option_key FROM %i WHERE decision_id IN (' . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ')',
+				array_merge( array( Db::table( 'decision_votes' ) ), $ids )
+			),
+			ARRAY_A
+		);
+		$out  = array();
+		foreach ( self::rows( $rows ) as $row ) {
+			$out[ (int) $row['decision_id'] ][ (int) $row['user_id'] ] = (string) $row['option_key'];
+		}
+		return $out;
+	}
+
+	/**
+	 * Cast, change or withdraw a member's vote.
+	 *
+	 * @param int         $decision_id Decision.
+	 * @param int         $user_id     Member.
+	 * @param string|null $key         Option key, or null to withdraw.
+	 */
+	public function vote( int $decision_id, int $user_id, ?string $key ): void {
+		global $wpdb;
+		$table = Db::table( 'decision_votes' );
+		if ( null === $key ) {
+			$wpdb->delete(
+				$table,
+				array(
+					'decision_id' => $decision_id,
+					'user_id'     => $user_id,
+				),
+				array( '%d', '%d' )
+			);
+		} else {
+			$wpdb->replace(
+				$table,
+				array(
+					'decision_id' => $decision_id,
+					'user_id'     => $user_id,
+					'option_key'  => $key,
+					'updated_at'  => Db::now(),
+				),
+				array( '%d', '%d', '%s', '%s' )
+			);
+		}
+		$this->touch( $decision_id );
+	}
+
+	/**
+	 * Drop votes for options that no longer exist.
+	 *
+	 * @param int      $decision_id Decision.
+	 * @param string[] $keys        Keys that remain.
+	 */
+	public function keep_votes( int $decision_id, array $keys ): void {
+		global $wpdb;
+		$table = Db::table( 'decision_votes' );
+		if ( ! $keys ) {
+			$wpdb->delete( $table, array( 'decision_id' => $decision_id ), array( '%d' ) );
+			return;
+		}
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i WHERE decision_id = %d AND option_key NOT IN (' . implode( ',', array_fill( 0, count( $keys ), '%s' ) ) . ')',
+				array_merge( array( $table, $decision_id ), array_values( $keys ) )
+			)
 		);
 	}
 
@@ -146,6 +272,7 @@ final class DecisionRepository extends Repository {
 	 */
 	public function delete( int $id ): void {
 		( new CommentRepository() )->delete_for( 'decision', $id );
+		$this->keep_votes( $id, array() );
 		parent::delete( $id );
 	}
 

@@ -62,3 +62,22 @@
   :root:not([data-theme="light"]) .nw-crew .nw-more .nw-avatar { background: var(--nw-line-strong); color: var(--nw-fg); }
 }
 :root[data-theme="dark"] .nw-crew .nw-more .nw-avatar { background: var(--nw-line-strong); color: var(--nw-fg); }
+
+/* Team votes on a decision (owner decision: votes advise the person who
+   decides). Rows are filled fields like the rest of the app; the share
+   shows as a soft fill; your choice reads like a checked assignee chip. */
+.nw-votes { display: grid; gap: 6px; }
+.nw-vote { position: relative; display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 0 10px; border: 0; border-radius: 9px; background: var(--nw-field); color: var(--nw-fg); font: 500 13px/1.3 var(--nw-font-head); text-align: left; overflow: hidden; cursor: pointer; }
+.nw-vote:hover { box-shadow: inset 0 0 0 1px var(--nw-field-hover); }
+.nw-vote:disabled { cursor: default; }
+.nw-vote:disabled:hover { box-shadow: none; }
+.nw-vote-fill { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--nw-accent) 12%, transparent); pointer-events: none; }
+.nw-vote > :not(.nw-vote-fill) { position: relative; }
+.nw-vote-lbl { flex: 1; min-width: 0; padding-block: 8px; overflow-wrap: anywhere; }
+.nw-vote-n { min-width: 1ch; font: 600 12px/1 var(--nw-font-head); color: var(--nw-muted); text-align: right; font-variant-numeric: tabular-nums; }
+.nw-vote.nw-on { background: var(--nw-accent-soft); color: var(--nw-accent-on-soft); box-shadow: inset 0 0 0 1px var(--nw-accent-line); }
+.nw-vote.nw-on .nw-vote-n { color: inherit; }
+.nw-vote .nw-avs .nw-avatar { width: 20px; height: 20px; font-size: 9px; }
+.nw-votes-meta { font: 500 12px/1 var(--nw-font-head); color: var(--nw-faint); }
+.nw-waiting { font: 500 12.5px/1 var(--nw-font-head); color: var(--nw-muted); white-space: nowrap; }
+@media (prefers-reduced-motion: no-preference) { .nw-vote-fill { transition: width .3s var(--nw-ease); } }
