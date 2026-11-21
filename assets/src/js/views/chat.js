@@ -195,14 +195,12 @@ async function loadOlder() {
 		return;
 	}
 	const ids = Object.keys( S.messages ).map( Number );
-	if ( ! ids.length ) {
-		return;
-	}
 	loadingOlder = true;
 	const box = $( 'nw-msgs' );
 	const before = box.scrollHeight;
 	try {
-		const rows = await get( 'messages', { beforeId: Math.min( ...ids ), limit: 50 } );
+		// Nothing here yet: the newest page.
+		const rows = await get( 'messages', { beforeId: ids.length ? Math.min( ...ids ) : 0, limit: 50 } );
 		if ( ! rows.length ) {
 			olderDone = true;
 		}

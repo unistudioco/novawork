@@ -273,3 +273,9 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
 @media (min-width: 720px) {
   dialog { max-height: calc(100dvh - 32px); overflow: auto; overscroll-behavior: contain; }
 }
+
+/* The full-screen search (phones, and the compact header) fills the screen
+   with results: the dropdown's 70vh cap left an empty band under the list
+   (carried over from the prototype). */
+.nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-res { max-height: none; }
+@media (max-width: 719px) { .nw-qs.nw-open .nw-qs-res { max-height: none; } }
