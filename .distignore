@@ -1,0 +1,22 @@
+# Files and folders that never ship in the WordPress.org zip.
+# bin/plugin-check.sh and the Phase 6 zip build both read this list.
+/.git
+/.github
+/.gitignore
+/.distignore
+/.editorconfig
+/.dev.env
+/.dev.env.example
+/.vscode
+/.idea
+/node_modules
+/bin
+/build
+/tests
+/CLAUDE.md
+/README.md
+/phpcs.xml.dist
+/phpstan.neon.dist
+/composer.lock
+/package-lock.json
+.DS_Store
