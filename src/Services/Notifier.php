@@ -15,6 +15,7 @@ use NovaWork\Data\DecisionRepository;
 use NovaWork\Data\NotificationRepository;
 use NovaWork\Data\TaskRepository;
 use NovaWork\Members;
+use NovaWork\Settings;
 
 /**
  * Who hears about what:
@@ -22,16 +23,12 @@ use NovaWork\Members;
  * - assign:   a member added to a task (not when you add yourself).
  * - comment:  everyone involved in the task or decision, except the writer.
  * - chat:     every other member.
- * - due:      assignees of an open task due within 3 days, or late; once per due date.
+ * - due:      assignees of an open task due soon (the due_soon_days setting,
+ *             3 by default) or late; once per due date.
  * - decision: who decides (everyone if no one is named) when the decide-by
- *             date is within 3 days; once per date.
+ *             date is that close; once per date.
  */
 final class Notifier {
-
-	/**
-	 * Days ahead a due date starts to notify.
-	 */
-	public const DUE_DAYS = 3;
 
 	/**
 	 * Transient that throttles the due-date check on polls.
@@ -229,7 +226,7 @@ final class Notifier {
 	 * The last due date that notifies today, in the site's timezone.
 	 */
 	private static function limit_date(): string {
-		return wp_date( 'Y-m-d', time() + self::DUE_DAYS * DAY_IN_SECONDS );
+		return wp_date( 'Y-m-d', time() + Settings::int( 'due_soon_days', 0 ) * DAY_IN_SECONDS );
 	}
 
 	/**

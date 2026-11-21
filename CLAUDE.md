@@ -224,6 +224,29 @@ Browser tests: drag with `pointerDrag()` from `tests/browser/helpers.js`, never
 Playwright's `dragTo()` (it scrolls mid-drag and the drag starts on the wrong
 card). Test pages use a 1500px-tall viewport so a whole column is visible.
 
+## Owner rule, 2026-11-21: admin choices are settings, never hardcoded
+
+Anything an administrator could reasonably want to choose is an optional
+setting with a sensible default (in `Settings::defaults()`), read through
+`Settings::get()`, sent to the app in `/sync` `settings` when the app needs
+it, and shown on the Phase 5 settings screen. Never a literal in code.
+
+Already settings: `idle_minutes` (10, the "Still working?" threshold),
+`poll_seconds` (4), `week_start` (WordPress's), `upload_max_mb` (10),
+`upload_types`, `load_fontshare` (on), `app_slug`, `delete_data` (off); plus
+the owner's marks above (`workspace_name`, `location`).
+Also settings now (2026-11-21): `now_limit` (3 per person; with 3 the
+prototype's "three" wording is kept word for word, other values use wording
+with the number), `due_soon_days` (3, due/decision notifications),
+`idle_grace` (60 s to answer "Still working?"), `log_days` (30, change-log
+retention), `read_note_days` (90). Sync sends `nowLimit`, `idleMinutes`,
+`idleGrace`, `dueSoonDays`, `pollSeconds`, `weekStart`. Fixed on purpose
+(design, not an admin choice): Focus's "Due in the next 3 weeks" list.
+`team_order` (owner, 2026-11-21): "Team today" order: `dynamic` (default:
+members who are here, tracking or online, first by most tracked today; away
+last), `tracked`, `online` (first to come online; uses member
+`onlineSince`, set when a member returns after being away), `fixed`.
+
 ## Design rules that bite (full list in the log)
 
 - Tokens: copy the block from `v3.src.html` exactly, light and dark. Blue

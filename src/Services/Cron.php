@@ -12,6 +12,7 @@ namespace NovaWork\Services;
 use NovaWork\Data\AttachmentRepository;
 use NovaWork\Data\ChangeLog;
 use NovaWork\Data\NotificationRepository;
+use NovaWork\Settings;
 
 /**
  * One hourly event. WP-Cron only runs when someone visits the site, so due
@@ -20,16 +21,6 @@ use NovaWork\Data\NotificationRepository;
 final class Cron {
 
 	public const HOOK = 'novawork_hourly';
-
-	/**
-	 * Days the change log keeps rows. Older clients get a full snapshot.
-	 */
-	public const LOG_DAYS = 30;
-
-	/**
-	 * Days read notifications are kept.
-	 */
-	public const READ_NOTIFICATION_DAYS = 90;
 
 	/**
 	 * Register the event handler.
@@ -60,7 +51,9 @@ final class Cron {
 	public static function run(): void {
 		Notifier::check_due( true );
 		( new AttachmentRepository() )->sweep_unclaimed( DAY_IN_SECONDS );
-		( new NotificationRepository() )->prune_read( self::READ_NOTIFICATION_DAYS );
-		ChangeLog::prune( self::LOG_DAYS );
+		// Retention is a setting: log_days (older clients get a full snapshot)
+		// and read_note_days.
+		( new NotificationRepository() )->prune_read( Settings::int( 'read_note_days' ) );
+		ChangeLog::prune( Settings::int( 'log_days' ) );
 	}
 }

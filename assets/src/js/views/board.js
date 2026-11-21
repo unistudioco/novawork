@@ -8,7 +8,7 @@ import { esc } from '../lib/format.js';
 import { post } from '../lib/api.js';
 import { write, keepTask } from './actions.js';
 import { openTask } from './editors.js';
-import { store, people, projects, tasks, task, assignees, has, myRun, byOrder, STATUSES, projChip, tbtn, dueHTML, prio, avatars, commentsOf } from './model.js';
+import { nowLimit, store, people, projects, tasks, task, assignees, has, myRun, byOrder, STATUSES, projChip, tbtn, dueHTML, prio, avatars, commentsOf } from './model.js';
 
 const pref = ( k, v ) => {
 	try {
@@ -57,11 +57,15 @@ export function viewBoard() {
 			}
 			let warn = '';
 			if ( s.key === 'now' ) {
-				const over = people().filter( ( p ) => ts.filter( ( t ) => t.status === 'now' && has( t, p.id ) ).length > 3 );
+				const limit = nowLimit();
+				const over = people().filter( ( p ) => ts.filter( ( t ) => t.status === 'now' && has( t, p.id ) ).length > limit );
 				if ( over.length ) {
-					warn = `<div class="nw-note" style="margin:0">${ ic( 'flag-banner' ) }<span>${ esc(
-						sprintf( /* translators: %s: names of members, comma-separated. */ __( '%s has more than three in Now.', 'novawork' ), over.map( ( p ) => p.name ).join( ', ' ) )
-					) }</span></div>`;
+					const names = over.map( ( p ) => p.name ).join( ', ' );
+					const text =
+						limit === 3
+							? sprintf( /* translators: %s: names of members, comma-separated. */ __( '%s has more than three in Now.', 'novawork' ), names )
+							: sprintf( /* translators: 1: names of members, 2: the Now limit. */ __( '%1$s has more than %2$d in Now.', 'novawork' ), names, limit );
+					warn = `<div class="nw-note" style="margin:0">${ ic( 'flag-banner' ) }<span>${ esc( text ) }</span></div>`;
 				}
 			}
 			const addLabel = esc( sprintf( /* translators: %s: column name, e.g. "Next". */ __( 'Add a task to %s', 'novawork' ), s.label ) );
