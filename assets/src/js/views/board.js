@@ -24,7 +24,8 @@ const ui = { allDone: false };
 
 export function viewBoard() {
 	const fProject = pref( 'nw.fProject' ) || 'all';
-	const fPerson = pref( 'nw.fPerson' ) || 'all';
+	// Default to you (owner); a choice made on this device is remembered.
+	const fPerson = pref( 'nw.fPerson' ) || String( store().me );
 	const ts = tasks().filter(
 		( t ) =>
 			( fProject === 'all' || t.projectId === Number( fProject ) ) &&

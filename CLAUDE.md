@@ -260,6 +260,14 @@ members who are here, tracking or online, first by most tracked today; away
 last), `tracked`, `online` (first to come online; uses member
 `onlineSince`, set when a member returns after being away), `fixed`.
 
+## Owner requests queued for later phases
+
+- **Chat (Phase 4):** @mentions. Typing `@` in the composer suggests members
+  (filtering as you type, keyboard-navigable, the prototype's dropdown look);
+  picking one inserts `@Name`. A mention is stored with the member's id
+  (names can change), shown highlighted in the message, and notifies that
+  member (a "mention" notification, even if they muted nothing else).
+
 ## Design rules that bite (full list in the log)
 
 - Tokens: copy the block from `v3.src.html` exactly, light and dark. Blue

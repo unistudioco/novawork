@@ -375,7 +375,7 @@ li.nw-drop-line, div.nw-drop-line { list-style: none; height: 2px; border-radius
 .nw-dec .nw-q { font: 600 16px/1.35 var(--nw-font-head); letter-spacing: -.012em; overflow-wrap: anywhere; }
 .nw-dec .nw-opts { font-size: 13.5px; color: var(--nw-muted); white-space: pre-wrap; overflow-wrap: anywhere; }
 .nw-dec .nw-ans { font-size: 13.5px; padding: 10px 12px; border-radius: 9px; background: var(--nw-done-soft); color: var(--nw-done-on-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
-.nw-dec .nw-foot { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; }
+.nw-dec .nw-foot { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
 .nw-dec .nw-foot .nw-sp { flex: 1; }
 .nw-dec .nw-foot .nw-sqbtn { margin-left: auto; }
 .nw-dec .nw-foot .nw-btn + .nw-sqbtn { margin-left: -10px; }

@@ -120,13 +120,17 @@ export default () => ( {
 	meMember() {
 		return this.member( this.$store.nw.me ) || { id: this.$store.nw.me, name: '', color: 'slate', avatar: '' };
 	},
-	/** Everyone but you, in the admin's chosen order (the same as Team today). */
+	/**
+	 * Everyone but you, in the admin's chosen order (the same as Team today).
+	 * Reads the clock without subscribing to it, so the header strip and the
+	 * popover list are not rebuilt every second (that reloaded every avatar).
+	 */
 	others() {
 		const nw = this.$store.nw;
-		const today = this.dayStart();
+		const today = dayStart( serverNow() );
 		return orderTeam(
 			nw.members.filter( ( m ) => m.id !== nw.me ),
-			{ order: nw.settings.teamOrder || 'dynamic', status: ( id ) => this.status( id ), today: ( id ) => this.tracked( id, today ), me: nw.me }
+			{ order: nw.settings.teamOrder || 'dynamic', status: ( id ) => this.status( id ), today: ( id ) => this.trackedAt( id, today, serverNow() ), me: nw.me }
 		);
 	},
 	crew() {
@@ -189,7 +193,9 @@ export default () => ( {
 	},
 	/** Milliseconds a member tracked from a time until now (a running timer counts). */
 	tracked( uid, from ) {
-		const now = this.$store.nw.now;
+		return this.trackedAt( uid, from, this.$store.nw.now );
+	},
+	trackedAt( uid, from, now ) {
 		return Object.values( this.$store.nw.timeEntries )
 			.filter( ( e ) => e.by === uid )
 			.reduce( ( sum, e ) => {

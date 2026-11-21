@@ -14,7 +14,8 @@ import { bind, store, tracked } from './model.js';
 import { bindSync, toggleTask, write, keepTask } from './actions.js';
 import { enhance, openSelectBox } from './select.js';
 import { mountDialog } from './dialog.js';
-import { openTask, openProject } from './editors.js';
+import { openTask, openProject, openDecision } from './editors.js';
+import { viewDecisions } from './decisions.js';
 import { viewBoard, wireBoard, toggleAllDone, place } from './board.js';
 import { viewFocus } from './focus.js';
 import { viewRoadmap, wireRoadmap, scrollToToday, forgetRoadmapScroll, rememberRoadmapScroll } from './roadmap.js';
@@ -22,15 +23,12 @@ import { viewTime, wireTime } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
 import { patch } from '../lib/api.js';
 
-const head = ( title, text ) => `<div class="nw-view-head"><div><h1>${ esc( title ) }</h1><p>${ esc( text ) }</p></div></div>`;
-
-/* Views still to come in Phase 4 show their heading only. */
 const VIEWS = {
 	focus: viewFocus,
 	board: viewBoard,
 	roadmap: viewRoadmap,
 	time: viewTime,
-	decisions: () => head( __( 'Decisions', 'novawork' ), __( 'Questions that block work. Record the answer so nobody has to ask twice.', 'novawork' ) ),
+	decisions: viewDecisions,
 };
 const WIRE = { board: wireBoard, time: wireTime, roadmap: wireRoadmap };
 
@@ -174,6 +172,12 @@ function onClick( e ) {
 		openProject( id );
 	} else if ( act === 'new-project' ) {
 		openProject( null );
+	} else if ( act === 'edit-decision' ) {
+		openDecision( id );
+	} else if ( act === 'new-decision' ) {
+		openDecision( null );
+	} else if ( act === 'decide' ) {
+		openDecision( id, true );
 	} else if ( act === 'all-done' ) {
 		toggleAllDone( rerender );
 	} else if ( act === 'tl-today' ) {
@@ -206,6 +210,8 @@ export function mountViews( sync ) {
 			openTask( null, { status: d.status || 'now' } );
 		} else if ( d.kind === 'project' ) {
 			openProject( null );
+		} else if ( d.kind === 'decision' ) {
+			openDecision( null );
 		}
 	} );
 	window.addEventListener( 'nw:open', ( e ) => {
@@ -214,6 +220,8 @@ export function mountViews( sync ) {
 			openTask( d.id );
 		} else if ( d.kind === 'project' ) {
 			openProject( d.id );
+		} else if ( d.kind === 'decision' ) {
+			openDecision( d.id );
 		}
 	} );
 
