@@ -216,7 +216,13 @@ Deleting (a task, project, decision, comment…) still arms on the first click
 and deletes on the second, and then shows **"Deleted. Undo"** with an Undo
 button. Any toast that carries an action stays up longer than a plain one
 (plain 2.6 s; with an action about 6 s, and it waits while hovered or
-focused). Undo must really bring the item back.
+focused). Undo must really bring the item back. **Toasts stack** (owner,
+2026-11-21): newest at the bottom, each rises in and fades out, the others
+glide to their places (FLIP in `lib/ui.js`); at most 4, the oldest makes way.
+
+Browser tests: drag with `pointerDrag()` from `tests/browser/helpers.js`, never
+Playwright's `dragTo()` (it scrolls mid-drag and the drag starts on the wrong
+card). Test pages use a 1500px-tall viewport so a whole column is visible.
 
 ## Design rules that bite (full list in the log)
 
@@ -247,6 +253,7 @@ composer run plugin-check  # bin/plugin-check.sh: Plugin Check on the release co
 composer run test:api      # bin/test-api.sh: REST integration tests, rolled back
 bash bin/test-http.sh      # real HTTP: nonce, two-member sync, upload/download
 bash bin/seed-dev.sh       # generic demo data on an empty dev workspace
+npm run test:browser       # Playwright (installed Chrome): tests/browser/*.spec.js
 npm run build              # Vite → assets/dist (manifest.json)
 npm run dev                # Vite dev server on :5175
 ```

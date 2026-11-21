@@ -162,11 +162,38 @@ export function swipeToClose( sheet, close ) {
 	sheet.addEventListener( 'pointercancel', end );
 }
 
-let current = null;
+const MAX_TOASTS = 4;
+const reduceMotion = () => window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+let stack = null;
+const live = [];
+
+/** Slide the other toasts from where they were to where they are now (FLIP). */
+function glide( before ) {
+	if ( reduceMotion() ) {
+		return;
+	}
+	live.forEach( ( t ) => {
+		const was = before.get( t.el );
+		if ( was === undefined || ! t.el.isConnected ) {
+			return;
+		}
+		const dy = was - t.el.getBoundingClientRect().top;
+		if ( ! dy ) {
+			return;
+		}
+		t.el.style.transition = 'none';
+		t.el.style.transform = `translateY(${ dy }px)`;
+		requestAnimationFrame( () => {
+			t.el.style.transition = 'transform .28s cubic-bezier(.22, .9, .24, 1)';
+			t.el.style.transform = '';
+		} );
+	} );
+}
+const positions = () => new Map( live.map( ( t ) => [ t.el, t.el.getBoundingClientRect().top ] ) );
 
 /**
- * A short message at the bottom of the screen. One at a time: a new toast
- * replaces the one showing (and settles its action).
+ * A message at the bottom of the screen. Toasts stack (newest at the
+ * bottom), rise in, and fade out; the others glide to their new places.
  *
  * A toast with an action (owner decision: e.g. "Deleted. Undo") stays up
  * longer, and holds while it is hovered or has focus.
@@ -177,31 +204,43 @@ let current = null;
  *                         settle when the toast goes away without a click.
  */
 export function toast( message, icon, action ) {
-	if ( current ) {
-		current.dismiss();
+	if ( ! stack || ! stack.isConnected ) {
+		stack = document.createElement( 'div' );
+		stack.className = 'nw-toasts';
+		document.body.appendChild( stack );
 	}
 	const el = document.createElement( 'div' );
 	el.className = 'nw-toast';
 	el.setAttribute( 'role', 'status' );
 	el.innerHTML = ic( icon || 'check' ) + '<span></span>';
-	el.lastChild.textContent = message;
+	el.children[ 1 ].textContent = message;
 
 	let timer = null;
 	let gone = false;
+	const item = { el };
 	const dismiss = ( clicked ) => {
 		if ( gone ) {
 			return;
 		}
 		gone = true;
 		clearTimeout( timer );
-		el.remove();
-		if ( current && current.el === el ) {
-			current = null;
-		}
 		if ( action && ! clicked && action.settle ) {
 			action.settle();
 		}
+		const finish = () => {
+			const before = positions();
+			el.remove();
+			live.splice( live.indexOf( item ), 1 );
+			glide( before );
+		};
+		if ( reduceMotion() ) {
+			finish();
+			return;
+		}
+		el.classList.add( 'nw-toast-out' );
+		setTimeout( finish, 200 );
 	};
+	item.dismiss = dismiss;
 	const wait = ( ms ) => {
 		clearTimeout( timer );
 		timer = setTimeout( () => dismiss( false ), ms );
@@ -223,7 +262,11 @@ export function toast( message, icon, action ) {
 		el.addEventListener( 'focusout', () => wait( 2500 ) );
 	}
 
-	document.body.appendChild( el );
-	current = { el, dismiss: () => dismiss( false ) };
+	const before = positions();
+	stack.appendChild( el );
+	live.push( item );
+	glide( before );
+	// Too many at once: the oldest makes way (and settles its action).
+	live.filter( ( t ) => ! t.el.classList.contains( 'nw-toast-out' ) ).slice( 0, -MAX_TOASTS ).forEach( ( t ) => t.dismiss( false ) );
 	wait( action ? 6000 : 2600 );
 }
