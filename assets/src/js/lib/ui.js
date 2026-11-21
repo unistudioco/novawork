@@ -162,18 +162,68 @@ export function swipeToClose( sheet, close ) {
 	sheet.addEventListener( 'pointercancel', end );
 }
 
+let current = null;
+
 /**
- * A short message at the bottom of the screen.
+ * A short message at the bottom of the screen. One at a time: a new toast
+ * replaces the one showing (and settles its action).
+ *
+ * A toast with an action (owner decision: e.g. "Deleted. Undo") stays up
+ * longer, and holds while it is hovered or has focus.
  *
  * @param {string} message Text (set as text, never HTML).
  * @param {string} icon    Icon name.
+ * @param {Object} action  Optional { label, run, settle }: run on click;
+ *                         settle when the toast goes away without a click.
  */
-export function toast( message, icon ) {
+export function toast( message, icon, action ) {
+	if ( current ) {
+		current.dismiss();
+	}
 	const el = document.createElement( 'div' );
 	el.className = 'nw-toast';
 	el.setAttribute( 'role', 'status' );
 	el.innerHTML = ic( icon || 'check' ) + '<span></span>';
 	el.lastChild.textContent = message;
+
+	let timer = null;
+	let gone = false;
+	const dismiss = ( clicked ) => {
+		if ( gone ) {
+			return;
+		}
+		gone = true;
+		clearTimeout( timer );
+		el.remove();
+		if ( current && current.el === el ) {
+			current = null;
+		}
+		if ( action && ! clicked && action.settle ) {
+			action.settle();
+		}
+	};
+	const wait = ( ms ) => {
+		clearTimeout( timer );
+		timer = setTimeout( () => dismiss( false ), ms );
+	};
+
+	if ( action ) {
+		const button = document.createElement( 'button' );
+		button.type = 'button';
+		button.className = 'nw-toast-act';
+		button.textContent = action.label;
+		button.addEventListener( 'click', () => {
+			dismiss( true );
+			action.run();
+		} );
+		el.appendChild( button );
+		el.addEventListener( 'mouseenter', () => clearTimeout( timer ) );
+		el.addEventListener( 'focusin', () => clearTimeout( timer ) );
+		el.addEventListener( 'mouseleave', () => wait( 2500 ) );
+		el.addEventListener( 'focusout', () => wait( 2500 ) );
+	}
+
 	document.body.appendChild( el );
-	setTimeout( () => el.remove(), 2600 );
+	current = { el, dismiss: () => dismiss( false ) };
+	wait( action ? 6000 : 2600 );
 }
