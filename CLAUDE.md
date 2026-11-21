@@ -210,6 +210,14 @@ one); the app document must have it.
    wp-login.php; logout returns here. A signed-in non-member sees the
    no-access page.
 
+## Owner decision, 2026-11-21: toasts with an action
+
+Deleting (a task, project, decision, comment…) still arms on the first click
+and deletes on the second, and then shows **"Deleted. Undo"** with an Undo
+button. Any toast that carries an action stays up longer than a plain one
+(plain 2.6 s; with an action about 6 s, and it waits while hovered or
+focused). Undo must really bring the item back.
+
 ## Design rules that bite (full list in the log)
 
 - Tokens: copy the block from `v3.src.html` exactly, light and dark. Blue

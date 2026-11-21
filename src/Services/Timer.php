@@ -131,6 +131,8 @@ final class Timer {
 			)
 		);
 		$entry = (array) $entries->find( (int) $running['id'] );
+		// The task's total time changed; let every client pick it up.
+		( new TaskRepository() )->touch( (int) $running['task_id'] );
 
 		/**
 		 * Fires when a member stops tracking time and the session is kept.
