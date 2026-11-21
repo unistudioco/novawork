@@ -6,6 +6,7 @@ import { ic, icf } from '../lib/icons.js';
 import { __, sprintf } from '../lib/i18n.js';
 import { esc, dur, dayStart, longDate, shortTitle } from '../lib/format.js';
 import { serverNow } from '../store.js';
+import { orderTeam } from '../lib/team.js';
 import {
 	nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days,
 	projChip, dueHTML, prio, avatars, presAvatar, tbtn, checkBtn, since,
@@ -29,30 +30,10 @@ export function statusLine( uid ) {
 	return esc( status( uid ) === 'online' ? __( 'Online', 'novawork' ) : __( 'Away', 'novawork' ) );
 }
 
-/**
- * "Team today" in the order the admin chose (setting team_order):
- * dynamic (default): here first (tracking or online), most tracked today
- * first; away members last, also by time. tracked: most tracked today.
- * online: here first in the order they came online; away last.
- * fixed: account order.
- */
-export function orderTeam( list, now ) {
-	const order = store().settings.teamOrder || 'dynamic';
-	if ( order === 'fixed' ) {
-		return list;
-	}
+/** "Team today" in the admin's chosen order (see lib/team.js). */
+export function orderedTeam( list, now ) {
 	const today = dayStart( now );
-	const ms = new Map( list.map( ( p ) => [ p.id, tracked( p.id, today ) ] ) );
-	const here = ( p ) => ( status( p.id ) === 'away' ? 1 : 0 );
-	const byTime = ( a, b ) => ms.get( b.id ) - ms.get( a.id );
-	const arrived = ( p ) => ( p.id === me() && ! p.onlineSince ? 0 : p.onlineSince || Infinity );
-	const sorters = {
-		dynamic: ( a, b ) => here( a ) - here( b ) || byTime( a, b ),
-		tracked: ( a, b ) => byTime( a, b ),
-		online: ( a, b ) => here( a ) - here( b ) || ( here( a ) ? ( b.lastSeen || 0 ) - ( a.lastSeen || 0 ) : arrived( a ) - arrived( b ) ),
-	};
-	// Array.prototype.sort is stable, so equal members keep account order.
-	return list.slice().sort( sorters[ order ] || sorters.dynamic );
+	return orderTeam( list, { order: store().settings.teamOrder || 'dynamic', status, today: ( id ) => tracked( id, today ), me: me() } );
 }
 
 export function viewFocus() {
@@ -124,7 +105,7 @@ export function viewFocus() {
 		.sort( ( a, b ) => ( a.decideBy || '9999' ).localeCompare( b.decideBy || '9999' ) );
 
 	const right =
-		`<section><div class="nw-label">${ esc( __( 'Team today', 'novawork' ) ) }</div><div class="nw-list nw-team">${ orderTeam( people(), now )
+		`<section><div class="nw-label">${ esc( __( 'Team today', 'novawork' ) ) }</div><div class="nw-list nw-team">${ orderedTeam( people(), now )
 			.map(
 				( p ) =>
 					`<div class="nw-row">${ presAvatar( p.id ) }<div class="nw-tm"><b>${ esc( p.name ) }${ p.id === S.me ? `<span class="nw-you">${ esc( __( 'You', 'novawork' ) ) }</span>` : '' }</b><span>${ statusLine(

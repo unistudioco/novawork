@@ -226,7 +226,12 @@ your left, then a grey "+N"; the left avatar sits on top (`row-reverse`, you
 first in the markup so phones still show only you). The team popover list
 and Focus "Team today" show five rows and half of the sixth (300px), then
 scroll. Custom dropdowns with more than 8 options cut off halfway through
-the eighth row and scroll.
+the eighth row and scroll. The order of members everywhere (Team today, the popover,
+the strip's picks) comes from one function, `lib/team.js` `orderTeam()`. In
+dark mode the "+N" circle uses `--nw-line-strong` so it reads against the page.
+Browser tests name their tasks with `unique()` and `cleanUp()` removes every
+"E2E …" task after each test, even a failed one. Never chain `git commit`
+after a gate without checking its exit code.
 
 Browser tests: drag with `pointerDrag()` from `tests/browser/helpers.js`, never
 Playwright's `dragTo()` (it scrolls mid-drag and the drag starts on the wrong

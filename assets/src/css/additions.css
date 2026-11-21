@@ -55,3 +55,10 @@
 /* Prototype bug: the selected option's check mark had 12px of padding inside
    a 14px border-box, leaving a 2px sliver. Keep the spacing, show the icon. */
 .nw-sel-menu li .nw-tick { box-sizing: content-box; }
+
+/* Owner: in dark mode the "+N" circle is lighter than the page (the sunken
+   tone used in light mode is darker than the dark page). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nw-crew .nw-more .nw-avatar { background: var(--nw-line-strong); color: var(--nw-fg); }
+}
+:root[data-theme="dark"] .nw-crew .nw-more .nw-avatar { background: var(--nw-line-strong); color: var(--nw-fg); }
