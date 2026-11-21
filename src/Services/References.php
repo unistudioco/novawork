@@ -160,6 +160,49 @@ final class References {
 	}
 
 	/**
+	 * Save an edit of a chat message or comment: the new text, its mentions
+	 * and links (kept only when really in the text), and the edit time. The
+	 * people and items it newly mentions or links are told, as for a new post.
+	 *
+	 * @param \NovaWork\Data\CommentRepository|\NovaWork\Data\MessageRepository $repo   Repository.
+	 * @param array<string, mixed>                                              $row    Row before the edit.
+	 * @param string                                                            $text   New text.
+	 * @param mixed                                                             $people Mentioned member ids sent.
+	 * @param mixed                                                             $links  Links sent.
+	 * @return array<string, mixed> The row after the edit.
+	 */
+	public static function save_edit( $repo, array $row, string $text, mixed $people, mixed $links ): array {
+		if ( (string) $row['body'] === $text ) {
+			return $row;
+		}
+		$mentions = self::mentions( $text, $people ?? array() );
+		$refs     = self::links( $text, $links ?? array() );
+		$repo->update(
+			(int) $row['id'],
+			array(
+				'body'      => $text,
+				'mentions'  => (string) wp_json_encode( $mentions ),
+				'refs'      => (string) wp_json_encode( $refs ),
+				'edited_at' => \NovaWork\Data\Db::now(),
+			)
+		);
+		$after = (array) $repo->find( (int) $row['id'] );
+
+		$before_people = array_column( self::decode( $row['mentions'] ), 'id' );
+		$new_people    = array_values( array_diff( array_column( $mentions, 'id' ), $before_people ) );
+		$kind          = $repo instanceof \NovaWork\Data\CommentRepository ? 'comment' : 'message';
+		if ( $new_people ) {
+			\NovaWork\Services\Notifier::mentioned( $kind, $after, $new_people );
+		}
+		$before_links = array_map( static fn( $l ) => $l['type'] . ':' . $l['id'], self::decode( $row['refs'] ) );
+		$new_links    = array_values( array_filter( $refs, static fn( $l ) => ! in_array( $l['type'] . ':' . $l['id'], $before_links, true ) ) );
+		if ( $new_links ) {
+			self::notify_links( $new_links, (int) $row['user_id'], $text, array_column( $mentions, 'id' ) );
+		}
+		return $after;
+	}
+
+	/**
 	 * The current title of an item, or null when it does not exist.
 	 *
 	 * @param string $type Item type.

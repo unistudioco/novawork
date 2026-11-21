@@ -135,6 +135,8 @@ final class SyncController extends Controller {
 				'teamOrder'      => Settings::team_order(),
 				'decideRule'     => Settings::decide_rule(),
 				'decisionVotes'  => (bool) Settings::get( 'decision_votes' ),
+				'messageEdits'   => Settings::message_edits(),
+				'editMinutes'    => Settings::int( 'edit_minutes' ),
 				'dueSoonDays'    => Settings::int( 'due_soon_days', 0 ),
 				'weekStart'      => (int) Settings::get( 'week_start' ),
 				'timezone'       => wp_timezone_string(),

@@ -47,6 +47,8 @@ final class CommentRepository extends Repository {
 			'body'        => '%s',
 			'mentions'    => '%s',
 			'refs'        => '%s',
+			'reply_to'    => '%d',
+			'edited_at'   => '%s',
 			'created_at'  => '%s',
 			'updated_at'  => '%s',
 		);
@@ -63,6 +65,7 @@ final class CommentRepository extends Repository {
 			'agent'    => '',
 			'mentions' => '[]',
 			'refs'     => '[]',
+			'reply_to' => 0,
 		);
 	}
 
@@ -82,6 +85,8 @@ final class CommentRepository extends Repository {
 			'text'       => (string) $row['body'],
 			'mentions'   => \NovaWork\Services\References::decode( $row['mentions'] ?? '[]' ),
 			'refs'       => \NovaWork\Services\References::decode( $row['refs'] ?? '[]' ),
+			'replyTo'    => (int) ( $row['reply_to'] ?? 0 ),
+			'editedAt'   => empty( $row['edited_at'] ) ? 0 : Db::to_ms( (string) $row['edited_at'] ),
 			'at'         => Db::to_ms( $row['created_at'] ),
 		);
 	}

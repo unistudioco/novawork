@@ -88,4 +88,4 @@ export function wpEval( php ) {
 
 /** Remove chat messages a test sent (text starts with "E2E "), with their files. */
 export const cleanChat = () =>
-	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "E2E %" ) ) as $id ) { $r->delete( (int) $id ); }` );
+	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "%E2E %" ) ) as $id ) { $r->delete( (int) $id ); }` );

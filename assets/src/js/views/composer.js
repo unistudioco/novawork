@@ -42,10 +42,11 @@ function items( type, q ) {
  * @param {Object}           options
  * @param {HTMLElement}      options.parent Positioned element the list goes in.
  * @param {string}           options.id     Id for the list (aria-controls).
+ * @param {Object}           [options.seed] Mentions and links already in the text (editing).
  */
-export function attachComposer( input, { parent, id } ) {
-	const mentions = new Set();
-	const refs = new Map();
+export function attachComposer( input, { parent, id, seed } ) {
+	const mentions = new Set( ( ( seed && seed.mentions ) || [] ).map( ( m ) => m.id ) );
+	const refs = new Map( ( ( seed && seed.refs ) || [] ).map( ( r ) => [ r.type + ':' + r.id, { type: r.type, id: r.id, label: r.label } ] ) );
 	let state = null;
 
 	input.setAttribute( 'aria-autocomplete', 'list' );
@@ -175,6 +176,10 @@ export function attachComposer( input, { parent, id } ) {
 	return {
 		isOpen: () => !! state,
 		close,
+		/** Remember a member mentioned without the list (a reply's "@Name "). */
+		mention( mid ) {
+			mentions.add( mid );
+		},
 		/** What to send with the text: only what is still in it. */
 		payload() {
 			const text = input.value.toLowerCase();

@@ -175,3 +175,70 @@
 @container nw-page (min-width: 820px) { .nw-two-col { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @container nw-page (max-width: 859.98px) { .nw-dec-cols { grid-template-columns: minmax(0, 1fr); } .nw-dec-cols .nw-sec { margin-top: 30px; } }
 @container nw-page (min-width: 860px) { .nw-dec-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } .nw-dec-cols .nw-sec { margin-top: 0; } }
+
+/* Reply / Edit / Delete on chat messages and comments (owner request). */
+.nw-msg { position: relative; border-radius: 10px; }
+.nw-msg > .nw-quote, .nw-msg > .nw-edit { grid-column: 2; }
+.nw-msg-acts { position: absolute; top: -4px; right: 0; display: none; gap: 2px; padding: 2px; background: var(--nw-raised); border: 1px solid var(--nw-line); border-radius: 9px; box-shadow: var(--nw-shadow); }
+.nw-msg-acts .nw-iconbtn { width: 28px; height: 28px; border-radius: 7px; color: var(--nw-muted); }
+.nw-msg-acts .nw-iconbtn:hover { color: var(--nw-fg); }
+.nw-msg-acts [data-tact="delete"]:hover { color: var(--nw-danger, #d23); }
+@media (hover: hover) { .nw-msg:hover > .nw-msg-acts { display: flex; } }
+.nw-msg:focus-within > .nw-msg-acts, .nw-msg.nw-acts-on > .nw-msg-acts { display: flex; }
+.nw-msg.nw-editing > .nw-msg-acts { display: none; }
+.nw-edited { font: 500 11px/1 var(--nw-font-body); color: var(--nw-faint); }
+.nw-quote { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; margin: 1px 0 2px; padding: 3px 8px 3px 7px; border: 0; border-left: 2px solid var(--nw-line-strong); border-radius: 0 7px 7px 0; background: var(--nw-field); color: var(--nw-muted); font: 500 12px/1.35 var(--nw-font-body); text-align: left; --nw-is: 13px; }
+button.nw-quote { cursor: pointer; }
+button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent); }
+.nw-quote b { flex: none; font-weight: 600; color: var(--nw-fg); }
+.nw-quote span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nw-quote .nw-ic { flex: none; }
+.nw-quote.nw-gone { font-style: italic; }
+.nw-edit { position: relative; display: grid; gap: 6px; }
+.nw-edit-foot { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--nw-faint); }
+.nw-edit-foot span { flex: 1; min-width: 0; }
+.nw-edit .nw-sel-menu.nw-mention-menu { left: 0; right: 0; top: auto; bottom: calc(100% + 4px); min-width: 0; max-width: none; }
+.nw-replying { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 10px; border-left: 3px solid var(--nw-accent); border-radius: 0 9px 9px 0; background: var(--nw-field); color: var(--nw-muted); font-size: 12.5px; --nw-is: 14px; }
+.nw-replying[hidden] { display: none; }
+.nw-replying .nw-rp-txt { flex: 1; min-width: 0; display: flex; gap: 6px; overflow: hidden; white-space: nowrap; }
+.nw-replying .nw-rp-txt b { color: var(--nw-fg); font-weight: 600; }
+.nw-replying .nw-rp-txt span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nw-replying .nw-iconbtn { width: 26px; height: 26px; flex: none; }
+#nw-cmt-reply { margin-bottom: 8px; }
+@keyframes nw-flash { from { background: var(--nw-accent-soft); box-shadow: 0 0 0 6px var(--nw-accent-soft); } }
+.nw-msg.nw-flash { animation: nw-flash 1.6s ease-out; }
+
+/* Reply / Edit / Delete on chat messages and comments (owner request). */
+.nw-msg { position: relative; border-radius: 10px; }
+.nw-msg > .nw-quote, .nw-msg > .nw-edit { grid-column: 2; }
+.nw-msg-acts { position: absolute; top: -4px; right: 0; display: none; gap: 2px; padding: 2px; background: var(--nw-raised); border: 1px solid var(--nw-line); border-radius: 9px; box-shadow: var(--nw-shadow); }
+.nw-msg-acts .nw-iconbtn { width: 28px; height: 28px; border-radius: 7px; color: var(--nw-muted); }
+.nw-msg-acts .nw-iconbtn:hover { color: var(--nw-fg); }
+.nw-msg-acts [data-tact="delete"]:hover { color: var(--nw-danger); }
+@media (hover: hover) { .nw-msg:hover > .nw-msg-acts { display: flex; } }
+.nw-msg:focus-within > .nw-msg-acts, .nw-msg.nw-acts-on > .nw-msg-acts { display: flex; }
+.nw-msg.nw-editing > .nw-msg-acts { display: none; }
+.nw-edited { font: 500 11px/1 var(--nw-font-body); color: var(--nw-faint); }
+.nw-quote { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; margin: 1px 0 2px; padding: 3px 8px 3px 7px; border: 0; border-left: 2px solid var(--nw-line-strong); border-radius: 0 7px 7px 0; background: var(--nw-field); color: var(--nw-muted); font: 500 12px/1.35 var(--nw-font-body); text-align: left; --nw-is: 13px; }
+button.nw-quote { cursor: pointer; }
+button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent); }
+.nw-quote b { flex: none; font-weight: 600; color: var(--nw-fg); }
+.nw-quote span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nw-quote .nw-ic { flex: none; }
+.nw-quote.nw-gone { font-style: italic; }
+.nw-edit { position: relative; display: grid; gap: 6px; }
+.nw-edit-foot { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--nw-faint); }
+.nw-edit-foot span { flex: 1; min-width: 0; }
+.nw-edit .nw-sel-menu.nw-mention-menu { left: 0; right: 0; top: auto; bottom: calc(100% + 4px); min-width: 0; max-width: none; }
+.nw-replying { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 10px; border-left: 3px solid var(--nw-accent); border-radius: 0 9px 9px 0; background: var(--nw-field); color: var(--nw-muted); font-size: 12.5px; --nw-is: 14px; }
+.nw-replying[hidden] { display: none; }
+.nw-replying .nw-rp-txt { flex: 1; min-width: 0; display: flex; gap: 6px; overflow: hidden; white-space: nowrap; }
+.nw-replying .nw-rp-txt b { color: var(--nw-fg); font-weight: 600; }
+.nw-replying .nw-rp-txt span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nw-replying .nw-iconbtn { width: 26px; height: 26px; flex: none; }
+#nw-cmt-reply { margin-bottom: 8px; }
+@keyframes nw-flash { from { background: var(--nw-accent-soft); box-shadow: 0 0 0 6px var(--nw-accent-soft); } }
+.nw-msg.nw-flash { animation: nw-flash 1.6s ease-out; }
+.nw-msg-acts .nw-iconbtn { border: 0; box-shadow: none; background: transparent; }
+.nw-msg-acts .nw-iconbtn:hover, .nw-msg-acts .nw-iconbtn:focus-visible { background: var(--nw-field); }
+@media (hover: none) { .nw-edit-foot span { visibility: hidden; } }

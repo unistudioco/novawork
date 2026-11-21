@@ -177,6 +177,22 @@ final class NotificationRepository extends Repository {
 	}
 
 	/**
+	 * Delete every notification about one object (a deleted chat message).
+	 *
+	 * @param string $object_type Object type.
+	 * @param int    $object_id   Object id.
+	 */
+	public function delete_for_object( string $object_type, int $object_id ): void {
+		global $wpdb;
+		$ids = $wpdb->get_col(
+			$wpdb->prepare( 'SELECT id FROM %i WHERE object_type = %s AND object_id = %d', $this->table_name(), $object_type, $object_id )
+		);
+		foreach ( self::ids( (array) $ids ) as $id ) {
+			$this->delete( $id );
+		}
+	}
+
+	/**
 	 * Delete read notifications older than a number of days. Unread ones stay,
 	 * and so do their dedupe keys, so a long-late task is never re-announced.
 	 *

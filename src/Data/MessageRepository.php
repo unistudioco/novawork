@@ -43,6 +43,8 @@ final class MessageRepository extends Repository {
 			'body'       => '%s',
 			'mentions'   => '%s',
 			'refs'       => '%s',
+			'reply_to'   => '%d',
+			'edited_at'  => '%s',
 			'created_at' => '%s',
 			'updated_at' => '%s',
 		);
@@ -60,6 +62,7 @@ final class MessageRepository extends Repository {
 			'body'     => '',
 			'mentions' => '[]',
 			'refs'     => '[]',
+			'reply_to' => 0,
 		);
 	}
 
@@ -80,17 +83,35 @@ final class MessageRepository extends Repository {
 	 * @return list<array<string, mixed>>
 	 */
 	public function present_many( array $rows ): array {
-		$files = ( new AttachmentRepository() )->for_messages( array_map( static fn( $row ) => (int) $row['id'], $rows ) );
-		$out   = array();
+		$files    = ( new AttachmentRepository() )->for_messages( array_map( static fn( $row ) => (int) $row['id'], $rows ) );
+		$replied  = array();
+		$reply_to = array_filter( array_map( static fn( $row ) => (int) ( $row['reply_to'] ?? 0 ), $rows ) );
+		foreach ( $reply_to ? $this->find_many( $reply_to ) : array() as $original ) {
+			$replied[ (int) $original['id'] ] = $original;
+		}
+		$out = array();
 		foreach ( $rows as $row ) {
-			$id    = (int) $row['id'];
-			$out[] = array(
+			$id       = (int) $row['id'];
+			$reply_id = (int) ( $row['reply_to'] ?? 0 );
+			$original = $replied[ $reply_id ] ?? null;
+			$out[]    = array(
 				'id'       => $id,
 				'by'       => (int) $row['user_id'],
 				'agent'    => (string) $row['agent'],
 				'text'     => (string) $row['body'],
 				'mentions' => self::mentions( $row ),
 				'refs'     => \NovaWork\Services\References::decode( $row['refs'] ?? '[]' ),
+				'replyTo'  => $reply_id,
+				// The quoted message, for when it isn't loaded on the device; null once deleted.
+				'reply'    => $original ? array(
+					'id'       => $reply_id,
+					'by'       => (int) $original['user_id'],
+					'agent'    => (string) $original['agent'],
+					'text'     => mb_substr( (string) $original['body'], 0, 200 ),
+					'mentions' => self::mentions( $original ),
+					'refs'     => \NovaWork\Services\References::decode( $original['refs'] ?? '[]' ),
+				) : null,
+				'editedAt' => empty( $row['edited_at'] ) ? 0 : Db::to_ms( (string) $row['edited_at'] ),
 				'at'       => Db::to_ms( $row['created_at'] ),
 				'files'    => $files[ $id ] ?? array(),
 			);
