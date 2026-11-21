@@ -565,9 +565,8 @@ export default () => ( {
 		this.qsClose();
 		this.$refs.qsIn.blur();
 	},
-	/** Go to the view that holds an item and ask it to open (Phase 4 dialogs). */
+	/** A search result: go to the item's page and its card (owner), not its editor. */
 	openItem( kind, id ) {
-		this.go( { task: 'board', project: 'roadmap', decision: 'decisions' }[ kind ] || 'focus' );
-		emit( 'nw:open', { kind, id } );
+		emit( 'nw:goto', { kind, id } );
 	},
 } );
