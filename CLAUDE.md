@@ -66,6 +66,12 @@ one); the app document must have it.
 - **Members are WordPress users** with a NovaWork capability (a "NovaWork
   Member" role, plus caps for administrators). Added and removed in
   **wp-admin → Users, never from inside the app**.
+  - **Owner decision 2026-11-21:** a user who already has another role (an
+    Editor, say) becomes a member through a "NovaWork member" checkbox on
+    their profile screen (wp-admin → Users → Edit), which grants the
+    `novawork_access` capability to that user without touching their role.
+    WordPress shows one role per user, so switching roles would strip theirs.
+    Built in Phase 5 with the settings screen.
 - **Avatars:** the member's Gravatar when they have one, otherwise the initial
   on their colour (deep tone + white text in light, bright tone + ink in dark).
   The colour is user meta, auto-assigned from the 8 accents. Respect the site's
@@ -85,13 +91,64 @@ one); the app document must have it.
   privacy text. The owner handles the WordPress.org review conversation.
 - **First run:** 3 sample items that show where to start, removable in one step.
   The prototype's seed data is the owner's real business and never ships.
-- **Settings screen** in wp-admin, native look (`.wrap`, `form-table`, core
-  buttons), under a real "NovaWork" menu: app slug, idle threshold (10 min),
+- **Settings screen** in wp-admin, under a real "NovaWork" menu. **Owner
+  decision 2026-11-21 (replaces the brief's "native look"):** it renders
+  inside the normal wp-admin shell (admin menu and admin bar stay, never a
+  full-page takeover) the way WordPress 7's Settings → Connectors page does,
+  but its content area uses **NovaWork's own UI**: the app's tokens and
+  fonts, centred cards, filled borderless fields, segmented controls, custom
+  dropdowns, NovaWork buttons. Not `form-table`. Scope every rule under one
+  NovaWork root so nothing leaks into the rest of wp-admin. Settings: app slug, idle threshold (10 min),
   poll interval, week start, upload size and types, Fontshare toggle, delete
   data on uninstall (off). A missing checkbox means "off".
 - v1 is 100% free, nothing locked. Out of scope (readme roadmap only):
   multiple workspaces, Multisite network mode, email digests, desktop alerts,
   integrations, native apps, AI features, client portal, paid add-ons.
+
+## Data and API conventions (Phase 2)
+
+- Code map: `src/Data/*Repository.php` (all SQL; `Repository` base does
+  find/insert/update/delete, logs every write to the change log, and owns
+  drag ordering), `src/Services/` (Timer, Notifier, Files, Cron),
+  `src/Rest/*Controller.php` (routes, validation, object-level rules),
+  `src/Install/` (Schema with `VERSION`, Installer), `src/Access/Capabilities.php`,
+  `src/Members.php`, `src/Settings.php`.
+- The brief's "order column" is **`sort_order`** (`ORDER` is reserved in
+  MySQL). Gaps of 1024; a move takes the midpoint and renumbers the list only
+  when there is no room.
+- Tables are `{$wpdb->prefix}novawork_*`. Every query uses `$wpdb->prepare()`
+  with `%i` for identifiers (WP 6.2+), or the `$wpdb` insert/update/delete
+  helpers. Repository files carry a file-level phpcs disable for
+  DirectQuery/NoCaching only, with the reason.
+- API shapes are camelCase like the prototype store (`projectId`, `doneAt`,
+  `decideBy`); ids are integers; instants are epoch **milliseconds**; calendar
+  dates stay `Y-m-d`. Decision context is `context` (the prototype said
+  `options`). Text is stored plain (sanitize_text_field / sanitize_textarea_field);
+  the app escapes on output (Alpine `x-text`).
+- Writes go through the REST routes; reads come from `GET /sync`. No `since`
+  = full snapshot; otherwise changes in (since, latest]. A cursor below the
+  prune floor (`novawork_changes_floor`) gets a full snapshot. Each response
+  carries members + presence, chat unread, settings and a fresh `nonce`.
+- Arg schemas with a custom `sanitize_callback` must also set
+  `'validate_callback' => 'rest_validate_request_arg'`, or WordPress skips
+  maxLength/enum checks (caught by the tests).
+- Authors: comments and messages have `user_id` **or** `agent` (an add-on's
+  key, e.g. a future AI teammate). Add-ons register agents with the
+  `novawork_agents` filter and listen on `novawork_task_created`,
+  `novawork_task_updated`, `novawork_decision_created`,
+  `novawork_decision_decided`, `novawork_comment_created`,
+  `novawork_message_created`, `novawork_timer_started|stopped`.
+- Timer: a running entry has `ended_at NULL` and `running_user = user`; a
+  UNIQUE index on `running_user` guarantees one per member. Sessions under 60 s
+  are dropped. `POST /timer/stop {endedAt}` ends at the last activity (idle).
+- Files: `uploads/novawork/<32 hex>` with no extension; served only by
+  `GET /attachments/{id}/file?_wpnonce=` (nosniff, CSP sandbox, images inline,
+  everything else as a download). The display name is kept readable; the type
+  is checked on a sanitised copy. On nginx the folder is protected by the
+  unguessable names only (the API never reveals them).
+- Notifications are per recipient, one row each; repeat checks dedupe on
+  `(user_id, dedupe_key)`. Due dates are checked hourly by cron and at most
+  every 10 minutes on polls.
 
 ## Design rules that bite (full list in the log)
 
@@ -119,6 +176,8 @@ one); the app document must have it.
 composer run lint          # PHPCS: WordPress + PHPCompatibilityWP (8.1-)
 composer run analyse       # PHPStan level 6 + WordPress stubs
 composer run plugin-check  # bin/plugin-check.sh: Plugin Check on the release copy
+composer run test:api      # bin/test-api.sh: REST integration tests, rolled back
+bash bin/test-http.sh      # real HTTP: nonce, two-member sync, upload/download
 npm run build              # Vite → assets/dist (manifest.json)
 npm run dev                # Vite dev server on :5175
 ```
@@ -142,8 +201,8 @@ npm run dev                # Vite dev server on :5175
 - WP-CLI needs Local's MySQL socket: settings live in `.dev.env` (git-ignored,
   see `.dev.env.example`). Pattern:
   `php -d mysqli.default_socket="$NOVAWORK_MYSQL_SOCKET" "$(command -v wp)" --path="$NOVAWORK_WP_PATH" …`
-- Test users: `alex` / `alex` and `sam` / `sam` (local only). They are
-  subscribers until Phase 2 adds the NovaWork Member role. `WP_DEBUG`,
+- Test users: `alex` / `alex` and `sam` / `sam` (local only), both with the
+  NovaWork Member role. `WP_DEBUG`,
   `WP_DEBUG_LOG` and `SCRIPT_DEBUG` are on; the log is `wp-content/debug.log`.
 
 ## Working agreements
