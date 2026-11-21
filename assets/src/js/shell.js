@@ -12,6 +12,8 @@ import { __, _n, sprintf } from './lib/i18n.js';
 import { clock, dur, esc, initials, dayStart, longDate, shortTitle, ago } from './lib/format.js';
 import { serverNow } from './store.js';
 import { orderTeam } from './lib/team.js';
+import { get } from './lib/api.js';
+import { plainText } from './views/rich.js';
 import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
 import { isPhone, PHONE, placeInd, lockBgScroll, unlockBgScroll, sheetOut, swipeToClose, toast } from './lib/ui.js';
 
@@ -70,6 +72,11 @@ export default () => ( {
 	fab: { open: false },
 	qs: { q: '', open: false, closing: false, showRes: false, html: '', act: 0, locked: false },
 	qsItems: [],
+	// Older chat messages matching the search, from the server: the app
+	// holds only the newest ones, and search covers the whole history.
+	qsOlder: { q: '', rows: [] },
+	qsTimer: null,
+	qsLastQ: '',
 
 	init() {
 		const media = window.matchMedia( PHONE );
@@ -446,11 +453,22 @@ export default () => ( {
 		const projectName = ( id ) => ( nw.projects[ id ] || {} ).name || '';
 		const person = ( id ) => ( this.member( id ) || {} ).name || '';
 		const statusLabel = { active: __( 'active', 'novawork' ), paused: __( 'paused', 'novawork' ), done: __( 'done', 'novawork' ) };
+		// Messages: the ones on this device, plus older ones the server found.
+		const msgs = new Map();
+		Object.values( nw.messages )
+			.filter( ( m ) => plainText( m ).toLowerCase().includes( q ) )
+			.forEach( ( m ) => msgs.set( m.id, m ) );
+		if ( this.qsOlder.q === q ) {
+			this.qsOlder.rows.forEach( ( m ) => msgs.has( m.id ) || msgs.set( m.id, m ) );
+		} else {
+			this.qsFetchOlder( raw );
+		}
 		const groups = [
 			[ __( 'Tasks', 'novawork' ), Object.values( nw.tasks ).filter( ( t ) => t.title.toLowerCase().includes( q ) ).slice( 0, 6 ).map( ( t ) => ( { icon: 'check', html: this.qsHighlight( t.title, q ), sub: projectName( t.projectId ), go: () => this.openItem( 'task', t.id ) } ) ) ],
 			[ __( 'Projects', 'novawork' ), Object.values( nw.projects ).filter( ( p ) => p.name.toLowerCase().includes( q ) || ( p.goal || '' ).toLowerCase().includes( q ) ).slice( 0, 4 ).map( ( p ) => ( { icon: 'map-trifold', html: this.qsHighlight( p.name, q ), sub: statusLabel[ p.status ] || '', go: () => this.openItem( 'project', p.id ) } ) ) ],
 			[ __( 'Decisions', 'novawork' ), Object.values( nw.decisions ).filter( ( d ) => d.question.toLowerCase().includes( q ) ).slice( 0, 4 ).map( ( d ) => ( { icon: 'scales', html: this.qsHighlight( d.question, q ), sub: d.status === 'decided' ? __( 'Decided', 'novawork' ) : __( 'Open', 'novawork' ), go: () => this.openItem( 'decision', d.id ) } ) ) ],
-			[ __( 'Messages', 'novawork' ), Object.values( nw.messages ).filter( ( m ) => ( m.text || '' ).toLowerCase().includes( q ) ).sort( ( a, b ) => a.id - b.id ).slice( -4 ).reverse().map( ( m ) => ( { icon: 'chat-circle-dots', html: this.qsHighlight( m.text, q ), sub: person( m.by ) + ' · ' + ago( m.at, nw.now, nw.locale ), go: () => emit( 'nw:chat', { open: true, search: raw } ) } ) ) ],
+			// A message opens the chat on it (owner: go to the thing itself).
+			[ __( 'Messages', 'novawork' ), [ ...msgs.values() ].sort( ( a, b ) => b.id - a.id ).slice( 0, 4 ).map( ( m ) => ( { icon: 'chat-circle-dots', html: this.qsHighlight( plainText( m ), q ), sub: person( m.by ) + ' · ' + ago( m.at, nw.now, nw.locale ), go: () => emit( 'nw:chat', { open: true, jump: m.id } ) } ) ) ],
 		];
 		this.qsItems = [];
 		let html = '';
@@ -466,8 +484,29 @@ export default () => ( {
 		} );
 		this.qs.html = html || `<div class="nw-empty" style="border:0;margin:4px">${ ic( 'magnifying-glass' ) }${ esc( sprintf( /* translators: %s: what was searched for. */ __( 'Nothing matches “%s”.', 'novawork' ), raw ) ) }</div>`;
 		this.qs.showRes = true;
-		this.qs.act = 0;
+		// A redraw for the same words (older messages arrived) keeps your place.
+		this.qs.act = this.qsLastQ === q ? Math.min( this.qs.act, Math.max( 0, this.qsItems.length - 1 ) ) : 0;
+		this.qsLastQ = q;
 		this.$nextTick( () => this.qsMark() );
+	},
+	/** Ask the server for older matching messages (debounced); redraw when they come. */
+	qsFetchOlder( raw ) {
+		clearTimeout( this.qsTimer );
+		const q = raw.toLowerCase();
+		if ( q.length < 2 ) {
+			return;
+		}
+		this.qsTimer = setTimeout( async () => {
+			try {
+				const rows = await get( 'messages', { q: raw, limit: 4 } );
+				this.qsOlder = { q, rows };
+				if ( this.qs.q.trim().toLowerCase() === q && this.qs.showRes ) {
+					this.qsRun();
+				}
+			} catch ( e ) {
+				// Local results stand.
+			}
+		}, 250 );
 	},
 	qsMark() {
 		const items = this.$refs.qsRes.querySelectorAll( '.nw-qs-item' );

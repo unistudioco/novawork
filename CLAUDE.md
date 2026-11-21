@@ -472,6 +472,14 @@ npm run dev                # Vite dev server on :5175
 
 ## Phases
 
-0 Understand ✓ · 1 Scaffold ✓ · 2 Data and API ✓ · 3 App shell ✓ · 4 Features
+0 Understand ✓ · 1 Scaffold ✓ · 2 Data and API ✓ · 3 App shell ✓ · 4 Features ✓
 (Board+Projects → Focus+Time → Roadmap → Decisions+Comments → Chat →
 Notifications → Search) · 5 Product layer · 6 Release.
+
+Search (final pass, 2026-11-21): tasks, projects and decisions from the
+store; messages from the store plus older ones from `GET /messages?q=`
+(debounced; the app holds only the newest 100), shown as plain text (a
+/link reads as its title). Every result goes to the item itself: a task,
+decision or project to its page and card (`nw:goto`), a message to the chat
+on that message. The full-screen search (phones, compact header) fills the
+screen with results (the prototype's 70vh cap left a gap).
