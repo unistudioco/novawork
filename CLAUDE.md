@@ -220,6 +220,14 @@ focused). Undo must really bring the item back. **Toasts stack** (owner,
 2026-11-21): newest at the bottom, each rises in and fades out, the others
 glide to their places (FLIP in `lib/ui.js`); at most 4, the oldest makes way.
 
+Members UI (owner, 2026-11-21): the header strip shows only members who
+are here (tracking or online): you next to the chevron, up to two others to
+your left, then a grey "+N"; the left avatar sits on top (`row-reverse`, you
+first in the markup so phones still show only you). The team popover list
+and Focus "Team today" show five rows and half of the sixth (300px), then
+scroll. Custom dropdowns with more than 8 options cut off halfway through
+the eighth row and scroll.
+
 Browser tests: drag with `pointerDrag()` from `tests/browser/helpers.js`, never
 Playwright's `dragTo()` (it scrolls mid-drag and the drag starts on the wrong
 card). Test pages use a 1500px-tall viewport so a whole column is visible.

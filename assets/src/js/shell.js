@@ -8,7 +8,7 @@
  * nw:notifications) for them to pick up.
  */
 import { ic, icf, swapInner } from './lib/icons.js';
-import { __, sprintf } from './lib/i18n.js';
+import { __, _n, sprintf } from './lib/i18n.js';
 import { clock, dur, esc, initials, dayStart, longDate, shortTitle, ago } from './lib/format.js';
 import { serverNow } from './store.js';
 import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
@@ -134,12 +134,28 @@ export default () => ( {
 		return `<span class="nw-pres nw-is-${ this.status( m.id ) }"><span class="nw-avatar nw-lg" title="${ esc( m.name ) }" style="${ this.cpair( m.color ) }">${ this.avatarInner( m ) }</span><i class="nw-st-dot"></i></span>`;
 	},
 	/**
-	 * The header's members strip, built as HTML like the prototype: the CSS
-	 * relies on :first-child and sibling rules that an Alpine <template>
-	 * inside the strip would break.
+	 * The header's members strip (owner decision): you, then up to two others
+	 * who are here (tracking first, then online), then "+N" for the rest who
+	 * are here. Away members are not shown. In the markup you come first; CSS
+	 * lays it out right to left, so you sit next to the chevron and the left
+	 * avatar is on top. Phones show only the first child: you.
+	 *
+	 * Built as HTML like the prototype: the CSS relies on :first-child and
+	 * sibling rules that an Alpine <template> inside the strip would break.
 	 */
 	crewHtml() {
-		return this.crew().map( ( m ) => this.presAvatar( m ) ).join( '' );
+		const rank = { tracking: 0, online: 1 };
+		const here = this.others()
+			.filter( ( m ) => this.status( m.id ) !== 'away' )
+			.sort( ( a, b ) => rank[ this.status( a.id ) ] - rank[ this.status( b.id ) ] );
+		const shown = here.slice( 0, 2 );
+		const extra = here.length - shown.length;
+		let html = this.presAvatar( this.meMember() ) + shown.map( ( m ) => this.presAvatar( m ) ).join( '' );
+		if ( extra > 0 ) {
+			const label = esc( sprintf( /* translators: %d: number of other members online. */ _n( '%d more here', '%d more here', extra, 'novawork' ), extra ) );
+			html += `<span class="nw-pres nw-more"><span class="nw-avatar nw-lg nw-ghost" title="${ label }" aria-label="${ label }">+${ extra }</span></span>`;
+		}
+		return html;
 	},
 	avatarInner( m ) {
 		if ( ! m ) {
