@@ -42,6 +42,7 @@ final class Settings {
 			'decision_votes' => true,
 			'message_edits'  => 'always',
 			'edit_minutes'   => 15,
+			'activity_days'  => 30,
 		);
 	}
 

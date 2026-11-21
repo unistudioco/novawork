@@ -23,7 +23,7 @@ use NovaWork\Data\Db;
  */
 final class Schema {
 
-	public const VERSION = 5;
+	public const VERSION = 6;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -138,6 +138,19 @@ UNIQUE KEY running_user (running_user),
 KEY user_started (user_id,started_at),
 KEY task_id (task_id),
 KEY started_at (started_at)
+) $c;",
+			"CREATE TABLE {$t( 'activity' )} (
+id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+actor_id bigint(20) unsigned NOT NULL DEFAULT 0,
+agent varchar(64) NOT NULL DEFAULT '',
+verb varchar(30) NOT NULL DEFAULT '',
+object_type varchar(20) NOT NULL DEFAULT '',
+object_id bigint(20) unsigned NOT NULL DEFAULT 0,
+data text NOT NULL,
+created_at datetime NOT NULL,
+PRIMARY KEY  (id),
+KEY created_at (created_at),
+KEY object (object_type,object_id)
 ) $c;",
 			"CREATE TABLE {$t( 'messages' )} (
 id bigint(20) unsigned NOT NULL AUTO_INCREMENT,

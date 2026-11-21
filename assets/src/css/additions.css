@@ -135,7 +135,7 @@
 .nw-hdr.nw-compact #nw-qs-btn { display: inline-grid; background: transparent; box-shadow: none; color: var(--nw-fg); }
 .nw-hdr.nw-compact .nw-qs-row { display: flex; align-items: center; gap: 8px; }
 .nw-hdr.nw-compact .nw-qs.nw-open { display: flex; flex-direction: column; gap: 10px; position: fixed; z-index: 55; inset: 0; width: auto; justify-self: stretch; align-self: stretch; padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 16px; background: var(--nw-bg); }
-.nw-hdr.nw-compact .nw-qs.nw-open > * { width: 100%; max-width: 680px; margin-inline: auto; }
+.nw-hdr.nw-compact .nw-qs.nw-open > *, .nw-hdr.nw-compact .nw-qs.nw-closing > * { width: 100%; max-width: 680px; margin-inline: auto; }
 .nw-hdr.nw-compact .nw-qs.nw-open #nw-qs-cancel { display: inline-flex; flex: none; }
 .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-field { flex: 1; min-width: 0; }
 .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-res { position: static; flex: 1; min-height: 0; overflow: auto; border: 0; box-shadow: none; background: transparent; padding: 0; }
@@ -144,7 +144,8 @@
   .nw-hdr.nw-compact .nw-qs.nw-open { transition: none; animation: nw-qs-fade-in .22s ease backwards; }
   .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-row { animation: nw-qs-row-down .3s cubic-bezier(.2, .9, .25, 1) .03s backwards; }
   .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-res { animation: nw-qs-fade-in .2s ease .14s backwards; }
-  .nw-hdr.nw-compact .nw-qs.nw-closing { transition: none; display: flex !important; position: fixed; inset: 0; width: auto; justify-self: stretch; align-self: stretch; z-index: 55; background: var(--nw-bg); animation: nw-qs-fade-in .18s ease reverse forwards; }
+  /* Closing: laid out like the open search while it fades, and never in the way of a click. */
+  .nw-hdr.nw-compact .nw-qs.nw-closing { transition: none; display: flex !important; flex-direction: column; gap: 10px; position: fixed; inset: 0; width: auto; justify-self: stretch; align-self: stretch; padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 16px; z-index: 55; background: var(--nw-bg); pointer-events: none; animation: nw-qs-fade-in .18s ease reverse forwards; }
 }
 
 /* A docked chat pushes the page over only when the page keeps at least 720px
@@ -242,3 +243,26 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
 .nw-msg-acts .nw-iconbtn { border: 0; box-shadow: none; background: transparent; }
 .nw-msg-acts .nw-iconbtn:hover, .nw-msg-acts .nw-iconbtn:focus-visible { background: var(--nw-field); }
 @media (hover: none) { .nw-edit-foot span { visibility: hidden; } }
+
+/* Notifications: the owner's Mine | Workspace filter under the panel title. */
+.nw-ntabs { padding: 0 10px 8px; }
+.nw-ntabs .nw-tabs.nw-seg { display: flex; }
+.nw-ntabs .nw-tabs.nw-seg .nw-tab { flex: 1; justify-content: center; }
+#nw-notes-body { display: contents; }
+
+/* Focus on a tablet (owner): below the two-column layout, "Team today" and
+   "Due in the next 3 weeks" sit side by side; "Waiting on a decision" keeps
+   the full width. Phones keep one column. */
+@container nw-page (min-width: 680px) and (max-width: 919.98px) {
+  .nw-focus .nw-side { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
+  .nw-focus .nw-side > .nw-sec-wait { grid-column: 1 / -1; }
+}
+
+/* Going to an item from a notification or chat: its card flashes once. */
+@keyframes nw-flash-ring { 0%, 45% { box-shadow: 0 0 0 3px var(--nw-accent); } 100% { box-shadow: 0 0 0 3px transparent; } }
+.nw-card.nw-flash, .nw-dec.nw-flash, .nw-proj.nw-flash { animation: nw-flash-ring 1.8s ease-out; outline: none; }
+.nw-dec:focus, .nw-proj:focus { outline: none; }
+/* Unread count on the Mine / Workspace tabs (owner). */
+.nw-tcount { display: inline-block; margin-left: 6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--nw-danger); color: #fff; font: 700 10px/16px var(--nw-font-head); text-align: center; }
+/* The panel title row keeps its height with or without "Mark all as read" (owner). */
+.nw-nhead { min-height: 42px; }

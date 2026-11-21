@@ -127,7 +127,7 @@ export function viewRoadmap() {
 					const nextUp = ts.filter( ( t ) => t.status === 'now' ).sort( byOrder )[ 0 ] || ts.filter( ( t ) => t.status === 'next' ).sort( byOrder )[ 0 ];
 					const status = p.status || 'active';
 					return (
-						`<article class="nw-proj" style="--nw-c:${ col( p.color ) }"><header><span class="nw-dot"></span><h3>${ esc( p.name ) }</h3><button class="nw-iconbtn nw-sqbtn" type="button" data-act="edit-project" data-id="${ p.id }" aria-label="${ esc(
+						`<article class="nw-proj" data-proj="${ Number( p.id ) }" tabindex="-1" style="--nw-c:${ col( p.color ) }"><header><span class="nw-dot"></span><h3>${ esc( p.name ) }</h3><button class="nw-iconbtn nw-sqbtn" type="button" data-act="edit-project" data-id="${ p.id }" aria-label="${ esc(
 							sprintf( /* translators: %s: project name. */ __( 'Edit %s', 'novawork' ), p.name )
 						) }">${ ic( 'pencil-simple', 15 ) }</button></header>` +
 						( p.goal ? `<p>${ esc( p.goal ) }</p>` : '' ) +

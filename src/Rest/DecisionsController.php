@@ -178,7 +178,21 @@ final class DecisionsController extends Controller {
 		if ( ! empty( $row['voting'] ) && empty( $before['voting'] ) ) {
 			Notifier::vote_requested( $row, self::me() );
 		}
-		return self::respond( $repo->present( $row ) );
+		$decision = $repo->present( $row );
+
+		/**
+		 * Fires after a member changes a decision (including deciding or
+		 * reopening it from the editor).
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array<string, mixed> $decision Decision as the API presents it.
+		 * @param array<string, mixed> $before   Database row before the change.
+		 * @param int                  $actor    Member who changed it.
+		 */
+		do_action( 'novawork_decision_updated', $decision, $before, self::me() );
+
+		return self::respond( $decision );
 	}
 
 	/**
@@ -282,6 +296,8 @@ final class DecisionsController extends Controller {
 			return self::not_found();
 		}
 		$repo->delete( $id );
+		// Notifications about it would lead nowhere.
+		( new \NovaWork\Data\NotificationRepository() )->delete_for_object( 'decision', $id );
 		return self::respond( array( 'deleted' => $id ) );
 	}
 

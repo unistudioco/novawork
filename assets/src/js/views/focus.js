@@ -105,7 +105,7 @@ export function viewFocus() {
 		.sort( ( a, b ) => ( a.decideBy || '9999' ).localeCompare( b.decideBy || '9999' ) );
 
 	const right =
-		`<section><div class="nw-label">${ esc( __( 'Team today', 'novawork' ) ) }</div><div class="nw-list nw-team">${ orderedTeam( people(), now )
+		`<section class="nw-sec-team"><div class="nw-label">${ esc( __( 'Team today', 'novawork' ) ) }</div><div class="nw-list nw-team">${ orderedTeam( people(), now )
 			.map(
 				( p ) =>
 					`<div class="nw-row">${ presAvatar( p.id ) }<div class="nw-tm"><b>${ esc( p.name ) }${ p.id === S.me ? `<span class="nw-you">${ esc( __( 'You', 'novawork' ) ) }</span>` : '' }</b><span>${ statusLine(
@@ -113,12 +113,12 @@ export function viewFocus() {
 					) }</span></div><span class="nw-tstat" title="${ esc( __( 'Tracked today', 'novawork' ) ) }" data-today="${ p.id }">${ esc( dur( tracked( p.id, dayStart( now ) ) ) ) }</span></div>`
 			)
 			.join( '' ) }</div></section>` +
-		`<section><div class="nw-label">${ esc( __( 'Due in the next 3 weeks', 'novawork' ) ) }<span class="nw-n nw-tnum">${ soon.length }</span></div>` +
+		`<section class="nw-sec-due"><div class="nw-label">${ esc( __( 'Due in the next 3 weeks', 'novawork' ) ) }<span class="nw-n nw-tnum">${ soon.length }</span></div>` +
 		( soon.length
 			? `<div class="nw-list">${ soon.map( ( t ) => `<div class="nw-row">${ avatars( t ) }<span class="nw-grow" data-act="edit-task" data-id="${ t.id }">${ esc( t.title ) }</span>${ dueHTML( t.due, t.status ) }</div>` ).join( '' ) }</div>`
 			: `<div class="nw-empty">${ ic( 'calendar-blank' ) }${ esc( __( 'No deadlines in the next three weeks.', 'novawork' ) ) }</div>` ) +
 		'</section>' +
-		`<section><div class="nw-label">${ esc( __( 'Waiting on a decision', 'novawork' ) ) }<span class="nw-n nw-tnum">${ openDec.length }</span></div>` +
+		`<section class="nw-sec-wait"><div class="nw-label">${ esc( __( 'Waiting on a decision', 'novawork' ) ) }<span class="nw-n nw-tnum">${ openDec.length }</span></div>` +
 		( openDec.length
 			? `<div class="nw-list">${ openDec
 				.slice( 0, 4 )
@@ -129,6 +129,6 @@ export function viewFocus() {
 
 	return (
 		`<div class="nw-view-head"><div><h1>${ esc( __( 'Focus', 'novawork' ) ) }</h1><p>${ esc( longDate( now, S.locale ) ) }. ${ esc( __( 'Three things at a time. Everything else waits in Next.', 'novawork' ) ) }</p></div></div>` +
-		`<div class="nw-focus"><div class="nw-stack">${ left }</div><div class="nw-stack">${ right }</div></div>`
+		`<div class="nw-focus"><div class="nw-stack">${ left }</div><div class="nw-stack nw-side">${ right }</div></div>`
 	);
 }

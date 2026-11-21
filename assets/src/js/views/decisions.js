@@ -17,7 +17,7 @@ function card( d ) {
 	const decided = d.status === 'decided';
 	const comments = commentsOf( 'decision', d.id ).length;
 	return (
-		`<article class="nw-dec${ decided ? ' nw-decided' : '' }"><div class="nw-q">${ esc( d.question ) }</div>` +
+		`<article class="nw-dec${ decided ? ' nw-decided' : '' }" data-dec="${ Number( d.id ) }" tabindex="-1"><div class="nw-q">${ esc( d.question ) }</div>` +
 		( d.context ? `<div class="nw-opts">${ esc( d.context ) }</div>` : '' ) +
 		( d.voting && ( d.options || [] ).length ? votesHTML( d, 'vote', ! decided ) : '' ) +
 		( decided && d.answer ? `<div class="nw-ans">${ esc( d.answer ) }</div>` : '' ) +

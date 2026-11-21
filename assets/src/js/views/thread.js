@@ -301,6 +301,7 @@ export function wireThread( o ) {
 		replyTo: () => ( reply ? reply.id : 0 ),
 		clearReply,
 		editing: () => !! edit,
+		jump,
 		/** Escape in the text field: drop the reply first. */
 		escape() {
 			if ( reply ) {

@@ -86,6 +86,10 @@ export function wpEval( php ) {
 	return execFileSync( 'php', [ ...args, wp, '--path=' + resolve( process.env.NOVAWORK_WP_PATH || '' ), 'eval', php ] ).toString();
 }
 
-/** Remove chat messages a test sent (text starts with "E2E "), with their files. */
+/** Remove chat messages a test sent (text containing "E2E "), with their files and notifications. */
 export const cleanChat = () =>
-	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "%E2E %" ) ) as $id ) { $r->delete( (int) $id ); }` );
+	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); $n = new NovaWork\\Data\\NotificationRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "%E2E %" ) ) as $id ) { $r->delete( (int) $id ); $n->delete_for_object( "message", (int) $id ); }` );
+
+/** Remove the team activity rows about test items ("E2E …" titles). */
+export const cleanActivity = () =>
+	wpEval( `global $wpdb; $r = new NovaWork\\Data\\ActivityRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE data LIKE %s", $r->table_name(), "%E2E %" ) ) as $id ) { $r->delete( (int) $id ); }` );

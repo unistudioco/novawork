@@ -57,8 +57,8 @@ final class ProjectsController extends Controller {
 		if ( '' === ( $data['name'] ?? '' ) ) {
 			return new WP_Error( 'novawork_required', __( 'Give the project a name.', 'novawork' ), array( 'status' => 400 ) );
 		}
-		$repo = new ProjectRepository();
-		$id   = $repo->insert(
+		$repo    = new ProjectRepository();
+		$id      = $repo->insert(
 			array_merge(
 				array(
 					'color'      => 'blue',
@@ -71,7 +71,19 @@ final class ProjectsController extends Controller {
 				)
 			)
 		);
-		return self::respond( $repo->present( (array) $repo->find( $id ) ), 201 );
+		$project = $repo->present( (array) $repo->find( $id ) );
+
+		/**
+		 * Fires after a member adds a project.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array<string, mixed> $project Project as the API presents it.
+		 * @param int                  $actor   Member who added it.
+		 */
+		do_action( 'novawork_project_created', $project, self::me() );
+
+		return self::respond( $project, 201 );
 	}
 
 	/**
@@ -81,9 +93,10 @@ final class ProjectsController extends Controller {
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 */
 	public function update( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$repo = new ProjectRepository();
-		$id   = self::id( $request );
-		if ( ! $repo->find( $id ) ) {
+		$repo   = new ProjectRepository();
+		$id     = self::id( $request );
+		$before = $repo->find( $id );
+		if ( ! $before ) {
 			return self::not_found();
 		}
 		$data = $this->columns( self::sent( $request, array( 'name', 'goal', 'color', 'status', 'start', 'target', 'deadline' ) ) );
@@ -91,7 +104,20 @@ final class ProjectsController extends Controller {
 			return new WP_Error( 'novawork_required', __( 'Give the project a name.', 'novawork' ), array( 'status' => 400 ) );
 		}
 		$repo->update( $id, $data );
-		return self::respond( $repo->present( (array) $repo->find( $id ) ) );
+		$project = $repo->present( (array) $repo->find( $id ) );
+
+		/**
+		 * Fires after a member changes a project.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array<string, mixed> $project Project as the API presents it.
+		 * @param array<string, mixed> $before  Database row before the change.
+		 * @param int                  $actor   Member who changed it.
+		 */
+		do_action( 'novawork_project_updated', $project, $before, self::me() );
+
+		return self::respond( $project );
 	}
 
 	/**

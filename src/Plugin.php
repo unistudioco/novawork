@@ -41,6 +41,7 @@ final class Plugin {
 		Rest\TimeController::class,
 		Rest\NotificationsController::class,
 		Rest\SearchController::class,
+		Rest\ActivityController::class,
 	);
 
 	/**
@@ -63,6 +64,7 @@ final class Plugin {
 	 */
 	public static function register(): void {
 		Cron::register();
+		Services\Activity::register();
 		App\Route::register();
 		Admin\Menu::register();
 

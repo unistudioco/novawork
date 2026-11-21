@@ -24,7 +24,7 @@ const hidden = new Set();
 export const hide = ( key, id ) => hidden.add( key + ':' + id );
 export const unhide = ( key, id ) => hidden.delete( key + ':' + id );
 
-export const COLLECTIONS = [ 'projects', 'tasks', 'decisions', 'comments', 'messages', 'timeEntries', 'notifications' ];
+export const COLLECTIONS = [ 'projects', 'tasks', 'decisions', 'comments', 'messages', 'timeEntries', 'notifications', 'activity' ];
 
 export function createStore( boot ) {
 	return {
@@ -41,6 +41,7 @@ export function createStore( boot ) {
 		messages: {},
 		timeEntries: {},
 		notifications: {},
+		activity: {},
 		cursor: null,
 		canManage: false,
 		now: Date.now(),
