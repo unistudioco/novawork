@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
 /**
  * Shared helpers for the browser tests.
  */
@@ -68,3 +70,22 @@ export const cleanUp = ( page ) =>
 			await fetch( window.novawork.restUrl + 'decisions/' + x.id, { method: 'DELETE', headers: h } );
 		}
 	} );
+
+/**
+ * Run PHP inside the dev site through WP-CLI (for cleanup the API does not
+ * offer, such as removing test chat messages). Uses .dev.env settings.
+ *
+ * @param {string} php Code for `wp eval`.
+ */
+export function wpEval( php ) {
+	const args = [];
+	if ( process.env.NOVAWORK_MYSQL_SOCKET ) {
+		args.push( '-d', 'mysqli.default_socket=' + process.env.NOVAWORK_MYSQL_SOCKET );
+	}
+	const wp = execFileSync( 'bash', [ '-lc', 'command -v wp' ] ).toString().trim();
+	return execFileSync( 'php', [ ...args, wp, '--path=' + resolve( process.env.NOVAWORK_WP_PATH || '' ), 'eval', php ] ).toString();
+}
+
+/** Remove chat messages a test sent (text starts with "E2E "), with their files. */
+export const cleanChat = () =>
+	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "E2E %" ) ) as $id ) { $r->delete( (int) $id ); }` );

@@ -286,13 +286,37 @@ last), `tracked`, `online` (first to come online; uses member
   hook when a decision is assigned to an agent so the add-on can act on it
   (read the context, the comments and the votes, then post its answer).
 
+## Chat (Phase 4)
+
+- `views/chat.js`: docks left/right (`body.nw-docked-*` pushes the page),
+  floats when dragged by its header (snap zones at the edges), bottom sheet
+  with swipe-to-close on phones (scroll locked). Position remembered per
+  device (`nw.chat`). The header button and the create sheet talk to it with
+  `nw:chat` events; it reports `nw:chat-state`.
+- The app holds the last 100 messages; older ones load as you scroll up
+  (`GET /messages?beforeId`). Search and the date filter run on the server
+  (`GET /messages?q&from&to`), so they find everything.
+- Files upload as soon as they are picked (`POST /attachments`), checked
+  first against `uploadMaxBytes`/`uploadTypes`; Send waits for uploads.
+  Images show inline through the private route (`?_wpnonce=`).
+- Reading: when the window is open and scrolled to the bottom, `POST
+  /chat/read` clears the unread count and chat/mention notifications.
+- **@mentions (owner):** `@` suggests members (keyboard: arrows, Enter/Tab,
+  Escape); `messages.mentions` stores `[{id, name}]` (schema v3), kept only
+  when `@Name` is really in the text and the id is a member. A mentioned
+  member gets a `mention` notification instead of `chat`. Mentions render as
+  accent text; a mention of you gets the soft accent surface.
+
 ## Owner requests queued for later phases
 
-- **Chat (Phase 4):** @mentions. Typing `@` in the composer suggests members
-  (filtering as you type, keyboard-navigable, the prototype's dropdown look);
-  picking one inserts `@Name`. A mention is stored with the member's id
-  (names can change), shown highlighted in the message, and notifies that
-  member (a "mention" notification, even if they muted nothing else).
+- (Built.) Chat @mentions: see "Chat" below.
+- **Notifications (owner, 2026-11-21):** the bell shows the signed-in
+  member's own notifications (they are stored per recipient already),
+  never the whole team's. Add a small segmented filter **Mine | Workspace**:
+  Mine (default) = your notifications; Workspace = what happened across the
+  team (tasks done, decisions made, votes opened, projects added…), read
+  only. Decide the Workspace source when building it (an activity log, not
+  other people's notifications, which stay private).
 
 ## Design rules that bite (full list in the log)
 
