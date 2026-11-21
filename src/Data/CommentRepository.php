@@ -45,6 +45,8 @@ final class CommentRepository extends Repository {
 			'user_id'     => '%d',
 			'agent'       => '%s',
 			'body'        => '%s',
+			'mentions'    => '%s',
+			'refs'        => '%s',
 			'created_at'  => '%s',
 			'updated_at'  => '%s',
 		);
@@ -57,8 +59,10 @@ final class CommentRepository extends Repository {
 	 */
 	protected function defaults(): array {
 		return array(
-			'user_id' => 0,
-			'agent'   => '',
+			'user_id'  => 0,
+			'agent'    => '',
+			'mentions' => '[]',
+			'refs'     => '[]',
 		);
 	}
 
@@ -76,6 +80,8 @@ final class CommentRepository extends Repository {
 			'by'         => (int) $row['user_id'],
 			'agent'      => (string) $row['agent'],
 			'text'       => (string) $row['body'],
+			'mentions'   => \NovaWork\Services\References::decode( $row['mentions'] ?? '[]' ),
+			'refs'       => \NovaWork\Services\References::decode( $row['refs'] ?? '[]' ),
 			'at'         => Db::to_ms( $row['created_at'] ),
 		);
 	}

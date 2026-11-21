@@ -11,9 +11,10 @@ import { __, _n, sprintf } from '../lib/i18n.js';
 import { esc, DAY } from '../lib/format.js';
 import { get, post, del } from '../lib/api.js';
 import { isPhone, lockBgScroll, unlockBgScroll, sheetOut, placeInd, toast } from '../lib/ui.js';
-import { store, people, avatar, iso, todayISO, parse, size } from './model.js';
+import { store, iso, todayISO, parse, size } from './model.js';
 import { enhance } from './select.js';
 import { msgHTML } from './editors.js';
+import { attachComposer } from './composer.js';
 
 const $ = ( id ) => document.getElementById( id );
 const MAX_FILES = 6;
@@ -27,8 +28,7 @@ let search = { active: false, list: [], q: '' };
 let searchTimer = null;
 let olderDone = false;
 let loadingOlder = false;
-const mentionIds = new Set();
-let mention = null;
+let composer = null;
 
 const pref = ( k, v ) => {
 	try {
@@ -105,7 +105,7 @@ export function closeChat() {
 		chat.style.transition = '';
 		chat.hidden = true;
 		setOpen( false );
-		closeMention();
+		composer.close();
 		apply();
 		$( 'nw-chat-btn' ).focus();
 	};
@@ -131,40 +131,6 @@ function dayLabel( at ) {
 	return new Date( at ).toLocaleDateString( S.locale || undefined, { weekday: 'short', day: 'numeric', month: 'short' } );
 }
 
-/** Search matches in plain text, escaped. */
-function hl( text, q ) {
-	const i = q ? text.toLowerCase().indexOf( q ) : -1;
-	return i < 0 ? esc( text ) : esc( text.slice( 0, i ) ) + '<mark>' + esc( text.slice( i, i + q.length ) ) + '</mark>' + esc( text.slice( i + q.length ) );
-}
-
-/** Message text with @mentions highlighted (yours more strongly) and search matches marked. */
-function richText( m, q ) {
-	return ( text ) => {
-		const marks = [];
-		( m.mentions || [] ).forEach( ( men ) => {
-			const token = '@' + men.name;
-			let from = 0;
-			let at;
-			while ( ( at = text.toLowerCase().indexOf( token.toLowerCase(), from ) ) >= 0 ) {
-				marks.push( { at, end: at + token.length, id: men.id } );
-				from = at + token.length;
-			}
-		} );
-		marks.sort( ( a, b ) => a.at - b.at );
-		let html = '';
-		let cur = 0;
-		marks.forEach( ( k ) => {
-			if ( k.at < cur ) {
-				return;
-			}
-			html += hl( text.slice( cur, k.at ), q );
-			html += `<span class="nw-mention${ k.id === store().me ? ' nw-me' : '' }">${ esc( text.slice( k.at, k.end ) ) }</span>`;
-			cur = k.end;
-		} );
-		return html + hl( text.slice( cur ), q );
-	};
-}
-
 function list() {
 	if ( search.active ) {
 		return search.list;
@@ -187,7 +153,7 @@ function paint( toBottom ) {
 			html += `<div class="nw-dsep">${ esc( dayLabel( m.at ) ) }</div>`;
 			last = k;
 		}
-		html += msgHTML( m, richText( m, search.q ) );
+		html += msgHTML( m, search.q );
 	} );
 	box.innerHTML =
 		html ||
@@ -352,15 +318,11 @@ async function send() {
 		if ( ! text && ! files.length ) {
 			return;
 		}
-		const mentions = [ ...mentionIds ].filter( ( id ) => {
-			const p = people().find( ( m ) => m.id === id );
-			return p && text.toLowerCase().includes( '@' + p.name.toLowerCase() );
-		} );
-		const m = await post( 'messages', { text, attachmentIds: files, mentions } );
+		const m = await post( 'messages', Object.assign( { text, attachmentIds: files }, composer.payload() ) );
 		store().upsert( 'messages', m );
 		input.value = '';
 		pending = [];
-		mentionIds.clear();
+		composer.reset();
 		paintPending();
 		paint( true );
 	} catch ( e ) {
@@ -369,101 +331,6 @@ async function send() {
 		sendBtn.disabled = false;
 		input.focus();
 	}
-}
-
-/* ---------- @mentions (owner request) ---------- */
-function mentionQuery() {
-	const input = $( 'nw-chat-in' );
-	const before = input.value.slice( 0, input.selectionStart );
-	const m = before.match( /(^|\s)@([^\s@]{0,30})$/ );
-	return m ? { q: m[ 2 ].toLowerCase(), start: before.length - m[ 2 ].length - 1 } : null;
-}
-
-function closeMention() {
-	const ul = $( 'nw-mention-list' );
-	if ( ul ) {
-		ul.remove();
-	}
-	$( 'nw-chat-in' ).removeAttribute( 'aria-activedescendant' );
-	mention = null;
-}
-
-function showMention() {
-	const found = mentionQuery();
-	if ( ! found ) {
-		closeMention();
-		return;
-	}
-	const S = store();
-	const matches = people()
-		.filter( ( p ) => p.id !== S.me && p.name.toLowerCase().split( /\s+/ ).concat( p.name.toLowerCase() ).some( ( w ) => w.startsWith( found.q ) ) )
-		.slice( 0, 6 );
-	if ( ! matches.length ) {
-		closeMention();
-		return;
-	}
-	mention = { start: found.start, matches, act: mention && mention.act < matches.length ? mention.act : 0 };
-	let ul = $( 'nw-mention-list' );
-	if ( ! ul ) {
-		ul = document.createElement( 'ul' );
-		ul.id = 'nw-mention-list';
-		ul.className = 'nw-sel-menu nw-mention-menu';
-		ul.setAttribute( 'role', 'listbox' );
-		ul.setAttribute( 'aria-label', __( 'Mention someone', 'novawork' ) );
-		ul.addEventListener( 'pointerdown', ( e ) => {
-			const li = e.target.closest( 'li' );
-			if ( li ) {
-				e.preventDefault();
-				pickMention( Number( li.dataset.i ) );
-			}
-		} );
-		$( 'nw-chat-form' ).appendChild( ul );
-	}
-	ul.innerHTML = matches
-		.map( ( p, i ) => `<li role="option" id="nw-mention-${ i }" data-i="${ i }" aria-selected="${ i === mention.act }" class="${ i === mention.act ? 'nw-active' : '' }">${ avatar( p.id ) }<span>${ esc( p.name ) }</span></li>` )
-		.join( '' );
-	$( 'nw-chat-in' ).setAttribute( 'aria-activedescendant', 'nw-mention-' + mention.act );
-}
-
-function pickMention( i ) {
-	const p = mention && mention.matches[ i ];
-	if ( ! p ) {
-		return;
-	}
-	const input = $( 'nw-chat-in' );
-	const caret = input.selectionStart;
-	const insert = '@' + p.name + ' ';
-	input.value = input.value.slice( 0, mention.start ) + insert + input.value.slice( caret );
-	const at = mention.start + insert.length;
-	input.setSelectionRange( at, at );
-	mentionIds.add( p.id );
-	closeMention();
-	input.focus();
-}
-
-function mentionKeys( e ) {
-	if ( ! mention ) {
-		return false;
-	}
-	const n = mention.matches.length;
-	if ( e.key === 'ArrowDown' || e.key === 'ArrowUp' ) {
-		e.preventDefault();
-		mention.act = ( mention.act + ( e.key === 'ArrowDown' ? 1 : n - 1 ) ) % n;
-		showMention();
-		return true;
-	}
-	if ( e.key === 'Enter' || e.key === 'Tab' ) {
-		e.preventDefault();
-		pickMention( mention.act );
-		return true;
-	}
-	if ( e.key === 'Escape' ) {
-		e.preventDefault();
-		e.stopPropagation();
-		closeMention();
-		return true;
-	}
-	return false;
 }
 
 /* ---------- drag, dock, swipe ---------- */
@@ -635,17 +502,14 @@ export function mountChat() {
 		paintPending();
 	} );
 	chat.addEventListener( 'keydown', ( e ) => {
-		if ( e.key === 'Escape' && ! mention ) {
+		if ( e.key === 'Escape' && ! composer.isOpen() ) {
 			closeChat();
 		}
 	} );
-	const input = $( 'nw-chat-in' );
-	input.addEventListener( 'input', showMention );
-	input.addEventListener( 'keydown', mentionKeys );
-	input.addEventListener( 'blur', () => setTimeout( closeMention, 120 ) );
+	composer = attachComposer( $( 'nw-chat-in' ), { parent: $( 'nw-chat-form' ), id: 'nw-mention-list' } );
 	$( 'nw-chat-form' ).addEventListener( 'submit', ( e ) => {
 		e.preventDefault();
-		if ( ! mention ) {
+		if ( ! composer.isOpen() ) {
 			send();
 		}
 	} );

@@ -81,6 +81,12 @@ export function mountDialog() {
 		placeInd( tabs );
 	} );
 	form.addEventListener( 'click', ( e ) => {
+		const ref = e.target.closest( '[data-act="open-ref"]' );
+		if ( ref ) {
+			e.preventDefault();
+			window.dispatchEvent( new CustomEvent( 'nw:open', { detail: { kind: ref.dataset.type, id: Number( ref.dataset.id ), stay: true } } ) );
+			return;
+		}
 		const c = e.target.closest( '[data-cmt]' );
 		if ( c ) {
 			e.preventDefault();

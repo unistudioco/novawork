@@ -61,6 +61,7 @@ export default () => ( {
 
 	stuck: false,
 	phone: false,
+	compact: false,
 	chatOpen: false,
 	notesOpen: false,
 	theme: store( 'nw.theme' ) || 'system',
@@ -75,6 +76,15 @@ export default () => ( {
 		media.addEventListener( 'change', () => {
 			this.phone = media.matches;
 		} );
+
+		// Not enough room for the search field beside the header controls
+		// (tablets, small laptops, a docked chat): show the search icon instead,
+		// which opens the full-screen search as on phones. 1060px is the width
+		// the field needs when focused (440px) next to the controls.
+		const inner = this.$root.querySelector( '.nw-hdr-in' );
+		new ResizeObserver( () => {
+			this.compact = ! this.phone && inner.clientWidth - 40 < 1060;
+		} ).observe( inner );
 
 		this.route();
 		window.addEventListener( 'hashchange', () => {
@@ -441,7 +451,7 @@ export default () => ( {
 		}
 		this.qs.showRes = false;
 		this.qsUnlock();
-		if ( this.qs.open && window.matchMedia( '(max-width: 719px) and (prefers-reduced-motion: no-preference)' ).matches ) {
+		if ( this.qs.open && ( this.phone || this.compact ) && window.matchMedia( '(prefers-reduced-motion: no-preference)' ).matches ) {
 			this.qs.open = false;
 			this.qs.closing = true;
 			setTimeout( () => {

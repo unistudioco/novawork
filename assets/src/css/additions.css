@@ -103,3 +103,75 @@
 }
 :root[data-theme="dark"] .nw-vote.nw-on { background: var(--nw-field); color: var(--nw-accent-ink); box-shadow: inset 0 0 0 1px var(--nw-accent-line); }
 :root[data-theme="dark"] .nw-vote.nw-on .nw-vote-fill { background: color-mix(in srgb, var(--nw-accent) 32%, transparent); }
+
+/* /links in chat and comments (owner request): a small chip with the item's
+   icon and current title that opens it; a deleted item is struck through.
+   The suggestion list shows each item's kind on the right. */
+.nw-ref { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 0 6px; border: 0; border-radius: 6px; background: var(--nw-field); color: var(--nw-fg); font: 500 12.5px/1.6 var(--nw-font-head); vertical-align: baseline; cursor: pointer; --nw-is: 13px; }
+.nw-ref .nw-ic { color: var(--nw-muted); }
+.nw-ref:hover { box-shadow: inset 0 0 0 1px var(--nw-field-hover); }
+.nw-ref.nw-gone { color: var(--nw-faint); text-decoration: line-through; cursor: default; }
+.nw-ref.nw-gone:hover { box-shadow: none; }
+.nw-sel-menu li .nw-opt-lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nw-sel-menu li .nw-ref-kind { margin-left: auto; padding-left: 12px; font: 500 11.5px/1 var(--nw-font-head); color: var(--nw-faint); }
+.nw-mention-menu { max-width: min(380px, calc(100vw - 40px)); }
+/* Comment suggestions open above the field, inside the dialog. */
+.nw-cmt-in { position: relative; }
+.nw-cmt-in .nw-sel-menu.nw-mention-menu { left: 0; bottom: calc(100% + 4px); }
+/* In the chat window the list spans the composer (the window is narrow and
+   clips anything wider). */
+.nw-composer .nw-sel-menu.nw-mention-menu { left: 12px; right: 12px; min-width: 0; max-width: none; }
+
+/* Link chips sit in the sentence like text (owner): an inline link keeps the
+   paragraph's baseline and wraps with it; the icon is nudged onto the text. */
+.nw-ref { display: inline; padding: 1px 6px; line-height: inherit; text-decoration: none; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.nw-ref .nw-ic { vertical-align: -2px; margin-right: 4px; }
+
+/* Compact header (owner): when the header is too narrow for the search field
+   beside its controls (tablets, small laptops, a docked chat), the search is a
+   bare icon that opens the full-screen search, as on phones; the field and
+   results stay a readable width on large screens. */
+.nw-hdr.nw-compact .nw-qs { display: none; }
+.nw-hdr.nw-compact #nw-qs-btn { display: inline-grid; background: transparent; box-shadow: none; color: var(--nw-fg); }
+.nw-hdr.nw-compact .nw-qs-row { display: flex; align-items: center; gap: 8px; }
+.nw-hdr.nw-compact .nw-qs.nw-open { display: flex; flex-direction: column; gap: 10px; position: fixed; z-index: 55; inset: 0; width: auto; justify-self: stretch; align-self: stretch; padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 16px; background: var(--nw-bg); }
+.nw-hdr.nw-compact .nw-qs.nw-open > * { width: 100%; max-width: 680px; margin-inline: auto; }
+.nw-hdr.nw-compact .nw-qs.nw-open #nw-qs-cancel { display: inline-flex; flex: none; }
+.nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-field { flex: 1; min-width: 0; }
+.nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-res { position: static; flex: 1; min-height: 0; overflow: auto; border: 0; box-shadow: none; background: transparent; padding: 0; }
+.nw-hdr.nw-compact .nw-qs kbd { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .nw-hdr.nw-compact .nw-qs.nw-open { transition: none; animation: nw-qs-fade-in .22s ease backwards; }
+  .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-row { animation: nw-qs-row-down .3s cubic-bezier(.2, .9, .25, 1) .03s backwards; }
+  .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-res { animation: nw-qs-fade-in .2s ease .14s backwards; }
+  .nw-hdr.nw-compact .nw-qs.nw-closing { transition: none; display: flex !important; position: fixed; inset: 0; width: auto; justify-self: stretch; align-self: stretch; z-index: 55; background: var(--nw-bg); animation: nw-qs-fade-in .18s ease reverse forwards; }
+}
+
+/* A docked chat pushes the page over only when the page keeps at least 720px
+   beside it (owner report: at 768px the header overlapped itself). On a
+   narrower screen, a tablet in portrait, the docked chat sits over the page
+   instead and the page keeps its full width. */
+@media (min-width: 720px) and (max-width: 1095px) {
+  body.nw-docked-right, body.nw-docked-left { padding-left: 0; padding-right: 0; }
+}
+
+/* Page layouts follow the page's own width, not the window's (owner report):
+   a docked chat takes 376px of the window, so the prototype's viewport
+   breakpoints picked layouts too wide for the space left (four squeezed board
+   columns at 1096px). Each breakpoint below is the prototype's, minus the
+   page's 40px side padding, so with no chat docked nothing changes. Phone-only
+   rules (max-width: 719px) stay on the viewport: they are about the device. */
+#nw-main { container: nw-page / inline-size; }
+/* Two board columns from tablet width up (not on phones, whose board swipes). */
+@media (min-width: 720px) { @container nw-page (max-width: 1019.98px) { .nw-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } } }
+@container nw-page (min-width: 1020px) { .nw-board { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container nw-page (max-width: 919.98px) { .nw-focus { grid-template-columns: minmax(0, 1fr); } }
+@container nw-page (min-width: 920px) { .nw-focus { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); } }
+@container nw-page (max-width: 739.98px) { .nw-projects { grid-template-columns: minmax(0, 1fr); } }
+@container nw-page (min-width: 740px) { .nw-projects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container nw-page (max-width: 719.98px) { .nw-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container nw-page (min-width: 720px) { .nw-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container nw-page (max-width: 819.98px) { .nw-two-col { grid-template-columns: minmax(0, 1fr); } }
+@container nw-page (min-width: 820px) { .nw-two-col { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@container nw-page (max-width: 859.98px) { .nw-dec-cols { grid-template-columns: minmax(0, 1fr); } .nw-dec-cols .nw-sec { margin-top: 30px; } }
+@container nw-page (min-width: 860px) { .nw-dec-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } .nw-dec-cols .nw-sec { margin-top: 0; } }

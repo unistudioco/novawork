@@ -452,6 +452,24 @@ try {
 	$kinds = array_column( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $admin, 100 ), fn( $n ) => (int) $n['object_id'] === $mm['id'] && 'message' === $n['object_type'] ), 'type' );
 	$t->ok( array( 'chat' ) === array_values( $kinds ), 'everyone else gets the usual chat notification', $kinds );
 
+	// /links (owner request).
+	list( , $lt ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Linked task', 'assignees' => array( $sam ) ) );
+	list( , $ld ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Linked decision', 'ownerId' => $admin ) );
+	list( $s, $lm ) = $t->call( $alex, 'POST', '/messages', array(
+		'text' => 'See /Linked task and /Linked decision',
+		'refs' => array( array( 'type' => 'task', 'id' => $lt['id'] ), array( 'type' => 'decision', 'id' => $ld['id'] ), array( 'type' => 'project', 'id' => 999999 ), array( 'type' => 'task', 'id' => $t1['id'] ) ),
+	) );
+	$t->ok( 201 === $s && array( 'task:' . $lt['id'], 'decision:' . $ld['id'] ) === array_map( fn( $r ) => $r['type'] . ':' . $r['id'], $lm['refs'] ), 'a link is kept only when the item exists and "/Title" is in the text', $lm['refs'] ?? $lm );
+	$link_for = fn( $uid, $type, $id ) => array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $uid, 200 ), fn( $n ) => 'link' === $n['type'] && $type === $n['object_type'] && (int) $n['object_id'] === $id );
+	$t->ok( 1 === count( $link_for( $sam, 'task', $lt['id'] ) ), "the linked task's assignee is told" );
+	$t->ok( 1 === count( $link_for( $admin, 'decision', $ld['id'] ) ), "the linked decision's decider is told" );
+	list( , $lm2 ) = $t->call( $alex, 'POST', '/messages', array( 'text' => "@{$sam_name} again /Linked task", 'mentions' => array( $sam ), 'refs' => array( array( 'type' => 'task', 'id' => $lt['id'] ) ) ) );
+	$t->ok( 1 === count( $link_for( $sam, 'task', $lt['id'] ) ), 'someone already mentioned in the message is not told twice' );
+	list( $s, $lc ) = $t->call( $sam, 'POST', '/comments', array( 'objectType' => 'task', 'objectId' => $lt['id'], 'text' => "Done, @" . get_userdata( $alex )->display_name . ", see /Linked decision", 'mentions' => array( $alex ), 'refs' => array( array( 'type' => 'decision', 'id' => $ld['id'] ) ) ) );
+	$t->ok( 201 === $s && array( $alex ) === array_column( $lc['mentions'], 'id' ) && 1 === count( $lc['refs'] ), 'comments carry mentions and links too', $lc );
+	$kinds = array_column( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $alex, 200 ), fn( $n ) => 'task' === $n['object_type'] && (int) $n['object_id'] === $lt['id'] ), 'type' );
+	$t->ok( in_array( 'mention', $kinds, true ) && ! in_array( 'comment', $kinds, true ), 'a member mentioned in a comment gets a mention instead of a comment', $kinds );
+
 	list( , $hist ) = $t->call( $sam, 'GET', '/messages', array( 'q' => 'waitlist' ) );
 	$t->ok( 1 === count( $hist ) && $m1['id'] === $hist[0]['id'], 'chat search finds the message' );
 	list( , $hist ) = $t->call( $sam, 'GET', '/messages', array( 'from' => wp_date( 'Y-m-d', time() + DAY_IN_SECONDS ) ) );

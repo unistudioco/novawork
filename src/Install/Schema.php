@@ -23,7 +23,7 @@ use NovaWork\Data\Db;
  */
 final class Schema {
 
-	public const VERSION = 3;
+	public const VERSION = 4;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -85,6 +85,8 @@ object_id bigint(20) unsigned NOT NULL DEFAULT 0,
 user_id bigint(20) unsigned NOT NULL DEFAULT 0,
 agent varchar(64) NOT NULL DEFAULT '',
 body text NOT NULL,
+mentions text NOT NULL,
+refs text NOT NULL,
 created_at datetime NOT NULL,
 updated_at datetime NOT NULL,
 PRIMARY KEY  (id),
@@ -141,6 +143,7 @@ user_id bigint(20) unsigned NOT NULL DEFAULT 0,
 agent varchar(64) NOT NULL DEFAULT '',
 body text NOT NULL,
 mentions text NOT NULL,
+refs text NOT NULL,
 created_at datetime NOT NULL,
 updated_at datetime NOT NULL,
 PRIMARY KEY  (id),

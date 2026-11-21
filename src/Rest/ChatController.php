@@ -15,6 +15,7 @@ use NovaWork\Data\NotificationRepository;
 use NovaWork\Data\ReadState;
 use NovaWork\Services\Files;
 use NovaWork\Services\Notifier;
+use NovaWork\Services\References;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -60,6 +61,7 @@ final class ChatController extends Controller {
 				'text'          => self::text( 2000 ),
 				'attachmentIds' => self::refs( self::MAX_FILES ),
 				'mentions'      => self::refs( 20 ),
+				'refs'          => self::links_schema(),
 			)
 		);
 		$this->route( '/attachments', WP_REST_Server::CREATABLE, array( $this, 'upload' ) );
@@ -106,7 +108,8 @@ final class ChatController extends Controller {
 			array(
 				'user_id'  => self::me(),
 				'body'     => $text,
-				'mentions' => (string) wp_json_encode( self::mentions( $text, (array) ( $request->get_param( 'mentions' ) ?? array() ) ) ),
+				'mentions' => (string) wp_json_encode( References::mentions( $text, $request->get_param( 'mentions' ) ?? array() ) ),
+				'refs'     => (string) wp_json_encode( References::links( $text, $request->get_param( 'refs' ) ?? array() ) ),
 			)
 		);
 		if ( ! $id ) {
@@ -124,6 +127,12 @@ final class ChatController extends Controller {
 		ReadState::set( self::me(), $id );
 		$message = (array) $repo->find( $id );
 		Notifier::chatted( $message );
+		References::notify_links(
+			References::decode( $message['refs'] ),
+			self::me(),
+			$text,
+			array_column( References::decode( $message['mentions'] ), 'id' )
+		);
 
 		/**
 		 * Fires after a member posts in team chat.
@@ -135,27 +144,6 @@ final class ChatController extends Controller {
 		do_action( 'novawork_message_created', $message );
 
 		return self::respond( $repo->present( $message ), 201 );
-	}
-
-	/**
-	 * Mentions to keep: members whose "@Name" really is in the text.
-	 *
-	 * @param string $text Message text.
-	 * @param mixed  $ids  Member ids the app says were mentioned.
-	 * @return list<array{id: int, name: string}>
-	 */
-	private static function mentions( string $text, mixed $ids ): array {
-		$out = array();
-		foreach ( self::members_only( $ids ) as $id ) {
-			$user = get_userdata( $id );
-			if ( $user && false !== mb_stripos( $text, '@' . $user->display_name ) ) {
-				$out[] = array(
-					'id'   => $id,
-					'name' => $user->display_name,
-				);
-			}
-		}
-		return $out;
 	}
 
 	/**
