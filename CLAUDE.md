@@ -260,6 +260,32 @@ members who are here, tracking or online, first by most tracked today; away
 last), `tracked`, `online` (first to come online; uses member
 `onlineSince`, set when a member returns after being away), `fixed`.
 
+## Decisions: who decides, and team votes (owner, 2026-11-21)
+
+- **One person decides; votes advise.** `Capabilities::can_decide()`:
+  administrators always; otherwise the member named in "Who decides", or
+  anyone when no one is named. Setting `decide_rule` = `named` (default) or
+  `anyone`. The server enforces it on `/decide` and on a PATCH that changes
+  the status or a decided answer (403 "Only Sam can record this decision.").
+  Anyone may still edit the question, context, project and date, and comment.
+  The app shows "Waiting on Sam" instead of Decide to everyone else.
+- **Votes** (setting `decision_votes`, on): a decision can "Ask the team to
+  vote" with up to 8 options. Options live on the decision (`vote_options`
+  JSON of `{key, label}`), votes in `{prefix}novawork_decision_votes` (one per
+  member). `POST /decisions/{id}/vote {option|null}` casts, changes or
+  withdraws. Keys survive edits (same label, or a rename in place); votes for
+  removed options are dropped. Voting closes once decided. Opening a vote
+  notifies every other member (`vote` notification, once per decision).
+  The majority never decides by itself.
+- Schema version 2 added these (the in-place upgrade ran on the dev site).
+- **Spike (Pro, later; owner 2026-11-21):** the team can ask Spike, the AI
+  teammate, to decide, as with any member. Today "Who decides" holds a user
+  id only, so Spike will need an agent owner on decisions (an `owner_agent`
+  column next to `owner_id`, like the `agent` column on messages and
+  comments), `can_decide()` letting the add-on decide for its agent, and a
+  hook when a decision is assigned to an agent so the add-on can act on it
+  (read the context, the comments and the votes, then post its answer).
+
 ## Owner requests queued for later phases
 
 - **Chat (Phase 4):** @mentions. Typing `@` in the composer suggests members

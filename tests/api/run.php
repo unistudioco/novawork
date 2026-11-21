@@ -279,7 +279,7 @@ try {
 	$t->ok( 400 === $s, 'deciding needs an answer', $s );
 	list( , $d1b ) = $t->call( $sam, 'POST', '/decisions/' . $d1['id'] . '/decide', array( 'answer' => '30 days.' ) );
 	$t->ok( 'decided' === $d1b['status'] && $sam === $d1b['decidedBy'] && is_int( $d1b['decidedAt'] ), 'decided, with who and when' );
-	list( , $d1c ) = $t->call( $alex, 'PATCH', '/decisions/' . $d1['id'], array( 'status' => 'open' ) );
+	list( , $d1c ) = $t->call( $sam, 'PATCH', '/decisions/' . $d1['id'], array( 'status' => 'open' ) );
 	$t->ok( 'open' === $d1c['status'] && null === $d1c['decidedAt'] && '30 days.' === $d1c['answer'], 'reopen keeps the answer, clears the stamp' );
 	list( $s ) = $t->call( $alex, 'PATCH', '/decisions/' . $d0['id'], array( 'status' => 'decided' ) );
 	$t->ok( 400 === $s, 'marking decided without an answer → 400', $s );
@@ -291,6 +291,54 @@ try {
 	$t->ok( 0 === $orphan['projectId'], "deleting a project clears it from its decisions" );
 	$task_after = $repo->present( (array) $repo->find( $t1['id'] ) );
 	$t->ok( 0 === $task_after['projectId'], 'and from its tasks, which stay' );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Decision rights and votes' );
+	delete_option( 'novawork_settings' );
+	list( $s, $dv ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Which logo?', 'ownerId' => $sam, 'voting' => true, 'options' => array( array( 'label' => 'Round' ), array( 'label' => 'Square' ), array( 'label' => 'square' ), array( 'label' => '  ' ) ) ) );
+	$t->ok( 201 === $s && true === $dv['voting'] && array( 'o1', 'o2' ) === array_column( $dv['options'], 'key' ), 'a vote opens with clean options (blank and duplicate dropped)', $dv['options'] ?? $dv );
+	$votes_for = fn( $uid ) => array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $uid, 100 ), fn( $n ) => 'vote' === $n['type'] && (int) $n['object_id'] === $dv['id'] );
+	$t->ok( 1 === count( $votes_for( $sam ) ) && 1 === count( $votes_for( $admin ) ) && 0 === count( $votes_for( $alex ) ), 'everyone but the asker is asked to vote' );
+	list( , $v1 ) = $t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => 'o1' ) );
+	list( , $v2 ) = $t->call( $sam, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => 'o2' ) );
+	$t->ok( array( (string) $alex => 'o1', (string) $sam => 'o2' ) == $v2['votes'], 'members vote', $v2['votes'] );
+	list( , $v3 ) = $t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => 'o2' ) );
+	$t->ok( 'o2' === $v3['votes'][ (string) $alex ], 'a member can change their vote' );
+	list( , $v4 ) = $t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => null ) );
+	$t->ok( ! isset( $v4['votes'][ (string) $alex ] ) && isset( $v4['votes'][ (string) $sam ] ), 'and withdraw it' );
+	list( $s ) = $t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => 'o9' ) );
+	$t->ok( 400 === $s, 'voting for a missing option → 400', $s );
+	list( , $re ) = $t->call( $alex, 'PATCH', '/decisions/' . $dv['id'], array( 'options' => array( array( 'key' => 'o2', 'label' => 'Square, rounded corners' ), array( 'label' => 'Wordmark only' ) ) ) );
+	$t->ok( array( 'o2', 'o3' ) === array_column( $re['options'], 'key' ) && 'o2' === ( $re['votes'][ (string) $sam ] ?? '' ), 'renaming an option keeps its votes; a new option gets a new key', $re );
+	$t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => 'o3' ) );
+	list( , $re2 ) = $t->call( $alex, 'PATCH', '/decisions/' . $dv['id'], array( 'options' => array( array( 'key' => 'o2', 'label' => 'Square, rounded corners' ) ) ) );
+	$t->ok( ! isset( $re2['votes'][ (string) $alex ] ) && isset( $re2['votes'][ (string) $sam ] ), 'removing an option drops the votes for it' );
+	list( $s, $no ) = $t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/decide', array( 'answer' => 'Round.' ) );
+	$t->ok( 403 === $s && str_contains( $no['message'], 'Sam' ), 'only the named person can decide (403, says who)', $no );
+	list( $s ) = $t->call( $alex, 'PATCH', '/decisions/' . $dv['id'], array( 'status' => 'decided', 'answer' => 'Round.' ) );
+	$t->ok( 403 === $s, 'marking it decided through an edit is refused too', $s );
+	list( $s, $okd ) = $t->call( $sam, 'POST', '/decisions/' . $dv['id'] . '/decide', array( 'answer' => 'Square, rounded corners.' ) );
+	$t->ok( 200 === $s && 'decided' === $okd['status'], 'the named person decides' );
+	list( $s ) = $t->call( $alex, 'POST', '/decisions/' . $dv['id'] . '/vote', array( 'option' => 'o2' ) );
+	$t->ok( 400 === $s, 'voting closes once decided', $s );
+	list( $s ) = $t->call( $alex, 'PATCH', '/decisions/' . $dv['id'], array( 'status' => 'open' ) );
+	$t->ok( 403 === $s, 'reopening follows the same rule', $s );
+	list( $s ) = $t->call( $alex, 'PATCH', '/decisions/' . $dv['id'], array( 'context' => 'Notes anyone may add.' ) );
+	$t->ok( 200 === $s, 'anyone may still edit the question and context', $s );
+	list( , $d2 ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Admin unblocks', 'ownerId' => $sam ) );
+	list( $s ) = $t->call( $admin, 'POST', '/decisions/' . $d2['id'] . '/decide', array( 'answer' => 'Done.' ) );
+	$t->ok( 200 === $s, 'an administrator can always decide', $s );
+	list( , $d3 ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Anyone', 'ownerId' => 0 ) );
+	list( $s ) = $t->call( $alex, 'POST', '/decisions/' . $d3['id'] . '/decide', array( 'answer' => 'Yes.' ) );
+	$t->ok( 200 === $s, 'with no one named, anyone decides', $s );
+	update_option( 'novawork_settings', array( 'decide_rule' => 'anyone', 'decision_votes' => false ) );
+	list( , $d4 ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Rule anyone', 'ownerId' => $sam, 'voting' => true, 'options' => array( array( 'label' => 'A' ) ) ) );
+	list( $s ) = $t->call( $alex, 'POST', '/decisions/' . $d4['id'] . '/decide', array( 'answer' => 'A.' ) );
+	$t->ok( 200 === $s, 'setting decide_rule=anyone lets any member decide', $s );
+	$t->ok( false === $d4['voting'], 'setting decision_votes=off: a new decision does not open a vote' );
+	list( , $sync_s ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( 'anyone' === $sync_s['settings']['decideRule'] && false === $sync_s['settings']['decisionVotes'] && false === $sync_s['canManage'], 'sync sends the decision settings and whether you manage NovaWork' );
+	delete_option( 'novawork_settings' );
 
 	// ------------------------------------------------------------------
 	$t->section( 'Timer' );

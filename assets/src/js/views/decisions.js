@@ -5,7 +5,13 @@
 import { ic } from '../lib/icons.js';
 import { __, sprintf } from '../lib/i18n.js';
 import { esc } from '../lib/format.js';
-import { decisions, commentsOf, avatar, projChip, dueHTML, fmt, iso } from './model.js';
+import { decisions, commentsOf, avatar, person, projChip, dueHTML, fmt, iso, canDecide, votesHTML } from './model.js';
+
+/** "Waiting on Sam": shown instead of Decide to everyone who can't decide. */
+function waiting( d ) {
+	const p = person( d.ownerId );
+	return `<span class="nw-waiting">${ esc( sprintf( /* translators: %s: name of the person who decides. */ __( 'Waiting on %s', 'novawork' ), p ? p.name : __( 'someone', 'novawork' ) ) ) }</span>`;
+}
 
 function card( d ) {
 	const decided = d.status === 'decided';
@@ -13,6 +19,7 @@ function card( d ) {
 	return (
 		`<article class="nw-dec${ decided ? ' nw-decided' : '' }"><div class="nw-q">${ esc( d.question ) }</div>` +
 		( d.context ? `<div class="nw-opts">${ esc( d.context ) }</div>` : '' ) +
+		( d.voting && ( d.options || [] ).length ? votesHTML( d, 'vote', ! decided ) : '' ) +
 		( decided && d.answer ? `<div class="nw-ans">${ esc( d.answer ) }</div>` : '' ) +
 		`<div class="nw-foot">${ d.ownerId ? avatar( d.ownerId ) : '' }${
 			decided
@@ -21,7 +28,7 @@ function card( d ) {
 					? dueHTML( d.decideBy, 'open' )
 					: ''
 		}${ projChip( d.projectId ) }${ comments ? `<span class="nw-cnt">${ ic( 'chat-circle' ) }${ comments }</span>` : '' }<span class="nw-sp"></span>` +
-		( decided ? '' : `<button class="nw-btn nw-secondary" type="button" data-act="decide" data-id="${ d.id }">${ ic( 'check', 15 ) }${ esc( __( 'Decide', 'novawork' ) ) }</button>` ) +
+		( decided ? '' : canDecide( d ) ? `<button class="nw-btn nw-secondary" type="button" data-act="decide" data-id="${ d.id }">${ ic( 'check', 15 ) }${ esc( __( 'Decide', 'novawork' ) ) }</button>` : waiting( d ) ) +
 		`<button class="nw-iconbtn nw-sqbtn" type="button" data-act="edit-decision" data-id="${ d.id }" aria-label="${ esc( __( 'Edit decision', 'novawork' ) ) }">${ ic( 'pencil-simple', 16 ) }</button></div></article>`
 	);
 }

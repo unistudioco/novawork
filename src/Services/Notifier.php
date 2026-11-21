@@ -65,6 +65,31 @@ final class Notifier {
 	}
 
 	/**
+	 * The team is asked to vote on a decision (once per decision).
+	 *
+	 * @param array<string, mixed> $decision Decision row.
+	 * @param int                  $actor    Who asked.
+	 */
+	public static function vote_requested( array $decision, int $actor ): void {
+		foreach ( Members::ids() as $user_id ) {
+			if ( $user_id === $actor ) {
+				continue;
+			}
+			self::send(
+				$user_id,
+				array(
+					'type'        => 'vote',
+					'actor_id'    => $actor,
+					'object_type' => 'decision',
+					'object_id'   => (int) $decision['id'],
+					'data'        => array( 'question' => (string) $decision['question'] ),
+					'dedupe_key'  => 'vote:' . (int) $decision['id'],
+				)
+			);
+		}
+	}
+
+	/**
 	 * A new comment.
 	 *
 	 * @param array<string, mixed> $comment Comment row.

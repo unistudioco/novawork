@@ -14,7 +14,7 @@ import { bind, store, tracked } from './model.js';
 import { bindSync, toggleTask, write, keepTask } from './actions.js';
 import { enhance, openSelectBox } from './select.js';
 import { mountDialog } from './dialog.js';
-import { openTask, openProject, openDecision } from './editors.js';
+import { openTask, openProject, openDecision, vote } from './editors.js';
 import { viewDecisions } from './decisions.js';
 import { viewBoard, wireBoard, toggleAllDone, place } from './board.js';
 import { viewFocus } from './focus.js';
@@ -180,6 +180,8 @@ function onClick( e ) {
 		openDecision( id, true );
 	} else if ( act === 'all-done' ) {
 		toggleAllDone( rerender );
+	} else if ( act === 'vote' ) {
+		vote( id, el.dataset.opt );
 	} else if ( act === 'tl-today' ) {
 		scrollToToday( true );
 	}

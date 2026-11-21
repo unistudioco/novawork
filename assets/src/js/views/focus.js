@@ -8,7 +8,7 @@ import { esc, dur, dayStart, longDate, shortTitle } from '../lib/format.js';
 import { serverNow } from '../store.js';
 import { orderTeam } from '../lib/team.js';
 import {
-	nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days,
+	canDecide, nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days,
 	projChip, dueHTML, prio, avatars, presAvatar, tbtn, checkBtn, since,
 } from './model.js';
 
@@ -122,7 +122,7 @@ export function viewFocus() {
 		( openDec.length
 			? `<div class="nw-list">${ openDec
 				.slice( 0, 4 )
-				.map( ( d ) => `<div class="nw-row">${ ic( 'scales', 17 ) }<span class="nw-grow" data-act="decide" data-id="${ d.id }" title="${ esc( __( 'Decide', 'novawork' ) ) }">${ esc( d.question ) }</span>${ dueHTML( d.decideBy, 'open' ) }</div>` )
+				.map( ( d ) => `<div class="nw-row">${ ic( 'scales', 17 ) }<span class="nw-grow" data-act="${ canDecide( d ) ? 'decide' : 'edit-decision' }" data-id="${ d.id }">${ esc( d.question ) }</span>${ dueHTML( d.decideBy, 'open' ) }</div>` )
 				.join( '' ) }</div>`
 			: `<div class="nw-empty">${ ic( 'scales' ) }${ esc( __( 'Nothing waiting on a decision.', 'novawork' ) ) }</div>` ) +
 		'</section>';

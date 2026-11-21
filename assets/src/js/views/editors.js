@@ -13,7 +13,7 @@ import { routeUrl, currentNonce } from '../lib/api.js';
 import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
 import {
-	store, me, people, person, projects, task, project, has, commentsOf, myRun, avatar, COLORS, STATUSES, PRIORITIES, fmt, iso, todayISO, size, byOrder,
+	store, me, people, person, projects, task, project, has, commentsOf, myRun, avatar, COLORS, STATUSES, PRIORITIES, fmt, iso, todayISO, size, byOrder, votesHTML,
 } from './model.js';
 
 /* ---------- comments ---------- */
@@ -222,12 +222,74 @@ export function openProject( id ) {
 /* ---------- decision ---------- */
 
 /**
+ * Turn "one per line" text into options, keeping each option's key so votes
+ * survive an edit: a line equal to an old label keeps that key; a changed
+ * line in the same place keeps the key of the option it replaced (a rename).
+ */
+function optionsFrom( text, old ) {
+	const lines = text.split( '\n' ).map( ( l ) => l.trim() ).filter( Boolean ).slice( 0, 8 );
+	const used = new Set();
+	return lines.map( ( label, i ) => {
+		const same = old.find( ( o ) => o.label === label && ! used.has( o.key ) );
+		const renamed = ! same && old[ i ] && ! lines.includes( old[ i ].label ) && ! used.has( old[ i ].key ) ? old[ i ] : null;
+		const key = ( same || renamed || {} ).key;
+		if ( key ) {
+			used.add( key );
+		}
+		return key ? { key, label } : { label };
+	} );
+}
+
+/** Show the options box with the checkbox; in Decide, an option fills the answer. */
+function wireDecisionDialog() {
+	const form = dialogForm();
+	const box = form.querySelector( '#nw-d-vote' );
+	if ( box ) {
+		box.addEventListener( 'change', () => {
+			form.querySelector( '#nw-d-opts' ).hidden = ! box.checked;
+		} );
+	}
+	form.querySelectorAll( '[data-act="pick"]' ).forEach( ( b ) =>
+		b.addEventListener( 'click', () => {
+			const answer = form.querySelector( '#nw-d-a' );
+			answer.value = b.querySelector( '.nw-vote-lbl' ).textContent + '. ';
+			answer.focus();
+			answer.setSelectionRange( answer.value.length, answer.value.length );
+		} )
+	);
+}
+
+/** Vote for an option, or withdraw by clicking your own choice again. */
+export async function vote( id, key ) {
+	const S = store();
+	const d = S.decisions[ id ];
+	if ( ! d ) {
+		return;
+	}
+	const mine = ( d.votes || {} )[ S.me ];
+	const option = mine === key ? null : key;
+	const votes = Object.assign( {}, d.votes );
+	if ( option ) {
+		votes[ S.me ] = option;
+	} else {
+		delete votes[ S.me ];
+	}
+	S.upsert( 'decisions', Object.assign( {}, d, { votes } ) );
+	const saved = await write( () => post( 'decisions/' + id + '/vote', { option } ) );
+	if ( saved && saved.id ) {
+		S.upsert( 'decisions', saved );
+	} else {
+		S.upsert( 'decisions', d );
+	}
+}
+
+/**
  * @param {number|null} id        Decision id, or null for a new one.
  * @param {boolean}     decideNow Open on the answer ("Decide").
  */
 export function openDecision( id, decideNow ) {
 	const S = store();
-	const d = id ? S.decisions[ id ] : { question: '', context: '', projectId: 0, ownerId: me(), decideBy: '', status: 'open', answer: '' };
+	const d = id ? S.decisions[ id ] : { question: '', context: '', projectId: 0, ownerId: me(), decideBy: '', status: 'open', answer: '', voting: false, options: [], votes: {} };
 	if ( ! d ) {
 		return;
 	}
@@ -243,6 +305,15 @@ export function openDecision( id, decideNow ) {
 				__( 'Decide by', 'novawork' )
 			) }</label><input class="nw-input" id="nw-d-by" type="date" name="decideBy" value="${ esc( d.decideBy || '' ) }"></div></div>` +
 			`<div class="nw-field"><label for="nw-d-own">${ L( __( 'Who decides', 'novawork' ) ) }</label><select id="nw-d-own" data-nw-sel data-block="1" name="ownerId">${ personOpts( d.ownerId, __( 'Anyone', 'novawork' ) ) }</select></div>` +
+			( ! decideNow && S.settings.decisionVotes !== false
+				? `<label class="nw-checkline"><input type="checkbox" name="voting" value="1" id="nw-d-vote"${ d.voting ? ' checked' : '' }> ${ L( __( 'Ask the team to vote', 'novawork' ) ) }</label>` +
+				  `<div class="nw-field" id="nw-d-opts"${ d.voting ? '' : ' hidden' }><label for="nw-d-ol">${ L( __( 'Options, one per line', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-d-ol" name="options" maxlength="1000" placeholder="${ L(
+					__( 'Up to eight short options', 'novawork' )
+				) }">${ esc( ( d.options || [] ).map( ( o ) => o.label ).join( '\n' ) ) }</textarea></div>`
+				: '' ) +
+			( decideNow && d.voting && ( d.options || [] ).length
+				? `<div class="nw-field"><span class="nw-flabel">${ L( __( 'Team votes', 'novawork' ) ) }</span>${ votesHTML( d, 'pick', true ) }</div>`
+				: '' ) +
 			( showAnswer
 				? `<div class="nw-field"><label for="nw-d-a">${ L( __( 'Decision', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-d-a" name="answer" maxlength="2000" ${ decideNow ? 'autofocus required ' : '' }placeholder="${ L(
 					__( 'What we decided, and why', 'novawork' )
@@ -265,6 +336,10 @@ export function openDecision( id, decideNow ) {
 			if ( showAnswer ) {
 				data.answer = String( fd.get( 'answer' ) || '' );
 			}
+			if ( ! decideNow && S.settings.decisionVotes !== false ) {
+				data.voting = !! fd.get( 'voting' );
+				data.options = optionsFrom( String( fd.get( 'options' ) || '' ), d.options || [] );
+			}
 			if ( decideNow ) {
 				if ( ! data.answer.trim() ) {
 					return false;
@@ -282,6 +357,7 @@ export function openDecision( id, decideNow ) {
 			return !! saved;
 		}
 	);
+	wireDecisionDialog();
 	if ( id ) {
 		commentsFor( 'decision', id );
 		onDelete( () => {
