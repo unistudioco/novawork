@@ -46,7 +46,8 @@ wp_print_styles( Assets::styles() );
 					<button class="nw-ttime" type="button" :title="myRun() ? t.timerRunningOpen : t.trackedTodayOpen" @click="go('time')"><span data-since x-show="myRun()" x-text="myRun() ? clock($store.nw.now - myRun().start) : ''"></span><span x-show="!myRun()" x-text="dur(tracked($store.nw.me, dayStart()))"></span></button>
 				</div>
 				<button class="nw-iconbtn nw-box" id="nw-chat-btn" type="button" aria-label="<?php esc_attr_e( 'Team chat', 'novawork' ); ?>" :aria-expanded="String(chatOpen)" @click="toggleChat()" :class="{ 'nw-on': chatOpen }" x-html="(chatOpen ? icf('chat-circle-dots', 17) : ic('chat-circle-dots', 17)) + ($store.nw.chat.unread ? '<i class=&quot;nw-dot-alert&quot;></i>' : '')"></button>
-				<button class="nw-iconbtn nw-box" id="nw-bell-btn" type="button" aria-haspopup="dialog" :aria-expanded="String(notesOpen)" :aria-label="bellLabel()" :class="{ 'nw-on': notesOpen }" x-html="bellHtml()"></button>
+				<button class="nw-iconbtn nw-box" id="nw-bell-btn" type="button" aria-haspopup="dialog" :aria-expanded="String(notesOpen)" :aria-label="bellLabel()" :class="{ 'nw-on': notesOpen }" x-html="bellHtml()" @click.stop="toggleNotes()"></button>
+				<div class="nw-pop nw-notes" id="nw-notes" x-ref="notes" x-show="notesOpen" role="dialog" aria-label="<?php esc_attr_e( 'Notifications', 'novawork' ); ?>" @pointerdown.stop><div id="nw-notes-body"></div></div>
 				<span class="nw-sepv" aria-hidden="true"></span>
 				<button class="nw-crew" id="nw-crew-btn" type="button" aria-haspopup="dialog" :aria-expanded="String(pop.open)" aria-label="<?php esc_attr_e( 'Team', 'novawork' ); ?>" @click.stop="togglePop()">
 					<span class="nw-avs" x-html="crewHtml()"></span><span class="nw-chev" x-html="ic('caret-down', 13)"></span>
@@ -75,8 +76,8 @@ wp_print_styles( Assets::styles() );
 						</template>
 					</div>
 					<div class="nw-sep"></div>
-					<div class="nw-appear"><span><?php esc_html_e( 'Appearance', 'novawork' ); ?></span>
-						<div class="nw-tabs nw-seg" role="radiogroup" aria-label="<?php esc_attr_e( 'Appearance', 'novawork' ); ?>" x-ref="appear">
+					<div class="nw-appear"><span><?php esc_html_e( 'Theme', 'novawork' ); ?></span>
+						<div class="nw-tabs nw-seg" role="radiogroup" aria-label="<?php esc_attr_e( 'Theme', 'novawork' ); ?>" x-ref="appear">
 							<span class="nw-ind" aria-hidden="true"></span>
 							<template x-for="o in themes" :key="o.key">
 								<button class="nw-tab" type="button" role="radio" :class="{ 'nw-on': theme === o.key }" :aria-checked="String(theme === o.key)" :aria-label="o.label" :title="o.label" x-html="theme === o.key ? icf(o.icon, 16) : ic(o.icon, 16)" @click="setTheme(o.key)"></button>

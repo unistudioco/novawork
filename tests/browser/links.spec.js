@@ -35,7 +35,12 @@ test( 'link a task in chat; the chip opens it; its assignee is told', async ( { 
 	await page.keyboard.press( 'Enter' );
 	const chip = page.locator( '#nw-msgs .nw-msg', { hasText: text } ).locator( '.nw-ref' );
 	await expect( chip ).toHaveText( title );
+	// A link in chat goes to the task on the Board (owner), not its editor.
 	await chip.click();
+	await expect( page ).toHaveURL( /#board$/ );
+	await expect( page.locator( `.nw-card[data-id="${ ids.task }"]` ) ).toHaveClass( /nw-flash/ );
+	await expect( page.locator( '#nw-dlg[open]' ) ).toHaveCount( 0 );
+	await page.locator( `.nw-card[data-id="${ ids.task }"]` ).click();
 	await expect( page.locator( '#nw-dlg[open] #nw-f-title' ) ).toHaveValue( title );
 
 	// In the task's comments: @mention and /link work too.

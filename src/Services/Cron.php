@@ -55,5 +55,6 @@ final class Cron {
 		// and read_note_days.
 		( new NotificationRepository() )->prune_read( Settings::int( 'read_note_days' ) );
 		ChangeLog::prune( Settings::int( 'log_days' ) );
+		( new \NovaWork\Data\ActivityRepository() )->prune( Settings::int( 'activity_days' ) );
 	}
 }

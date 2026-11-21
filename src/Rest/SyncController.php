@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Rest;
 
+use NovaWork\Data\ActivityRepository;
 use NovaWork\Data\ChangeLog;
 use NovaWork\Data\CommentRepository;
 use NovaWork\Data\Db;
@@ -58,6 +59,11 @@ final class SyncController extends Controller {
 	public const NOTIFICATIONS = 100;
 
 	/**
+	 * Workspace activity in a full snapshot; older rows come from GET /activity.
+	 */
+	public const ACTIVITY = 50;
+
+	/**
 	 * Days of time entries in a full snapshot (covers "today" and "this week").
 	 */
 	public const ENTRY_DAYS = 8;
@@ -93,6 +99,7 @@ final class SyncController extends Controller {
 			'message'      => array( new MessageRepository(), 'messages' ),
 			'time_entry'   => array( new TimeEntryRepository(), 'timeEntries' ),
 			'notification' => array( new NotificationRepository(), 'notifications' ),
+			'activity'     => array( new ActivityRepository(), 'activity' ),
 		);
 	}
 
@@ -183,6 +190,7 @@ final class SyncController extends Controller {
 				'messages'      => $messages->present_many( $messages->page( 0, self::MESSAGES ) ),
 				'timeEntries'   => $entries->present_many( array_merge( $recent, array_values( $all_runs ) ) ),
 				'notifications' => $notifications->present_many( $notifications->recent_for( $me, self::NOTIFICATIONS ) ),
+				'activity'      => ( new ActivityRepository() )->present_many( ( new ActivityRepository() )->page( 0, self::ACTIVITY ) ),
 			),
 			'deleted' => (object) array(),
 		);

@@ -179,7 +179,7 @@ try {
 	$sam_notes = ( new NovaWork\Data\NotificationRepository() )->recent_for( $sam, 50 );
 	$assign    = array_values( array_filter( $sam_notes, fn( $n ) => 'assign' === $n['type'] && (int) $n['object_id'] === $t1['id'] ) );
 	$t->ok( 1 === count( $assign ) && (int) $assign[0]['actor_id'] === $alex, 'sam is notified of the assignment' );
-	$alex_assign = array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $alex, 50 ), fn( $n ) => 'assign' === $n['type'] );
+	$alex_assign = array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $alex, 50 ), fn( $n ) => 'assign' === $n['type'] && (int) $n['object_id'] === $mine['id'] );
 	$t->ok( ! $alex_assign, 'assigning yourself does not notify you' );
 
 	list( , $t2 ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Second' ) );
@@ -558,6 +558,64 @@ try {
 	list( , $mk ) = $t->call( $sam, 'POST', '/notifications/read', array( 'all' => true ) );
 	$left = array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $sam, 100 ), fn( $n ) => null === $n['read_at'] );
 	$t->ok( $mk['marked'] > 0 && ! $left, 'mark all as read' );
+
+	// A message that is only a file says what was shared.
+	$png  = wp_tempnam( 'nw-share.png' );
+	file_put_contents( $png, base64_decode( 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' ) );
+	wp_set_current_user( $alex );
+	$share = Files::store( array( 'name' => 'plan.png', 'type' => 'image/png', 'tmp_name' => $png, 'error' => 0, 'size' => filesize( $png ) ), true );
+	if ( ! is_wp_error( $share ) ) {
+		$aid = ( new NovaWork\Data\AttachmentRepository() )->insert( array_merge( $share, array( 'user_id' => $alex ) ) );
+		list( , $fm ) = $t->call( $alex, 'POST', '/messages', array( 'text' => '', 'attachmentIds' => array( $aid ) ) );
+		$fn = array_values( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $sam, 100 ), fn( $n ) => 'message' === $n['object_type'] && (int) $n['object_id'] === (int) $fm['id'] ) );
+		$fd = $fn ? json_decode( $fn[0]['data'], true ) : array();
+		$t->ok( array( 'plan.png' ) === ( $fd['files'] ?? null ) && 1 === ( $fd['count'] ?? 0 ), 'a chat notification for files only names what was shared', $fd );
+	} else {
+		$t->ok( false, 'store a test file', $share->get_error_message() );
+	}
+	@unlink( $png );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Workspace activity (Notifications → Workspace)' );
+	$feed = function ( $type, $id ) use ( $wpdb ) {
+		return $wpdb->get_col( $wpdb->prepare( 'SELECT verb FROM %i WHERE object_type = %s AND object_id = %d ORDER BY id', $wpdb->prefix . 'novawork_activity', $type, $id ) );
+	};
+	list( , $ap ) = $t->call( $alex, 'POST', '/projects', array( 'name' => 'Activity project' ) );
+	$t->ok( array( 'project_added' ) === $feed( 'project', $ap['id'] ), 'adding a project is in the feed' );
+	list( , $at ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Activity task', 'projectId' => $ap['id'] ) );
+	$t->ok( array( 'task_added' ) === $feed( 'task', $at['id'] ), 'adding a task is in the feed' );
+	$t->call( $alex, 'PATCH', '/tasks/' . $at['id'], array( 'title' => 'Activity task renamed' ) );
+	$t->ok( array( 'task_added' ) === $feed( 'task', $at['id'] ), 'an ordinary edit is not' );
+	$t->call( $sam, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'done' ) );
+	$t->call( $sam, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'now' ) );
+	$t->call( $sam, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'done' ) );
+	$t->ok( array( 'task_added', 'task_done' ) === $feed( 'task', $at['id'] ), 'finishing a task is in the feed once, even when ticked twice', $feed( 'task', $at['id'] ) );
+	$t->call( $alex, 'PATCH', '/projects/' . $ap['id'], array( 'status' => 'done' ) );
+	$t->ok( in_array( 'project_done', $feed( 'project', $ap['id'] ), true ), 'finishing a project is in the feed' );
+	list( , $ad ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Activity decision?', 'voting' => true, 'options' => array( array( 'label' => 'Yes' ), array( 'label' => 'No' ) ) ) );
+	$t->ok( array( 'decision_opened', 'vote_opened' ) === $feed( 'decision', $ad['id'] ), 'opening a decision with a vote: both in the feed', $feed( 'decision', $ad['id'] ) );
+	$t->call( $sam, 'POST', '/comments', array( 'objectType' => 'decision', 'objectId' => $ad['id'], 'text' => 'Yes, I think' ) );
+	$t->call( $admin, 'POST', '/decisions/' . $ad['id'] . '/decide', array( 'answer' => 'Yes' ) );
+	$t->ok( array( 'decision_opened', 'vote_opened', 'commented', 'decision_made' ) === $feed( 'decision', $ad['id'] ), 'comments and the decision itself are in the feed', $feed( 'decision', $ad['id'] ) );
+	list( , $snap ) = $t->call( $sam, 'GET', '/sync' );
+	$made = array_values( array_filter( $snap['data']['activity'], fn( $a ) => 'decision_made' === $a['verb'] && $ad['id'] === $a['objectId'] ) );
+	$t->ok( 1 === count( $made ) && $admin === $made[0]['actor'] && 'Yes' === $made[0]['data']['answer'], 'every member gets the feed with sync, who did it and what', $made );
+	list( $s, $older ) = $t->call( $sam, 'GET', '/activity', array( 'beforeId' => $made[0]['id'], 'limit' => 3 ) );
+	$t->ok( 200 === $s && 3 === count( $older ) && $older[0]['id'] < $made[0]['id'], 'older activity pages back by id', $older );
+	list( , $inc ) = $t->call( $sam, 'GET', '/sync', array( 'since' => $snap['cursor'] ) );
+	$t->call( $alex, 'POST', '/tasks', array( 'title' => 'Activity later' ) );
+	list( , $inc ) = $t->call( $sam, 'GET', '/sync', array( 'since' => $snap['cursor'] ) );
+	$t->ok( in_array( 'task_added', array_column( $inc['data']['activity'] ?? array(), 'verb' ), true ), 'new activity reaches everyone through incremental sync' );
+	$rows_before = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'novawork_activity' );
+	$wpdb->query( $wpdb->prepare( 'UPDATE %i SET created_at = %s WHERE object_type = %s AND object_id = %d', $wpdb->prefix . 'novawork_activity', gmdate( 'Y-m-d H:i:s', time() - 40 * DAY_IN_SECONDS ), 'project', $ap['id'] ) );
+	( new NovaWork\Data\ActivityRepository() )->prune( NovaWork\Settings::int( 'activity_days' ) );
+	$t->ok( array() === $feed( 'project', $ap['id'] ) && (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'novawork_activity' ) === $rows_before - 2, 'rows older than activity_days (30) are pruned, the rest stay' );
+
+	list( , $gone ) = $t->call( $sam, 'POST', '/tasks', array( 'title' => 'Soon deleted', 'assignees' => array( $alex ) ) );
+	$t->ok( 1 === count( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $alex, 100 ), fn( $n ) => 'task' === $n['object_type'] && (int) $n['object_id'] === $gone['id'] ) ), 'alex is told about the assignment' );
+	$t->call( $sam, 'DELETE', '/tasks/' . $gone['id'] );
+	$t->ok( ! array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $alex, 100 ), fn( $n ) => 'task' === $n['object_type'] && (int) $n['object_id'] === $gone['id'] ), 'deleting a task removes the notifications about it' );
+	$t->ok( array( 'task_added' ) === $feed( 'task', $gone['id'] ), 'the team feed keeps its row (with the title)' );
 
 	// ------------------------------------------------------------------
 	$t->section( 'Removing a member' );

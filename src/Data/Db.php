@@ -32,6 +32,7 @@ final class Db {
 		'messages',
 		'attachments',
 		'notifications',
+		'activity',
 		'reads',
 		'changes',
 	);

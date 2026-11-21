@@ -158,6 +158,13 @@ final class Notifier {
 	public static function chatted( array $message ): void {
 		$author    = (int) $message['user_id'];
 		$mentioned = array_column( \NovaWork\Data\MessageRepository::mentions( $message ), 'id' );
+		// What was said, and the files shared (a message can be files only).
+		$files = ( new \NovaWork\Data\AttachmentRepository() )->for_messages( array( (int) $message['id'] ) )[ (int) $message['id'] ] ?? array();
+		$data  = array(
+			'excerpt' => self::excerpt( (string) $message['body'] ),
+			'files'   => array_slice( array_column( $files, 'name' ), 0, 3 ),
+			'count'   => count( $files ),
+		);
 		foreach ( Members::ids() as $user_id ) {
 			if ( $user_id === $author ) {
 				continue;
@@ -172,7 +179,7 @@ final class Notifier {
 						'agent'       => (string) $message['agent'],
 						'object_type' => 'message',
 						'object_id'   => (int) $message['id'],
-						'data'        => array( 'excerpt' => self::excerpt( (string) $message['body'] ) ),
+						'data'        => $data,
 					)
 				);
 				continue;
@@ -185,7 +192,7 @@ final class Notifier {
 					'agent'       => (string) $message['agent'],
 					'object_type' => 'message',
 					'object_id'   => (int) $message['id'],
-					'data'        => array( 'excerpt' => self::excerpt( (string) $message['body'] ) ),
+					'data'        => $data,
 				)
 			);
 		}

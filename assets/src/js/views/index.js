@@ -7,6 +7,7 @@
  * dropdown in the view is open, so a poll never pulls the floor out.
  */
 import Alpine from 'alpinejs';
+import { safeEffect } from '../lib/effect.js';
 import { __ } from '../lib/i18n.js';
 import { esc, clock, dur, dayStart } from '../lib/format.js';
 import { serverNow } from '../store.js';
@@ -16,12 +17,14 @@ import { enhance, openSelectBox } from './select.js';
 import { mountDialog } from './dialog.js';
 import { openTask, openProject, openDecision, vote } from './editors.js';
 import { viewDecisions } from './decisions.js';
-import { viewBoard, wireBoard, toggleAllDone, place } from './board.js';
+import { viewBoard, wireBoard, toggleAllDone, place, revealTask } from './board.js';
+import { toast } from '../lib/ui.js';
 import { viewFocus } from './focus.js';
 import { viewRoadmap, wireRoadmap, scrollToToday, forgetRoadmapScroll, rememberRoadmapScroll } from './roadmap.js';
 import { viewTime, wireTime } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
 import { mountChat } from './chat.js';
+import { mountNotes } from './notes.js';
 import { patch } from '../lib/api.js';
 
 const VIEWS = {
@@ -182,12 +185,56 @@ function onClick( e ) {
 	} else if ( act === 'all-done' ) {
 		toggleAllDone( rerender );
 	} else if ( act === 'open-ref' ) {
+		// A link in chat goes to the item's page (owner).
 		e.preventDefault();
-		window.dispatchEvent( new CustomEvent( 'nw:open', { detail: { kind: el.dataset.type, id, stay: true } } ) );
+		window.dispatchEvent( new CustomEvent( 'nw:goto', { detail: { kind: el.dataset.type, id } } ) );
 	} else if ( act === 'vote' ) {
 		vote( id, el.dataset.opt );
 	} else if ( act === 'tl-today' ) {
 		scrollToToday( true );
+	}
+}
+
+const PAGE = { task: 'board', decision: 'decisions', project: 'roadmap' };
+const CARD = { task: ( id ) => `.nw-card[data-id="${ id }"]`, decision: ( id ) => `.nw-dec[data-dec="${ id }"]`, project: ( id ) => `.nw-proj[data-proj="${ id }"]` };
+const frames = ( n ) => new Promise( ( r ) => ( function f( i ) {
+	requestAnimationFrame( () => ( i > 1 ? f( i - 1 ) : r() ) );
+} )( n ) );
+
+/**
+ * Go to an item's page and bring its card into view (owner: from a
+ * notification, the team feed or a chat link, rather than opening its
+ * editor). The card flashes once.
+ *
+ * @param {Object} d { kind: "task"|"decision"|"project", id }
+ */
+async function goTo( d ) {
+	const S = store();
+	const id = Number( d.id );
+	const rows = { task: S.tasks, decision: S.decisions, project: S.projects }[ d.kind ];
+	if ( ! rows || ! rows[ id ] ) {
+		toast( __( 'That item was deleted.', 'novawork' ), 'x' );
+		return;
+	}
+	if ( d.kind === 'task' && revealTask( id ) ) {
+		toast( __( 'Showing everyone’s tasks so you can see it.', 'novawork' ), 'users-three' );
+	}
+	if ( location.hash !== '#' + PAGE[ d.kind ] ) {
+		location.hash = PAGE[ d.kind ];
+	}
+	rerender();
+	for ( let i = 0; i < 20; i++ ) {
+		await frames( 2 );
+		const card = main.querySelector( CARD[ d.kind ]( id ) );
+		if ( card ) {
+			card.scrollIntoView( { block: 'center', behavior: window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ? 'auto' : 'smooth' } );
+			card.focus( { preventScroll: true } );
+			card.classList.remove( 'nw-flash' );
+			void card.offsetWidth;
+			card.classList.add( 'nw-flash' );
+			setTimeout( () => card.classList.remove( 'nw-flash' ), 1900 );
+			return;
+		}
 	}
 }
 
@@ -198,10 +245,11 @@ export function mountViews( sync ) {
 	mountDialog();
 	mountIdle();
 	mountChat();
+	mountNotes();
 	main = document.getElementById( 'nw-main' );
 	main.addEventListener( 'nw:painted', tick );
 
-	Alpine.effect( () => {
+	safeEffect( () => {
 		void state.force;
 		const view = VIEWS[ S.view ] || VIEWS.focus;
 		paint( view() );
@@ -221,6 +269,7 @@ export function mountViews( sync ) {
 			openDecision( null );
 		}
 	} );
+	window.addEventListener( 'nw:goto', ( e ) => goTo( e.detail || {} ) );
 	window.addEventListener( 'nw:open', ( e ) => {
 		const d = e.detail || {};
 		if ( d.kind === 'task' ) {

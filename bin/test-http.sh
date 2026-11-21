@@ -5,7 +5,9 @@
 #   - the REST API refuses a logged-in cookie without the wp_rest nonce
 #   - a change by one member reaches the other on their next poll
 #   - a real multipart upload, the private download (headers, owner only)
-# It deletes the task and the upload it creates. Change-log rows stay (harmless).
+# It deletes the task and the upload it creates, and the task's row in the
+# team activity feed (through WP-CLI, when .dev.env names the site). Change-log
+# rows stay (harmless).
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 [[ -f "$ROOT/.dev.env" ]] && source "$ROOT/.dev.env"
@@ -60,5 +62,9 @@ echo "  · the private folder URL itself answers $DIRECT (index.php: empty page;
 ok "$(curl "${A[@]}" -X DELETE -o /dev/null -w '%{http_code}' "$API/attachments/$ID")" 200 "the uploader discards it"
 ok "$(curl -s -b "$TMP/a.jar" -o /dev/null -w '%{http_code}' "$API/attachments/$ID/file?_wpnonce=$NA")" 404 "and it is gone"
 
+if [[ -n "${NOVAWORK_WP_PATH:-}" && -n "${TASK:-}" ]]; then
+	php ${NOVAWORK_MYSQL_SOCKET:+-d mysqli.default_socket="$NOVAWORK_MYSQL_SOCKET"} "$(command -v wp)" --path="$NOVAWORK_WP_PATH" eval \
+		"global \$wpdb; \$r = new NovaWork\\Data\\ActivityRepository(); foreach ( \$wpdb->get_col( \$wpdb->prepare( 'SELECT id FROM %i WHERE object_type = %s AND object_id = %d', \$r->table_name(), 'task', (int) '$TASK' ) ) as \$id ) { \$r->delete( (int) \$id ); }" >/dev/null 2>&1
+fi
 echo; echo "$pass passed, $fail failed."
 [[ $fail -eq 0 ]]

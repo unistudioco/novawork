@@ -64,6 +64,7 @@ export default () => ( {
 	compact: false,
 	chatOpen: false,
 	notesOpen: false,
+	notesClosing: false,
 	theme: store( 'nw.theme' ) || 'system',
 	pop: { open: false },
 	fab: { open: false },
@@ -104,6 +105,13 @@ export default () => ( {
 
 		swipeToClose( this.$refs.pop, () => this.closePop( true ) );
 		swipeToClose( this.$refs.fabSheet, () => this.closeFab( true ) );
+		swipeToClose( this.$refs.notes, () => this.closeNotes( true ) );
+		// A notification that opens something closes the panel.
+		window.addEventListener( 'nw:notes', ( e ) => {
+			if ( e.detail && e.detail.open === false ) {
+				this.closeNotes( true );
+			}
+		} );
 
 		document.addEventListener( 'pointerdown', ( e ) => this.onPointerDown( e ) );
 		document.addEventListener( 'keydown', ( e ) => this.onKey( e ) );
@@ -262,6 +270,7 @@ export default () => ( {
 			return;
 		}
 		this.closeFab( true );
+		this.closeNotes( true );
 		lockBgScroll();
 		// On phones the popover is a bottom sheet: it must leave the sticky
 		// header (its own stacking context) or the scrim would cover it.
@@ -285,12 +294,44 @@ export default () => ( {
 			sheetOut( this.$refs.pop, done, this.$refs.scrim2 );
 		}
 	},
+	toggleNotes() {
+		if ( this.notesOpen ) {
+			this.closeNotes();
+			return;
+		}
+		this.closePop( true );
+		this.closeFab( true );
+		lockBgScroll();
+		// On phones the panel is a bottom sheet: it must leave the sticky
+		// header (its own stacking context) or the scrim would cover it.
+		( this.phone ? document.body : this.$refs.right ).appendChild( this.$refs.notes );
+		this.notesOpen = true;
+		this.$nextTick( () => emit( 'nw:notes-state', { open: true } ) );
+	},
+	closeNotes( instant ) {
+		if ( ! this.notesOpen || this.notesClosing ) {
+			return;
+		}
+		this.notesClosing = true;
+		const done = () => {
+			this.notesOpen = false;
+			this.notesClosing = false;
+			unlockBgScroll();
+			emit( 'nw:notes-state', { open: false } );
+		};
+		if ( instant ) {
+			done();
+		} else {
+			sheetOut( this.$refs.notes, done, this.$refs.scrim2 );
+		}
+	},
 	toggleFab() {
 		if ( this.fab.open ) {
 			this.closeFab();
 			return;
 		}
 		this.closePop( true );
+		this.closeNotes( true );
 		lockBgScroll();
 		this.fab.open = true;
 		this.$nextTick( () => {
@@ -347,6 +388,9 @@ export default () => ( {
 		if ( this.fab.open && ! this.$refs.fabSheet.contains( e.target ) && ! e.target.closest( '#nw-fab' ) ) {
 			this.closeFab();
 		}
+		if ( this.notesOpen && ! this.$refs.notes.contains( e.target ) && ! e.target.closest( '#nw-bell-btn' ) ) {
+			this.closeNotes();
+		}
 		if ( ! this.$refs.qs.contains( e.target ) && ! e.target.closest( '#nw-qs-btn' ) ) {
 			this.qsClose();
 		}
@@ -360,6 +404,10 @@ export default () => ( {
 			if ( this.fab.open ) {
 				this.closeFab();
 				document.getElementById( 'nw-fab' ).focus();
+			}
+			if ( this.notesOpen ) {
+				this.closeNotes();
+				document.getElementById( 'nw-bell-btn' ).focus();
 			}
 			return;
 		}
@@ -507,6 +555,7 @@ export default () => ( {
 	 * class goes on directly, as in the prototype, and the binding agrees.
 	 */
 	qsShow() {
+		this.qs.closing = false;
 		this.qs.open = true;
 		this.$refs.qs.classList.add( 'nw-open' );
 		this.$refs.qsIn.focus();

@@ -13,6 +13,7 @@ import { richText } from './rich.js';
 import { attachComposer } from './composer.js';
 import { wireThread, quoteHTML, actsHTML, kindOf } from './thread.js';
 import Alpine from 'alpinejs';
+import { safeEffect } from '../lib/effect.js';
 import { routeUrl, currentNonce } from '../lib/api.js';
 import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
@@ -102,7 +103,7 @@ function commentsFor( kind, id ) {
 			e.stopPropagation();
 		}
 	} );
-	const fx = Alpine.effect( () => {
+	const fx = safeEffect( () => {
 		const sig = commentsOf( kind, id )
 			.map( ( c ) => c.id + '.' + ( c.editedAt || 0 ) )
 			.join();

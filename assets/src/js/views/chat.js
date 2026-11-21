@@ -5,7 +5,7 @@
  * filter, day dividers. Ported from the prototype's chat; @mentions, /links
  * and Reply / Edit / Delete (views/thread.js) are owner requests.
  */
-import Alpine from 'alpinejs';
+import { safeEffect } from '../lib/effect.js';
 import { ic } from '../lib/icons.js';
 import { __, _n, sprintf } from '../lib/i18n.js';
 import { esc, DAY } from '../lib/format.js';
@@ -554,6 +554,11 @@ export function mountChat() {
 		}
 	} );
 
+	window.addEventListener( 'nw:goto', () => {
+		if ( open && isPhone() ) {
+			closeChat();
+		}
+	} );
 	window.addEventListener( 'nw:chat', ( e ) => {
 		const d = e.detail || {};
 		if ( d.open === false ) {
@@ -562,11 +567,15 @@ export function mountChat() {
 			}
 		} else {
 			openChat( d.search );
+			if ( d.jump ) {
+				// A notification about a message: go to it.
+				requestAnimationFrame( () => thread.jump( d.jump ) );
+			}
 		}
 	} );
 
 	// New, edited and deleted messages (from anyone) redraw the open window.
-	Alpine.effect( () => {
+	safeEffect( () => {
 		const S = store();
 		void Object.values( S.messages )
 			.map( ( m ) => m.id + '.' + ( m.editedAt || 0 ) )

@@ -152,6 +152,12 @@ one); the app document must have it.
 
 ## App shell conventions (Phase 3)
 
+- Reactive callbacks go through `safeEffect()` (lib/effect.js), never bare
+  `Alpine.effect()`: an error thrown in one stops Alpine's shared update
+  queue for good and the whole page freezes mid-state.
+- Focus on a tablet (owner): below the two-column layout, "Team today" and
+  "Due in the next 3 weeks" sit side by side, "Waiting on a decision" spans.
+
 - Code map: `src/App/Route.php` (rewrite `/{slug}/` + `?novawork=1` fallback,
   `auth_redirect()` for visitors), `src/App/Page.php` (prints the document,
   embeds the first sync as `window.novawork`), `src/App/Assets.php` (Vite
@@ -261,6 +267,7 @@ last), `tracked`, `online` (first to come online; uses member
 `onlineSince`, set when a member returns after being away), `fixed`.
 `message_edits` / `edit_minutes` (owner, 2026-11-21): see "Reply, Edit and
 Delete" below.
+`activity_days` (30, the Workspace feed's retention): see "Notifications".
 
 ## Decisions: who decides, and team votes (owner, 2026-11-21)
 
@@ -353,16 +360,43 @@ Delete" below.
   show up while it is open.
 - Hooks: `novawork_message_updated|deleted`, `novawork_comment_updated|deleted`.
 
+## Notifications: Mine | Workspace (owner, 2026-11-21)
+
+- The bell opens `views/notes.js` (the prototype's panel: Today / Earlier,
+  an icon per kind, unread dots, Mark all as read; a bottom sheet on
+  phones). The owner's small segmented filter sits under the title.
+- **Mine** (default) is what is about you: assigned, mentioned, asked to
+  vote, comments on your work, due dates. **Workspace** holds new chat
+  messages (your own `chat` notifications, with read state) plus the team
+  feed below (owner). Each tab shows an unread count; Mark all as read marks
+  the open tab. Nobody ever sees anyone else's notifications.
+- Going to an item (owner): a notification, a feed row or a /link in chat
+  goes to the item's page and flashes its card (`nw:goto` in
+  views/index.js: Board, Decisions, Roadmap's project cards), never its
+  editor. The Board widens its filters (with a toast) or shows all of Done
+  when they would hide the task. A chat message opens the chat on it. /links
+  inside a dialog's comments still open the item in the dialog.
+- Chat notifications carry `files` (first three names) and `count`, so a
+  message that is only files reads "Sam shared plan.png".
+- **Workspace** is the team's activity feed, read only, from its own table
+  `{prefix}novawork_activity` (schema v6), never from other people's
+  notifications. `Services/Activity.php` writes one row per event from
+  NovaWork's hooks: `task_added`, `task_done`, `project_added`,
+  `project_done`, `decision_opened`, `decision_made`, `vote_opened`,
+  `commented` (chat is not repeated). The same event on the same object by
+  the same person within 10 minutes is one row. Rows keep the title, so a
+  deleted item still reads well. Sync sends the newest 50 (`activity`) and
+  changes; `GET /activity?beforeId=` pages back as you scroll. Add-ons call
+  `Activity::record()`. New hooks for it: `novawork_project_created|updated`,
+  `novawork_decision_updated`.
+- Setting `activity_days` (30): feed retention, pruned by cron.
+- The last tab is remembered per viewer (`nw.notesTab` in localStorage).
+- Browser tests clean their feed rows in `tests/browser/teardown.js`.
+
 ## Owner requests queued for later phases
 
 - (Built.) Chat @mentions: see "Chat" below.
-- **Notifications (owner, 2026-11-21):** the bell shows the signed-in
-  member's own notifications (they are stored per recipient already),
-  never the whole team's. Add a small segmented filter **Mine | Workspace**:
-  Mine (default) = your notifications; Workspace = what happened across the
-  team (tasks done, decisions made, votes opened, projects added…), read
-  only. Decide the Workspace source when building it (an activity log, not
-  other people's notifications, which stay private).
+- (Built.) Notifications with Mine | Workspace: see "Notifications" below.
 
 ## Design rules that bite (full list in the log)
 

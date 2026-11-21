@@ -157,7 +157,9 @@ final class TasksController extends Controller {
 	}
 
 	/**
-	 * Delete a task and its comments. Tracked time stays in the reports.
+	 * Delete a task, its comments and the notifications about it (they would
+	 * lead nowhere). Tracked time stays in the reports; the team feed keeps
+	 * its rows, which carry the title.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
@@ -170,6 +172,7 @@ final class TasksController extends Controller {
 		}
 		$this->stop_my_timer_on( $id );
 		$repo->delete( $id );
+		( new \NovaWork\Data\NotificationRepository() )->delete_for_object( 'task', $id );
 		return self::respond( array( 'deleted' => $id ) );
 	}
 

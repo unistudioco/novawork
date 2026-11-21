@@ -128,6 +128,35 @@ export function wireBoard( main, rerender ) {
 	} );
 }
 
+/**
+ * Make sure a task's card is on the board (going to it from a notification
+ * or chat): widen the filters if they hide it, show all of Done if it is an
+ * older done task. Returns true when a filter had to change.
+ *
+ * @param {number} id Task.
+ */
+export function revealTask( id ) {
+	const t = task( id );
+	if ( ! t ) {
+		return false;
+	}
+	const fProject = pref( 'nw.fProject' ) || 'all';
+	const fPerson = pref( 'nw.fPerson' ) || String( store().me );
+	let widened = false;
+	if ( fProject !== 'all' && t.projectId !== Number( fProject ) ) {
+		pref( 'nw.fProject', 'all' );
+		widened = true;
+	}
+	if ( fPerson !== 'all' && ( fPerson === 'none' ? assignees( t ).length : ! has( t, fPerson ) ) ) {
+		pref( 'nw.fPerson', 'all' );
+		widened = true;
+	}
+	if ( t.status === 'done' ) {
+		ui.allDone = true;
+	}
+	return widened;
+}
+
 export function toggleAllDone( rerender ) {
 	ui.allDone = ! ui.allDone;
 	rerender();
