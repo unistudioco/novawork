@@ -17,3 +17,9 @@
 .nw-gate h1 { font-size: 20px; letter-spacing: -.02em; color: var(--nw-fg); }
 .nw-gate p { margin: 0; }
 .nw-gate a.nw-btn { text-decoration: none; margin-top: 6px; }
+
+/* Owner decision: toasts can carry an action ("Deleted. Undo"). The toast is
+   inverted (fg on bg), so the button uses the toast's own colours. */
+.nw-toast-act { margin-left: 4px; padding: 4px 8px; border: 0; border-radius: 6px; background: color-mix(in srgb, var(--nw-bg) 16%, transparent); color: var(--nw-bg); font: 600 13px/1 var(--nw-font-head); cursor: pointer; }
+.nw-toast-act:hover { background: color-mix(in srgb, var(--nw-bg) 26%, transparent); }
+.nw-toast-act:focus-visible { outline: 2px solid var(--nw-bg); outline-offset: 2px; }

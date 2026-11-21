@@ -16,6 +16,14 @@ export const serverNow = () => Date.now() + offset;
 /** Members' fields that change what the app shows (not "last seen"). */
 const memberSig = ( list ) => JSON.stringify( ( list || [] ).map( ( m ) => [ m.id, m.name, m.color, m.avatar, m.online ] ) );
 
+/*
+ * Rows deleted on this device but not yet on the server (the Undo window).
+ * Sync must not bring them back meanwhile.
+ */
+const hidden = new Set();
+export const hide = ( key, id ) => hidden.add( key + ':' + id );
+export const unhide = ( key, id ) => hidden.delete( key + ':' + id );
+
 export const COLLECTIONS = [ 'projects', 'tasks', 'decisions', 'comments', 'messages', 'timeEntries', 'notifications' ];
 
 export function createStore( boot ) {
@@ -55,7 +63,9 @@ export function createStore( boot ) {
 			const deleted = payload.deleted || {};
 			COLLECTIONS.forEach( ( key ) => {
 				( data[ key ] || [] ).forEach( ( row ) => {
-					this[ key ][ row.id ] = row;
+					if ( ! hidden.has( key + ':' + row.id ) ) {
+						this[ key ][ row.id ] = row;
+					}
 				} );
 				( deleted[ key ] || [] ).forEach( ( id ) => {
 					delete this[ key ][ id ];

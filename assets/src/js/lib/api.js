@@ -46,7 +46,7 @@ export function routeUrl( path, params = {} ) {
  * @param {string} path   Route path.
  * @param {Object} [body] JSON body, FormData, or query params for GET.
  */
-export async function api( method, path, body ) {
+export async function api( method, path, body, options = {} ) {
 	const isForm = body instanceof FormData;
 	const isGet = method === 'GET';
 	const headers = { Accept: 'application/json', 'X-WP-Nonce': nonce };
@@ -58,6 +58,7 @@ export async function api( method, path, body ) {
 		credentials: 'same-origin',
 		headers,
 		body: isGet || ! body ? undefined : isForm ? body : JSON.stringify( body ),
+		keepalive: !! options.keepalive,
 	} );
 	const text = await response.text();
 	let data = null;
@@ -75,4 +76,4 @@ export async function api( method, path, body ) {
 export const get = ( path, params ) => api( 'GET', path, params );
 export const post = ( path, body ) => api( 'POST', path, body || {} );
 export const patch = ( path, body ) => api( 'PATCH', path, body || {} );
-export const del = ( path ) => api( 'DELETE', path );
+export const del = ( path, options ) => api( 'DELETE', path, undefined, options );

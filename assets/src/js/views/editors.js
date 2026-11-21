@@ -7,7 +7,8 @@ import { ic } from '../lib/icons.js';
 import { __ } from '../lib/i18n.js';
 import { esc, dur } from '../lib/format.js';
 import { serverNow } from '../store.js';
-import { post, patch, del } from '../lib/api.js';
+import { post, patch } from '../lib/api.js';
+import { deleteWithUndo } from './undo.js';
 import { routeUrl, currentNonce } from '../lib/api.js';
 import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
@@ -159,12 +160,9 @@ export function openTask( id, defaults ) {
 	);
 	if ( id ) {
 		commentsFor( 'task', id );
-		onDelete( async () => {
-			const ok = await write( () => del( 'tasks/' + id ), __( 'Deleted', 'novawork' ) );
-			if ( ok ) {
-				store().remove( 'tasks', id );
-			}
-			return ok;
+		onDelete( () => {
+			deleteWithUndo( 'tasks', id, 'tasks/' + id );
+			return true;
 		} );
 	}
 }
@@ -214,12 +212,9 @@ export function openProject( id ) {
 		}
 	);
 	if ( id ) {
-		onDelete( async () => {
-			const ok = await write( () => del( 'projects/' + id ), __( 'Deleted', 'novawork' ) );
-			if ( ok ) {
-				store().remove( 'projects', id );
-			}
-			return ok;
+		onDelete( () => {
+			deleteWithUndo( 'projects', id, 'projects/' + id );
+			return true;
 		} );
 	}
 }
