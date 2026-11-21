@@ -38,13 +38,15 @@
 		"test": [
 			"@lint",
 			"@analyse"
-		]
+		],
+		"test:api": "bash bin/test-api.sh"
 	},
 	"scripts-descriptions": {
 		"lint": "PHPCS with WordPress Coding Standards and PHP 8.1 compatibility.",
 		"lint:fix": "Fix what PHPCBF can fix automatically.",
 		"analyse": "PHPStan level 6 with WordPress stubs.",
 		"plugin-check": "Run the official Plugin Check against the dev site (see bin/plugin-check.sh).",
-		"test": "Both static gates."
+		"test": "Both static gates.",
+		"test:api": "API integration tests on the dev site (rolled back)."
 	}
 }

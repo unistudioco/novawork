@@ -1,0 +1,81 @@
+<?php
+/**
+ * NovaWork settings and their defaults.
+ *
+ * @package NovaWork
+ */
+
+declare( strict_types = 1 );
+
+namespace NovaWork;
+
+/**
+ * One option holds every setting. Phase 5 adds the wp-admin screen; until
+ * then the defaults apply.
+ */
+final class Settings {
+
+	public const OPTION = 'novawork_settings';
+
+	/**
+	 * Every setting with its default.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function defaults(): array {
+		return array(
+			'app_slug'       => 'novawork',
+			'idle_minutes'   => 10,
+			'poll_seconds'   => 4,
+			'week_start'     => (int) get_option( 'start_of_week', 1 ),
+			'upload_max_mb'  => 10,
+			'upload_types'   => array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'mp4', 'mov', 'mp3', 'm4a' ),
+			'load_fontshare' => true,
+			'delete_data'    => false,
+		);
+	}
+
+	/**
+	 * Every setting, stored values over defaults.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function all(): array {
+		$stored = get_option( self::OPTION, array() );
+		return array_merge( self::defaults(), is_array( $stored ) ? $stored : array() );
+	}
+
+	/**
+	 * One setting.
+	 *
+	 * @param string $key Setting name.
+	 */
+	public static function get( string $key ): mixed {
+		return self::all()[ $key ] ?? null;
+	}
+
+	/**
+	 * Largest upload in bytes: the setting, capped by what PHP accepts.
+	 */
+	public static function upload_max_bytes(): int {
+		$mb = max( 1, (int) self::get( 'upload_max_mb' ) );
+		return (int) min( $mb * MB_IN_BYTES, wp_max_upload_size() );
+	}
+
+	/**
+	 * Allowed upload extensions.
+	 *
+	 * @return list<string>
+	 */
+	public static function upload_types(): array {
+		$types = self::get( 'upload_types' );
+		$out   = array();
+		foreach ( is_array( $types ) ? $types : array() as $type ) {
+			$type = strtolower( sanitize_key( (string) $type ) );
+			if ( '' !== $type ) {
+				$out[] = $type;
+			}
+		}
+		return $out;
+	}
+}
