@@ -9,6 +9,8 @@ import { esc, dur } from '../lib/format.js';
 import { serverNow } from '../store.js';
 import { post, patch } from '../lib/api.js';
 import { deleteWithUndo } from './undo.js';
+import { richText } from './rich.js';
+import { attachComposer } from './composer.js';
 import { routeUrl, currentNonce } from '../lib/api.js';
 import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
@@ -19,7 +21,7 @@ import {
 /* ---------- comments ---------- */
 
 /** One comment or chat message (the prototype's msgHTML). */
-export function msgHTML( m, highlight ) {
+export function msgHTML( m, q ) {
 	const S = store();
 	const agent = m.agent ? S.agents.find( ( a ) => a.key === m.agent ) : null;
 	const p = agent ? null : person( m.by );
@@ -35,7 +37,7 @@ export function msgHTML( m, highlight ) {
 		} )
 		.join( '' );
 	const av = agent ? `<span class="nw-avatar" title="${ esc( name ) }" style="--nw-c:var(--nw-c-${ esc( agent.color ) });--nw-ci:var(--nw-ci-${ esc( agent.color ) })">${ ic( 'sparkle', 13 ) }</span>` : avatar( m.by );
-	return `<div class="nw-msg">${ av }<div class="nw-mwho">${ esc( name ) }<time>${ esc( when ) }</time></div>${ m.text ? `<div class="nw-txt">${ highlight ? highlight( m.text ) : esc( m.text ) }</div>` : '' }${ files ? `<div class="nw-files">${ files }</div>` : '' }</div>`;
+	return `<div class="nw-msg">${ av }<div class="nw-mwho">${ esc( name ) }<time>${ esc( when ) }</time></div>${ m.text ? `<div class="nw-txt">${ richText( m, q || '' ) }</div>` : '' }${ files ? `<div class="nw-files">${ files }</div>` : '' }</div>`;
 }
 
 function commentBox( kind, id ) {
@@ -48,18 +50,21 @@ function commentBox( kind, id ) {
 
 /** Wire the comment box of the open dialog to an object. */
 function commentsFor( kind, id ) {
+	const form = dialogForm();
+	const box = form.querySelector( '.nw-cmt-in' );
+	const composer = attachComposer( form.querySelector( '#nw-cmt-in' ), { parent: box, id: 'nw-cmt-suggest' } );
 	onComment( async () => {
-		const form = dialogForm();
 		const input = form.querySelector( '#nw-cmt-in' );
 		const text = input.value.trim();
-		if ( ! text ) {
+		if ( ! text || composer.isOpen() ) {
 			return;
 		}
-		const c = await write( () => post( 'comments', { objectType: kind, objectId: Number( id ), text } ) );
+		const c = await write( () => post( 'comments', Object.assign( { objectType: kind, objectId: Number( id ), text }, composer.payload() ) ) );
 		if ( ! c ) {
 			return;
 		}
 		store().upsert( 'comments', c );
+		composer.reset();
 		input.value = '';
 		const box = form.querySelector( '#nw-cmts' );
 		const list = commentsOf( kind, id );

@@ -42,6 +42,7 @@ final class MessageRepository extends Repository {
 			'agent'      => '%s',
 			'body'       => '%s',
 			'mentions'   => '%s',
+			'refs'       => '%s',
 			'created_at' => '%s',
 			'updated_at' => '%s',
 		);
@@ -58,6 +59,7 @@ final class MessageRepository extends Repository {
 			'agent'    => '',
 			'body'     => '',
 			'mentions' => '[]',
+			'refs'     => '[]',
 		);
 	}
 
@@ -88,6 +90,7 @@ final class MessageRepository extends Repository {
 				'agent'    => (string) $row['agent'],
 				'text'     => (string) $row['body'],
 				'mentions' => self::mentions( $row ),
+				'refs'     => \NovaWork\Services\References::decode( $row['refs'] ?? '[]' ),
 				'at'       => Db::to_ms( $row['created_at'] ),
 				'files'    => $files[ $id ] ?? array(),
 			);

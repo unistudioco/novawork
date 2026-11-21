@@ -307,6 +307,24 @@ last), `tracked`, `online` (first to come online; uses member
   member gets a `mention` notification instead of `chat`. Mentions render as
   accent text; a mention of you gets the soft accent surface.
 
+## Mentions and links, in chat and comments (owner, 2026-11-21)
+
+- `views/composer.js` attaches to a text field: `@` suggests members, `/`
+  suggests tasks, decisions and projects (`/task …`, `/decision …`,
+  `/project …` narrow it; a bare `/` offers your current work). The field
+  gets the text as typed ("@Sam ", "/Fix the checkout bug "); `payload()`
+  sends only ids whose text is still there.
+- `Services/References.php` keeps a mention only for a member whose "@Name"
+  is in the text, and a link only for an item that exists and whose "/Title"
+  is in the text. Stored as typed: `messages.mentions|refs`,
+  `comments.mentions|refs` (schema v4).
+- `views/rich.js` renders both: mentions as accent text (yours highlighted),
+  links as chips with the item's icon and *current* title that open it
+  (`data-act="open-ref"` → `nw:open`); a deleted item's chip is struck out.
+- Notifications: a mentioned member gets `mention` (instead of chat or
+  comment); a linked task's assignees and a linked decision's decider get
+  `link` (owner), never twice for one message.
+
 ## Owner requests queued for later phases
 
 - (Built.) Chat @mentions: see "Chat" below.

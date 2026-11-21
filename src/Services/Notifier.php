@@ -91,11 +91,13 @@ final class Notifier {
 	}
 
 	/**
-	 * A new comment.
+	 * A new comment. Members it mentions get a "mention"; everyone else
+	 * involved a "comment".
 	 *
 	 * @param array<string, mixed> $comment Comment row.
+	 * @return int[] Members notified.
 	 */
-	public static function commented( array $comment ): void {
+	public static function commented( array $comment ): array {
 		$type   = (string) $comment['object_type'];
 		$id     = (int) $comment['object_id'];
 		$author = (int) $comment['user_id'];
@@ -106,14 +108,14 @@ final class Notifier {
 			$tasks = new TaskRepository();
 			$task  = $tasks->find( $id );
 			if ( ! $task ) {
-				return;
+				return array();
 			}
 			$title  = (string) $task['title'];
 			$people = array_merge( $tasks->assignees_of( array( $id ) )[ $id ] ?? array(), array( (int) $task['created_by'] ) );
 		} elseif ( 'decision' === $type ) {
 			$decision = ( new DecisionRepository() )->find( $id );
 			if ( ! $decision ) {
-				return;
+				return array();
 			}
 			$title  = (string) $decision['question'];
 			$people = array( (int) $decision['owner_id'], (int) $decision['created_by'] );
@@ -123,14 +125,17 @@ final class Notifier {
 			$people[] = (int) $earlier['user_id'];
 		}
 
-		foreach ( array_unique( $people ) as $user_id ) {
+		$mentioned = array_column( References::decode( $comment['mentions'] ?? '[]' ), 'id' );
+		$told      = array();
+		foreach ( array_unique( array_merge( $people, $mentioned ) ) as $user_id ) {
 			if ( $user_id <= 0 || $user_id === $author ) {
 				continue;
 			}
+			$told[] = $user_id;
 			self::send(
 				$user_id,
 				array(
-					'type'        => 'comment',
+					'type'        => in_array( $user_id, $mentioned, true ) ? 'mention' : 'comment',
 					'actor_id'    => $author,
 					'agent'       => (string) $comment['agent'],
 					'object_type' => $type,
@@ -142,6 +147,7 @@ final class Notifier {
 				)
 			);
 		}
+		return $told;
 	}
 
 	/**

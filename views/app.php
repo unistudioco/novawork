@@ -31,7 +31,7 @@ wp_print_styles( Assets::styles() );
 </head>
 <body class="nw-body" x-data="nwApp" x-cloak>
 
-<header class="nw-hdr" id="nw-hdr" :class="{ 'nw-stuck': stuck }">
+<header class="nw-hdr" id="nw-hdr" :class="{ 'nw-stuck': stuck, 'nw-compact': compact }">
 	<div class="nw-hdr-in">
 		<div class="nw-row1">
 			<a class="nw-logo" href="#focus" aria-label="<?php esc_attr_e( 'NovaWork, Focus', 'novawork' ); ?>"><span class="nw-mark" x-html="icf('flag-banner-fold', 24)"></span>NovaWork</a>
@@ -83,7 +83,6 @@ wp_print_styles( Assets::styles() );
 							</template>
 						</div>
 					</div>
-					<div class="nw-foot"><?php esc_html_e( 'Members are managed in WordPress, under Users.', 'novawork' ); ?></div>
 				</div>
 			</div>
 		</div>

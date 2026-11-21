@@ -181,6 +181,9 @@ function onClick( e ) {
 		openDecision( id, true );
 	} else if ( act === 'all-done' ) {
 		toggleAllDone( rerender );
+	} else if ( act === 'open-ref' ) {
+		e.preventDefault();
+		window.dispatchEvent( new CustomEvent( 'nw:open', { detail: { kind: el.dataset.type, id, stay: true } } ) );
 	} else if ( act === 'vote' ) {
 		vote( id, el.dataset.opt );
 	} else if ( act === 'tl-today' ) {

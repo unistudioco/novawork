@@ -240,6 +240,31 @@ abstract class Controller {
 	}
 
 	/**
+	 * Schema: /links as the app sends them ([ { type, id } ]).
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected static function links_schema(): array {
+		return array(
+			'type'     => 'array',
+			'maxItems' => 20,
+			'items'    => array(
+				'type'       => 'object',
+				'properties' => array(
+					'type' => array(
+						'type' => 'string',
+						'enum' => \NovaWork\Services\References::TYPES,
+					),
+					'id'   => array(
+						'type'    => 'integer',
+						'minimum' => 1,
+					),
+				),
+			),
+		);
+	}
+
+	/**
 	 * Schema: a colour key.
 	 *
 	 * @return array<string, mixed>

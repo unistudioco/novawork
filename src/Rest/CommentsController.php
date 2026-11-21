@@ -13,6 +13,7 @@ use NovaWork\Data\CommentRepository;
 use NovaWork\Data\DecisionRepository;
 use NovaWork\Data\TaskRepository;
 use NovaWork\Services\Notifier;
+use NovaWork\Services\References;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -35,6 +36,8 @@ final class CommentsController extends Controller {
 				'objectType' => array_merge( self::choice( CommentRepository::OBJECTS ), array( 'required' => true ) ),
 				'objectId'   => array_merge( self::ref( true ), array( 'minimum' => 1 ) ),
 				'text'       => self::text( 2000, true ),
+				'mentions'   => self::refs( 20 ),
+				'refs'       => self::links_schema(),
 			)
 		);
 	}
@@ -65,10 +68,13 @@ final class CommentsController extends Controller {
 					'object_id'   => $id,
 					'user_id'     => self::me(),
 					'body'        => $text,
+					'mentions'    => (string) wp_json_encode( References::mentions( $text, $request->get_param( 'mentions' ) ?? array() ) ),
+					'refs'        => (string) wp_json_encode( References::links( $text, $request->get_param( 'refs' ) ?? array() ) ),
 				)
 			)
 		);
-		Notifier::commented( $comment );
+		$told    = Notifier::commented( $comment );
+		References::notify_links( References::decode( $comment['refs'] ), self::me(), $text, $told );
 
 		/**
 		 * Fires after a member comments on a task or decision.
