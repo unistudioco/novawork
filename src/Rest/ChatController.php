@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Rest;
 
+use NovaWork\Access\Capabilities;
 use NovaWork\Data\AttachmentRepository;
 use NovaWork\Data\MessageRepository;
 use NovaWork\Data\NotificationRepository;
@@ -22,8 +23,8 @@ use WP_REST_Response;
 use WP_REST_Server;
 
 /**
- * GET|POST /messages, POST /attachments, GET /attachments/{id}/file,
- * DELETE /attachments/{id}, POST /chat/read.
+ * GET|POST /messages, PATCH|DELETE /messages/{id}, POST /attachments,
+ * GET /attachments/{id}/file, DELETE /attachments/{id}, POST /chat/read.
  */
 final class ChatController extends Controller {
 
@@ -62,8 +63,20 @@ final class ChatController extends Controller {
 				'attachmentIds' => self::refs( self::MAX_FILES ),
 				'mentions'      => self::refs( 20 ),
 				'refs'          => self::links_schema(),
+				'replyTo'       => self::ref(),
 			)
 		);
+		$this->route(
+			'/messages/(?P<id>\d+)',
+			WP_REST_Server::EDITABLE,
+			array( $this, 'edit' ),
+			array(
+				'text'     => self::text( 2000 ),
+				'mentions' => self::refs( 20 ),
+				'refs'     => self::links_schema(),
+			)
+		);
+		$this->route( '/messages/(?P<id>\d+)', WP_REST_Server::DELETABLE, array( $this, 'remove' ) );
 		$this->route( '/attachments', WP_REST_Server::CREATABLE, array( $this, 'upload' ) );
 		$this->route( '/attachments/(?P<id>\d+)', WP_REST_Server::DELETABLE, array( $this, 'discard' ) );
 		$this->route( '/attachments/(?P<id>\d+)/file', WP_REST_Server::READABLE, array( $this, 'file' ) );
@@ -103,10 +116,12 @@ final class ChatController extends Controller {
 			return new WP_Error( 'novawork_required', __( 'Write a message or add a file.', 'novawork' ), array( 'status' => 400 ) );
 		}
 
-		$repo = new MessageRepository();
-		$id   = $repo->insert(
+		$repo     = new MessageRepository();
+		$reply_to = (int) $request->get_param( 'replyTo' );
+		$id       = $repo->insert(
 			array(
 				'user_id'  => self::me(),
+				'reply_to' => $reply_to > 0 && $repo->find( $reply_to ) ? $reply_to : 0,
 				'body'     => $text,
 				'mentions' => (string) wp_json_encode( References::mentions( $text, $request->get_param( 'mentions' ) ?? array() ) ),
 				'refs'     => (string) wp_json_encode( References::links( $text, $request->get_param( 'refs' ) ?? array() ) ),
@@ -144,6 +159,72 @@ final class ChatController extends Controller {
 		do_action( 'novawork_message_created', $message );
 
 		return self::respond( $repo->present( $message ), 201 );
+	}
+
+	/**
+	 * Edit your own message (the message_edits setting decides whether and
+	 * for how long). Only its text changes; files stay.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
+	 */
+	public function edit( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$repo = new MessageRepository();
+		$row  = $repo->find( self::id( $request ) );
+		if ( ! $row ) {
+			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_post( $row, self::me() ) ) {
+			return self::forbidden( __( 'You can’t edit this message.', 'novawork' ) );
+		}
+		$text = trim( (string) $request->get_param( 'text' ) );
+		if ( '' === $text && ! ( new AttachmentRepository() )->for_messages( array( (int) $row['id'] ) ) ) {
+			return new WP_Error( 'novawork_required', __( 'A message needs some text. To remove it, delete it.', 'novawork' ), array( 'status' => 400 ) );
+		}
+		$after = References::save_edit( $repo, $row, $text, $request->get_param( 'mentions' ), $request->get_param( 'refs' ) );
+
+		/**
+		 * Fires after a member edits a chat message.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array<string, mixed> $after  Message row after the edit.
+		 * @param array<string, mixed> $before Message row before it.
+		 */
+		do_action( 'novawork_message_updated', $after, $row );
+
+		return self::respond( $repo->present( $after ) );
+	}
+
+	/**
+	 * Delete a message, its files and the notifications about it. Your own
+	 * (as for editing); administrators may delete anyone's.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
+	 */
+	public function remove( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$repo = new MessageRepository();
+		$row  = $repo->find( self::id( $request ) );
+		if ( ! $row ) {
+			return self::not_found();
+		}
+		if ( ! Capabilities::can_delete_post( $row, self::me() ) ) {
+			return self::forbidden( __( 'You can’t delete this message.', 'novawork' ) );
+		}
+		$repo->delete( (int) $row['id'] );
+		( new NotificationRepository() )->delete_for_object( 'message', (int) $row['id'] );
+
+		/**
+		 * Fires after a chat message is deleted.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array<string, mixed> $row Deleted message row.
+		 */
+		do_action( 'novawork_message_deleted', $row );
+
+		return self::respond( array( 'deleted' => true ) );
 	}
 
 	/**

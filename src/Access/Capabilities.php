@@ -81,6 +81,35 @@ final class Capabilities {
 	}
 
 	/**
+	 * Whether a member may edit a chat message or comment: only their own,
+	 * under the message_edits setting. An agent's words are never edited.
+	 *
+	 * @param array<string, mixed> $row     Message or comment row.
+	 * @param int                  $user_id Member.
+	 */
+	public static function can_edit_post( array $row, int $user_id ): bool {
+		if ( $user_id <= 0 || '' !== (string) $row['agent'] || (int) $row['user_id'] !== $user_id ) {
+			return false;
+		}
+		return match ( \NovaWork\Settings::message_edits() ) {
+			'never'  => false,
+			'window' => (int) \NovaWork\Data\Db::to_ms( (string) $row['created_at'] ) >= ( time() - \NovaWork\Settings::int( 'edit_minutes' ) * MINUTE_IN_SECONDS ) * 1000,
+			default  => true,
+		};
+	}
+
+	/**
+	 * Whether a member may delete a chat message or comment: their own, as
+	 * for editing; administrators anyone's.
+	 *
+	 * @param array<string, mixed> $row     Message or comment row.
+	 * @param int                  $user_id Member.
+	 */
+	public static function can_delete_post( array $row, int $user_id ): bool {
+		return user_can( $user_id, self::MANAGE ) || self::can_edit_post( $row, $user_id );
+	}
+
+	/**
 	 * Whether a user is a member.
 	 *
 	 * @param int $user_id User id.

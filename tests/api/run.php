@@ -478,6 +478,70 @@ try {
 	$t->ok( count( $hist ) >= 2, "date filter: today's messages" );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Replies, edits and deletes (chat and comments)' );
+	$notes_about = fn( $uid, $type, $id ) => array_column( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $uid, 300 ), fn( $n ) => $type === $n['object_type'] && (int) $n['object_id'] === $id ), 'type' );
+	list( , $orig ) = $t->call( $sam, 'POST', '/messages', array( 'text' => 'Original for a reply' ) );
+	list( $s, $rep ) = $t->call( $alex, 'POST', '/messages', array( 'text' => "@{$sam_name} replying", 'mentions' => array( $sam ), 'replyTo' => $orig['id'] ) );
+	$t->ok( 201 === $s && $orig['id'] === $rep['replyTo'] && 'Original for a reply' === ( $rep['reply']['text'] ?? '' ) && $sam === $rep['reply']['by'], 'a reply carries the message it answers', $rep );
+	list( , $rep0 ) = $t->call( $alex, 'POST', '/messages', array( 'text' => 'reply to nothing', 'replyTo' => 999999 ) );
+	$t->ok( 0 === $rep0['replyTo'] && null === $rep0['reply'], 'a reply to a missing message is a plain message', $rep0 );
+
+	list( $s ) = $t->call( $sam, 'PATCH', '/messages/' . $rep['id'], array( 'text' => 'hijack' ) );
+	$t->ok( 403 === $s, "you can't edit someone else's message", $s );
+	list( $s ) = $t->call( $admin, 'PATCH', '/messages/' . $rep['id'], array( 'text' => 'hijack' ) );
+	$t->ok( 403 === $s, "not even an administrator can edit someone else's words", $s );
+	$admin_name = get_userdata( $admin )->display_name;
+	list( $s, $ed ) = $t->call( $alex, 'PATCH', '/messages/' . $rep['id'], array( 'text' => "@{$sam_name} replying, and @{$admin_name}", 'mentions' => array( $sam, $admin ) ) );
+	$t->ok( 200 === $s && $ed['editedAt'] > 0 && 2 === count( $ed['mentions'] ) && $orig['id'] === $ed['replyTo'], 'you can edit your own message: new text, mentions kept, marked edited', $ed );
+	$t->ok( array( 'mention' ) === array_values( $notes_about( $sam, 'message', $rep['id'] ) ), 'someone already mentioned is not told again by an edit', $notes_about( $sam, 'message', $rep['id'] ) );
+	$t->ok( in_array( 'mention', $notes_about( $admin, 'message', $rep['id'] ), true ), 'someone newly mentioned by an edit is told', $notes_about( $admin, 'message', $rep['id'] ) );
+	list( $s ) = $t->call( $alex, 'PATCH', '/messages/' . $rep['id'], array( 'text' => '  ' ) );
+	$t->ok( 400 === $s, 'a message without files cannot be edited to nothing', $s );
+
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'message_edits' => 'never' ) ) );
+	list( $s ) = $t->call( $alex, 'PATCH', '/messages/' . $rep['id'], array( 'text' => 'no edits allowed' ) );
+	$t->ok( 403 === $s, 'message_edits = never: no edits', $s );
+	list( $s ) = $t->call( $alex, 'DELETE', '/messages/' . $rep0['id'] );
+	$t->ok( 403 === $s, 'message_edits = never: members cannot delete their own either', $s );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'message_edits' => 'window', 'edit_minutes' => 15 ) ) );
+	$wpdb->update( $wpdb->prefix . 'novawork_messages', array( 'created_at' => gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ) ), array( 'id' => $rep0['id'] ) );
+	list( $s ) = $t->call( $alex, 'PATCH', '/messages/' . $rep0['id'], array( 'text' => 'too late' ) );
+	$t->ok( 403 === $s, 'message_edits = window: an hour-old message is past a 15-minute window', $s );
+	list( $s ) = $t->call( $alex, 'PATCH', '/messages/' . $rep['id'], array( 'text' => "@{$sam_name} in time" ) );
+	$t->ok( 200 === $s, 'message_edits = window: a new message can still be edited', $s );
+	list( , $sync ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( 'window' === $sync['settings']['messageEdits'] && 15 === $sync['settings']['editMinutes'], 'the app gets the edit rule', $sync['settings'] );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'message_edits' => 'always' ) ) );
+
+	list( $s ) = $t->call( $sam, 'DELETE', '/messages/' . $rep0['id'] );
+	$t->ok( 403 === $s, "you can't delete someone else's message", $s );
+	list( $s ) = $t->call( $admin, 'DELETE', '/messages/' . $rep0['id'] );
+	$t->ok( 200 === $s, "an administrator can delete anyone's message", $s );
+	$t->call( $alex, 'PATCH', '/messages/' . $rep['id'], array( 'text' => "@{$sam_name} in time, edited again" ) );
+	list( , $cur ) = $t->call( $sam, 'GET', '/sync', array( 'since' => $sync['cursor'] ) );
+	$t->ok( in_array( $rep0['id'], $cur['deleted']['messages'] ?? array(), true ) && in_array( $rep['id'], array_column( $cur['data']['messages'] ?? array(), 'id' ), true ), 'edits and deletes reach everyone through sync', $cur['deleted'] ?? $cur );
+	list( $s ) = $t->call( $sam, 'DELETE', '/messages/' . $orig['id'] );
+	$t->ok( 200 === $s && array() === $notes_about( $alex, 'message', $orig['id'] ), 'you can delete your own message; its notifications go with it', $s );
+	list( , $after ) = $t->call( $alex, 'GET', '/messages', array( 'q' => 'in time' ) );
+	$t->ok( 1 === count( $after ) && $orig['id'] === $after[0]['replyTo'] && null === $after[0]['reply'], 'a reply to a deleted message keeps its place, with nothing to quote', $after );
+
+	list( , $c1 ) = $t->call( $sam, 'POST', '/comments', array( 'objectType' => 'task', 'objectId' => $lt['id'], 'text' => 'First comment' ) );
+	list( , $c2 ) = $t->call( $alex, 'POST', '/comments', array( 'objectType' => 'task', 'objectId' => $lt['id'], 'text' => 'A reply', 'replyTo' => $c1['id'] ) );
+	$t->ok( $c1['id'] === $c2['replyTo'], 'a comment can reply to a comment on the same task', $c2 );
+	list( , $c3 ) = $t->call( $alex, 'POST', '/comments', array( 'objectType' => 'decision', 'objectId' => $ld['id'], 'text' => 'Elsewhere', 'replyTo' => $c1['id'] ) );
+	$t->ok( 0 === $c3['replyTo'], 'but not to a comment somewhere else', $c3 );
+	list( $s ) = $t->call( $sam, 'PATCH', '/comments/' . $c2['id'], array( 'text' => 'hijack' ) );
+	$t->ok( 403 === $s, "you can't edit someone else's comment", $s );
+	list( $s, $c2e ) = $t->call( $alex, 'PATCH', '/comments/' . $c2['id'], array( 'text' => 'A better reply' ) );
+	$t->ok( 200 === $s && 'A better reply' === $c2e['text'] && $c2e['editedAt'] > 0, 'you can edit your own comment', $c2e );
+	list( $s ) = $t->call( $sam, 'DELETE', '/comments/' . $c2['id'] );
+	$t->ok( 403 === $s, "you can't delete someone else's comment", $s );
+	list( $s ) = $t->call( $alex, 'DELETE', '/comments/' . $c2['id'] );
+	$t->ok( 200 === $s && null === ( new NovaWork\Data\CommentRepository() )->find( $c2['id'] ), 'you can delete your own comment', $s );
+	list( $s ) = $t->call( $admin, 'DELETE', '/comments/' . $c1['id'] );
+	$t->ok( 200 === $s, "an administrator can delete anyone's comment", $s );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Search' );
 	list( , $found ) = $t->call( $sam, 'GET', '/search', array( 'q' => 'due soon' ) );
 	$t->ok( in_array( $due['id'], array_column( $found['tasks'], 'id' ), true ), 'finds a task by title' );

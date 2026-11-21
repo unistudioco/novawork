@@ -259,6 +259,8 @@ retention), `read_note_days` (90). Sync sends `nowLimit`, `idleMinutes`,
 members who are here, tracking or online, first by most tracked today; away
 last), `tracked`, `online` (first to come online; uses member
 `onlineSince`, set when a member returns after being away), `fixed`.
+`message_edits` / `edit_minutes` (owner, 2026-11-21): see "Reply, Edit and
+Delete" below.
 
 ## Decisions: who decides, and team votes (owner, 2026-11-21)
 
@@ -324,6 +326,32 @@ last), `tracked`, `online` (first to come online; uses member
 - Notifications: a mentioned member gets `mention` (instead of chat or
   comment); a linked task's assignees and a linked decision's decider get
   `link` (owner), never twice for one message.
+
+## Reply, Edit and Delete, in chat and comments (owner, 2026-11-21)
+
+- `views/thread.js` is shared by chat and the comment box. Reply puts
+  "@Name " in the field (the composer remembers the mention) and a
+  "Replying to" bar above it; the post stores `reply_to` (schema v5,
+  `messages|comments.reply_to`, `edited_at`). A reply quotes the original
+  (`.nw-quote`); clicking it scrolls there, loading older chat history if
+  needed, and flashes it. A comment can only reply to a comment on the same
+  task or decision.
+- Edit happens in place (Enter saves, Escape cancels only the edit). Only
+  your own words are editable, never an agent's or someone else's, not even
+  by an administrator. An edit tells only newly mentioned people and newly
+  linked items. Delete uses the usual Undo; a deleted chat message takes its
+  notifications with it. A reply to a deleted message says so.
+- Settings: `message_edits` = `always` (default), `window` (for
+  `edit_minutes`, 15, after posting) or `never`; one rule for edit and
+  delete. Administrators can always delete anyone's message or comment.
+  Sync sends `messageEdits`, `editMinutes`. Routes: `PATCH|DELETE
+  /messages/{id}`, `PATCH|DELETE /comments/{id}`; `replyTo` on POST.
+- Desktop shows the toolbar on hover or focus; on touch screens, tapping a
+  message shows it. Message `.nw-msg` carries `data-mid` and `data-kind`.
+- The comment box redraws itself from the store (Alpine effect, released
+  when the dialog's list leaves the page), so Undo and teammates' comments
+  show up while it is open.
+- Hooks: `novawork_message_updated|deleted`, `novawork_comment_updated|deleted`.
 
 ## Owner requests queued for later phases
 

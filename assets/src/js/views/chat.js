@@ -2,8 +2,8 @@
  * Team chat: one channel. The window docks left or right (pushing the page
  * over), floats anywhere when dragged, and rises as a bottom sheet on phones.
  * Attachments, history that loads as you scroll up, search with a date
- * filter, day dividers. Ported from the prototype's chat; @mentions are an
- * owner request.
+ * filter, day dividers. Ported from the prototype's chat; @mentions, /links
+ * and Reply / Edit / Delete (views/thread.js) are owner requests.
  */
 import Alpine from 'alpinejs';
 import { ic } from '../lib/icons.js';
@@ -15,6 +15,7 @@ import { store, iso, todayISO, parse, size } from './model.js';
 import { enhance } from './select.js';
 import { msgHTML } from './editors.js';
 import { attachComposer } from './composer.js';
+import { wireThread } from './thread.js';
 
 const $ = ( id ) => document.getElementById( id );
 const MAX_FILES = 6;
@@ -29,6 +30,7 @@ let searchTimer = null;
 let olderDone = false;
 let loadingOlder = false;
 let composer = null;
+let thread = null;
 
 const pref = ( k, v ) => {
 	try {
@@ -139,7 +141,7 @@ function list() {
 }
 
 function paint( toBottom ) {
-	if ( ! open ) {
+	if ( ! open || ( thread && thread.editing() ) ) {
 		return;
 	}
 	const box = $( 'nw-msgs' );
@@ -153,7 +155,7 @@ function paint( toBottom ) {
 			html += `<div class="nw-dsep">${ esc( dayLabel( m.at ) ) }</div>`;
 			last = k;
 		}
-		html += msgHTML( m, search.q );
+		html += msgHTML( m, search.q, { acts: ! search.active } );
 	} );
 	box.innerHTML =
 		html ||
@@ -212,6 +214,20 @@ async function loadOlder() {
 		// Try again on the next scroll.
 	} finally {
 		loadingOlder = false;
+	}
+}
+
+/** Load older history until a message is there (a reply's quote was clicked). */
+async function loadUntil( id ) {
+	if ( search.active ) {
+		$( 'nw-chat-find' ).click();
+	}
+	for ( let i = 0; i < 40 && ! store().messages[ id ] && ! olderDone; i++ ) {
+		if ( loadingOlder ) {
+			await new Promise( ( r ) => setTimeout( r, 150 ) );
+		} else {
+			await loadOlder();
+		}
 	}
 }
 
@@ -318,11 +334,12 @@ async function send() {
 		if ( ! text && ! files.length ) {
 			return;
 		}
-		const m = await post( 'messages', Object.assign( { text, attachmentIds: files }, composer.payload() ) );
+		const m = await post( 'messages', Object.assign( { text, attachmentIds: files, replyTo: thread.replyTo() }, composer.payload() ) );
 		store().upsert( 'messages', m );
 		input.value = '';
 		pending = [];
 		composer.reset();
+		thread.clearReply();
 		paintPending();
 		paint( true );
 	} catch ( e ) {
@@ -503,10 +520,24 @@ export function mountChat() {
 	} );
 	chat.addEventListener( 'keydown', ( e ) => {
 		if ( e.key === 'Escape' && ! composer.isOpen() ) {
+			// Escape in the text field drops a reply before it closes the chat.
+			if ( e.target.id === 'nw-chat-in' && thread.escape() ) {
+				return;
+			}
 			closeChat();
 		}
 	} );
 	composer = attachComposer( $( 'nw-chat-in' ), { parent: $( 'nw-chat-form' ), id: 'nw-mention-list' } );
+	thread = wireThread( {
+		list: () => $( 'nw-msgs' ),
+		input: () => $( 'nw-chat-in' ),
+		composer: () => composer,
+		bar: () => $( 'nw-chat-reply' ),
+		redraw: () => paint( false ),
+		find: loadUntil,
+	} );
+	$( 'nw-msgs' ).addEventListener( 'click', thread.onClick );
+	$( 'nw-chat-reply' ).addEventListener( 'click', thread.onClick );
 	$( 'nw-chat-form' ).addEventListener( 'submit', ( e ) => {
 		e.preventDefault();
 		if ( ! composer.isOpen() ) {
@@ -534,10 +565,12 @@ export function mountChat() {
 		}
 	} );
 
-	// New messages (from anyone) redraw the open window.
+	// New, edited and deleted messages (from anyone) redraw the open window.
 	Alpine.effect( () => {
 		const S = store();
-		void Object.keys( S.messages ).length;
+		void Object.values( S.messages )
+			.map( ( m ) => m.id + '.' + ( m.editedAt || 0 ) )
+			.join();
 		void S.members;
 		void S.agents;
 		if ( open && ! search.active ) {

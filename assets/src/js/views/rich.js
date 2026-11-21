@@ -41,6 +41,21 @@ function find( text, token ) {
 }
 
 /**
+ * One line of a message for a reply quote: a link reads as its title
+ * (without the slash), everything else as typed.
+ *
+ * @param {Object} m Message or comment (text, refs).
+ * @return {string} Plain text.
+ */
+export function plainText( m ) {
+	let text = String( m.text || '' );
+	( m.refs || [] ).forEach( ( ref ) => {
+		text = text.split( '/' + ref.label ).join( ref.label );
+	} );
+	return text.replace( /\s+/g, ' ' ).trim();
+}
+
+/**
  * @param {Object} m Message or comment (text, mentions, refs).
  * @param {string} q Search text to mark (lower case), or ''.
  * @return {string} HTML.

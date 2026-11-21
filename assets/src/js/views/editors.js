@@ -11,6 +11,8 @@ import { post, patch } from '../lib/api.js';
 import { deleteWithUndo } from './undo.js';
 import { richText } from './rich.js';
 import { attachComposer } from './composer.js';
+import { wireThread, quoteHTML, actsHTML, kindOf } from './thread.js';
+import Alpine from 'alpinejs';
 import { routeUrl, currentNonce } from '../lib/api.js';
 import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
@@ -20,8 +22,17 @@ import {
 
 /* ---------- comments ---------- */
 
-/** One comment or chat message (the prototype's msgHTML). */
-export function msgHTML( m, q ) {
+/**
+ * One comment or chat message (the prototype's msgHTML), with the reply
+ * quote, "edited" and the Reply / Edit / Delete toolbar (owner request).
+ *
+ * @param {Object}  m             Message or comment.
+ * @param {string}  [q]           Search text to mark.
+ * @param {Object}  [opts]
+ * @param {boolean} [opts.acts=true] Show the toolbar (not on search results).
+ */
+export function msgHTML( m, q, opts ) {
+	const withActs = ! opts || opts.acts !== false;
 	const S = store();
 	const agent = m.agent ? S.agents.find( ( a ) => a.key === m.agent ) : null;
 	const p = agent ? null : person( m.by );
@@ -37,7 +48,10 @@ export function msgHTML( m, q ) {
 		} )
 		.join( '' );
 	const av = agent ? `<span class="nw-avatar" title="${ esc( name ) }" style="--nw-c:var(--nw-c-${ esc( agent.color ) });--nw-ci:var(--nw-ci-${ esc( agent.color ) })">${ ic( 'sparkle', 13 ) }</span>` : avatar( m.by );
-	return `<div class="nw-msg">${ av }<div class="nw-mwho">${ esc( name ) }<time>${ esc( when ) }</time></div>${ m.text ? `<div class="nw-txt">${ richText( m, q || '' ) }</div>` : '' }${ files ? `<div class="nw-files">${ files }</div>` : '' }</div>`;
+	const edited = m.editedAt ? `<span class="nw-edited">${ esc( __( 'edited', 'novawork' ) ) }</span>` : '';
+	return `<div class="nw-msg" data-mid="${ Number( m.id ) }" data-kind="${ kindOf( m ) }">${ av }<div class="nw-mwho">${ esc( name ) }<time>${ esc( when ) }</time>${ edited }</div>${ quoteHTML( m ) }${
+		m.text ? `<div class="nw-txt">${ richText( m, q || '' ) }</div>` : ''
+	}${ files ? `<div class="nw-files">${ files }</div>` : '' }${ withActs ? actsHTML( m ) : '' }</div>`;
 }
 
 function commentBox( kind, id ) {
@@ -45,32 +59,77 @@ function commentBox( kind, id ) {
 	return `<div class="nw-field"><span class="nw-flabel">${ esc( __( 'Comments', 'novawork' ) ) }${ list.length ? ' · ' + list.length : '' }</span><div class="nw-comments" id="nw-cmts">${
 		list.length ? list.map( ( c ) => msgHTML( c ) ).join( '' ) : `<span style="color:var(--nw-faint);font-size:13px">${ esc( __( 'No comments yet.', 'novawork' ) ) }</span>`
 	}</div>` +
+		`<div class="nw-replying" id="nw-cmt-reply" hidden></div>` +
 		`<div class="nw-cmt-in"><label for="nw-cmt-in" class="nw-vh">${ esc( __( 'Comment', 'novawork' ) ) }</label><input class="nw-input" id="nw-cmt-in" maxlength="2000" placeholder="${ esc( __( 'Write a comment', 'novawork' ) ) }"><button class="nw-btn" type="button" data-cmt="1" aria-label="${ esc( __( 'Send comment', 'novawork' ) ) }">${ ic( 'paper-plane-right', 15 ) }</button></div></div>`;
 }
 
-/** Wire the comment box of the open dialog to an object. */
+/**
+ * Wire the comment box of the open dialog to an object. The list redraws
+ * whenever its comments change (yours, an edit, an Undo, or a teammate's
+ * arriving with sync), except while you are editing one.
+ */
 function commentsFor( kind, id ) {
 	const form = dialogForm();
-	const box = form.querySelector( '.nw-cmt-in' );
-	const composer = attachComposer( form.querySelector( '#nw-cmt-in' ), { parent: box, id: 'nw-cmt-suggest' } );
+	const inputBox = form.querySelector( '.nw-cmt-in' );
+	const input = form.querySelector( '#nw-cmt-in' );
+	const list = form.querySelector( '#nw-cmts' );
+	const composer = attachComposer( input, { parent: inputBox, id: 'nw-cmt-suggest' } );
+	let toBottom = false;
+	const draw = () => {
+		if ( ! list.isConnected ) {
+			return;
+		}
+		const all = commentsOf( kind, id );
+		list.innerHTML = all.length ? all.map( ( x ) => msgHTML( x ) ).join( '' ) : `<span style="color:var(--nw-faint);font-size:13px">${ esc( __( 'No comments yet.', 'novawork' ) ) }</span>`;
+		list.previousElementSibling.textContent = __( 'Comments', 'novawork' ) + ( all.length ? ' · ' + all.length : '' );
+		if ( toBottom ) {
+			list.scrollTop = list.scrollHeight;
+			toBottom = false;
+		}
+	};
+	const thread = wireThread( {
+		list: () => list,
+		input: () => input,
+		composer: () => composer,
+		bar: () => form.querySelector( '#nw-cmt-reply' ),
+		redraw: draw,
+	} );
+	list.addEventListener( 'click', thread.onClick );
+	form.querySelector( '#nw-cmt-reply' ).addEventListener( 'click', thread.onClick );
+	input.addEventListener( 'keydown', ( e ) => {
+		if ( e.key === 'Escape' && ! composer.isOpen() && thread.escape() ) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	} );
+	const fx = Alpine.effect( () => {
+		const sig = commentsOf( kind, id )
+			.map( ( c ) => c.id + '.' + ( c.editedAt || 0 ) )
+			.join();
+		void store().members;
+		if ( ! list.isConnected ) {
+			queueMicrotask( () => Alpine.release( fx ) );
+			return;
+		}
+		if ( sig !== list.dataset.sig && ! thread.editing() ) {
+			list.dataset.sig = sig;
+			draw();
+		}
+	} );
 	onComment( async () => {
-		const input = form.querySelector( '#nw-cmt-in' );
 		const text = input.value.trim();
 		if ( ! text || composer.isOpen() ) {
 			return;
 		}
-		const c = await write( () => post( 'comments', Object.assign( { objectType: kind, objectId: Number( id ), text }, composer.payload() ) ) );
+		const c = await write( () => post( 'comments', Object.assign( { objectType: kind, objectId: Number( id ), text, replyTo: thread.replyTo() }, composer.payload() ) ) );
 		if ( ! c ) {
 			return;
 		}
+		toBottom = true;
 		store().upsert( 'comments', c );
 		composer.reset();
+		thread.clearReply();
 		input.value = '';
-		const box = form.querySelector( '#nw-cmts' );
-		const list = commentsOf( kind, id );
-		box.innerHTML = list.map( ( x ) => msgHTML( x ) ).join( '' );
-		box.previousElementSibling.textContent = __( 'Comments', 'novawork' ) + ' · ' + list.length;
-		box.scrollTop = box.scrollHeight;
 		input.focus();
 	} );
 }

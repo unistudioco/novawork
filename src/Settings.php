@@ -40,6 +40,8 @@ final class Settings {
 			'team_order'     => 'dynamic',
 			'decide_rule'    => 'named',
 			'decision_votes' => true,
+			'message_edits'  => 'always',
+			'edit_minutes'   => 15,
 		);
 	}
 
@@ -83,6 +85,16 @@ final class Settings {
 	 */
 	public static function decide_rule(): string {
 		return 'anyone' === self::get( 'decide_rule' ) ? 'anyone' : 'named';
+	}
+
+	/**
+	 * Whether members may edit and delete their own chat messages and
+	 * comments: "always", "window" (for edit_minutes after posting) or
+	 * "never". Administrators may always delete anyone's.
+	 */
+	public static function message_edits(): string {
+		$rule = (string) self::get( 'message_edits' );
+		return in_array( $rule, array( 'always', 'window', 'never' ), true ) ? $rule : 'always';
 	}
 
 	/**

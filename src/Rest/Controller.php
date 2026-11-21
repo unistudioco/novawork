@@ -87,6 +87,15 @@ abstract class Controller {
 	}
 
 	/**
+	 * 403 for a member who may not change this row (someone else's message).
+	 *
+	 * @param string $message What the member sees.
+	 */
+	protected static function forbidden( string $message ): WP_Error {
+		return new WP_Error( 'novawork_forbidden', $message, array( 'status' => 403 ) );
+	}
+
+	/**
 	 * 404 for an object that does not exist.
 	 */
 	protected static function not_found(): WP_Error {

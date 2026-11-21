@@ -192,6 +192,42 @@ final class Notifier {
 	}
 
 	/**
+	 * People newly @mentioned when a chat message or comment is edited (the
+	 * ones already mentioned were told when it was posted).
+	 *
+	 * @param string               $kind     "message" or "comment".
+	 * @param array<string, mixed> $row      The edited row.
+	 * @param int[]                $user_ids Newly mentioned members.
+	 */
+	public static function mentioned( string $kind, array $row, array $user_ids ): void {
+		$author = (int) $row['user_id'];
+		$data   = array( 'excerpt' => self::excerpt( (string) $row['body'] ) );
+		if ( 'comment' === $kind ) {
+			$object = 'task' === $row['object_type'] ? ( new TaskRepository() )->find( (int) $row['object_id'] ) : ( new DecisionRepository() )->find( (int) $row['object_id'] );
+			if ( ! $object ) {
+				return;
+			}
+			$data['title'] = (string) ( $object['title'] ?? $object['question'] ?? '' );
+		}
+		foreach ( array_unique( array_map( 'intval', $user_ids ) ) as $user_id ) {
+			if ( $user_id <= 0 || $user_id === $author ) {
+				continue;
+			}
+			self::send(
+				$user_id,
+				array(
+					'type'        => 'mention',
+					'actor_id'    => $author,
+					'agent'       => (string) $row['agent'],
+					'object_type' => 'comment' === $kind ? (string) $row['object_type'] : 'message',
+					'object_id'   => 'comment' === $kind ? (int) $row['object_id'] : (int) $row['id'],
+					'data'        => $data,
+				)
+			);
+		}
+	}
+
+	/**
 	 * Look for due tasks and decisions. Polls call this; it runs at most every
 	 * ten minutes unless forced (cron forces it hourly).
 	 *
