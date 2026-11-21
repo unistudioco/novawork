@@ -95,3 +95,25 @@ test( 'the bell: your notifications, the team feed, open, mark read', async ( { 
 	await ctx.close();
 	await ctxB.close();
 } );
+
+test( 'a quick search result goes to the item on its page, not its editor', async ( { browser } ) => {
+	const ctx = await browser.newContext( { viewport: { width: 1366, height: 1000 } } );
+	await signIn( ctx, 'A' );
+	const page = await ctx.newPage();
+	await page.goto( APP + '#focus' );
+	const title = unique( 'search target' );
+	const id = await page.evaluate( async ( t ) => {
+		const nw = window.Alpine.store( 'nw' );
+		const task = await ( await fetch( window.novawork.restUrl + 'tasks', { method: 'POST', headers: { 'X-WP-Nonce': window.novawork.nonce, 'Content-Type': 'application/json' }, body: JSON.stringify( { title: t } ) } ) ).json();
+		nw.upsert( 'tasks', task );
+		return task.id;
+	}, title );
+	await page.locator( '#nw-qs .nw-qs-field' ).click();
+	await page.keyboard.type( title );
+	await page.keyboard.press( 'Enter' );
+	await expect( page ).toHaveURL( /#board$/ );
+	await expect( page.locator( `.nw-card[data-id="${ id }"]` ) ).toHaveClass( /nw-flash/ );
+	await expect( page.locator( '#nw-dlg[open]' ) ).toHaveCount( 0 );
+	await cleanUp( page );
+	await ctx.close();
+} );

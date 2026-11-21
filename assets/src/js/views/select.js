@@ -119,9 +119,22 @@ function openSel( sel, box ) {
 	box.classList.add( 'nw-open' );
 	box.firstChild.setAttribute( 'aria-expanded', 'true' );
 	openBox = box;
+	// Open down, or up when there is more room above. Inside a dialog the
+	// room is the dialog's (it scrolls on short screens), not the window's;
+	// if neither side fits the list, it gets shorter rather than cut off.
 	const r = box.getBoundingClientRect();
-	if ( window.innerHeight - r.bottom < 320 && r.top > window.innerHeight - r.bottom ) {
+	const frame = box.closest( 'dialog' );
+	const fr = frame ? frame.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+	const below = fr.bottom - r.bottom - 12;
+	const above = r.top - fr.top - 12;
+	const need = Math.min( ul.offsetHeight, 320 );
+	const up = below < need && above > below;
+	if ( up ) {
 		box.classList.add( 'nw-up' );
+	}
+	const room = Math.floor( up ? above : below );
+	if ( frame && room < ul.offsetHeight ) {
+		ul.style.maxHeight = Math.max( 120, room ) + 'px';
 	}
 	let act = Math.max( sel.selectedIndex, 0 );
 	const mark = () => {
