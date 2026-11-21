@@ -5,6 +5,17 @@
  * Times are epoch ms; `now` is the server's clock (local clock + offset) so
  * a running timer reads the same on every device.
  */
+/*
+ * The gap between the server's clock and this device's, outside the reactive
+ * store on purpose: it moves a little on every poll, and a reactive value
+ * would redraw every view each time.
+ */
+let offset = 0;
+export const serverNow = () => Date.now() + offset;
+
+/** Members' fields that change what the app shows (not "last seen"). */
+const memberSig = ( list ) => JSON.stringify( ( list || [] ).map( ( m ) => [ m.id, m.name, m.color, m.avatar, m.online ] ) );
+
 export const COLLECTIONS = [ 'projects', 'tasks', 'decisions', 'comments', 'messages', 'timeEntries', 'notifications' ];
 
 export function createStore( boot ) {
@@ -23,7 +34,6 @@ export function createStore( boot ) {
 		timeEntries: {},
 		notifications: {},
 		cursor: null,
-		offset: 0,
 		now: Date.now(),
 		view: 'focus',
 
@@ -51,14 +61,25 @@ export function createStore( boot ) {
 					delete this[ key ][ id ];
 				} );
 			} );
-			this.members = payload.members || this.members;
-			this.agents = payload.agents || this.agents;
-			this.chat = payload.chat || this.chat;
-			this.settings = payload.settings || this.settings;
-			this.cursor = payload.cursor;
+			// Only replace what changed, so an idle poll redraws nothing.
+			const same = ( a, b ) => JSON.stringify( a ) === JSON.stringify( b );
+			if ( payload.members && memberSig( payload.members ) !== memberSig( this.members ) ) {
+				this.members = payload.members;
+			}
+			if ( payload.agents && ! same( payload.agents, this.agents ) ) {
+				this.agents = payload.agents;
+			}
+			if ( payload.chat && ! same( payload.chat, this.chat ) ) {
+				this.chat = payload.chat;
+			}
+			if ( payload.settings && ! same( payload.settings, this.settings ) ) {
+				this.settings = payload.settings;
+			}
+			if ( payload.cursor !== this.cursor ) {
+				this.cursor = payload.cursor;
+			}
 			if ( payload.now ) {
-				this.offset = payload.now - Date.now();
-				this.now = Date.now() + this.offset;
+				offset = payload.now - Date.now();
 			}
 		},
 

@@ -10,7 +10,8 @@
 import { ic, icf, swapInner } from './lib/icons.js';
 import { __, sprintf } from './lib/i18n.js';
 import { clock, dur, esc, initials, dayStart, longDate, shortTitle, ago } from './lib/format.js';
-import { post } from './lib/api.js';
+import { serverNow } from './store.js';
+import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
 import { isPhone, PHONE, placeInd, lockBgScroll, unlockBgScroll, sheetOut, swipeToClose, toast } from './lib/ui.js';
 
 const COLORS = [ 'blue', 'indigo', 'grape', 'violet', 'pink', 'rose', 'salmon', 'red', 'peach', 'amber', 'gold', 'sand', 'lime', 'mint', 'emerald', 'aqua', 'teal', 'sky', 'slate' ];
@@ -28,7 +29,7 @@ function store( key, value ) {
 
 const emit = ( name, detail ) => window.dispatchEvent( new CustomEvent( name, { detail } ) );
 
-export default ( sync ) => ( {
+export default () => ( {
 	ic,
 	icf,
 	swapInner,
@@ -87,7 +88,7 @@ export default ( sync ) => ( {
 		onScroll();
 
 		setInterval( () => {
-			this.$store.nw.now = Date.now() + this.$store.nw.offset;
+			this.$store.nw.now = serverNow();
 		}, 1000 );
 
 		swipeToClose( this.$refs.pop, () => this.closePop( true ) );
@@ -203,43 +204,12 @@ export default ( sync ) => ( {
 		const task = this.taskOf( run );
 		return ( run ? sprintf( /* translators: %s: task title. */ __( 'Pause: %s', 'novawork' ), task ? task.title : '' ) : this.t.startTracking ) + '  (T)';
 	},
-	topTask() {
-		const me = this.$store.nw.me;
-		const mine = Object.values( this.$store.nw.tasks )
-			.filter( ( t ) => t.status === 'now' && ( t.assignees || [] ).includes( me ) )
-			.sort( ( a, b ) => a.order - b.order );
-		return mine.length ? mine[ 0 ].id : 0;
-	},
-	async toggleTracking() {
-		const nw = this.$store.nw;
-		const run = this.myRun();
-		try {
-			if ( run ) {
-				const res = await post( 'timer/stop' );
-				nw.remove( 'timeEntries', run.id );
-				nw.upsert( 'timeEntries', res.entry );
-				toast( sprintf( /* translators: %s: time tracked today. */ __( 'Paused. %s tracked today.', 'novawork' ), dur( this.tracked( nw.me, this.dayStart() ) ) ), 'pause' );
-			} else {
-				const last = Number( store( 'nw.lastTask' ) );
-				const lastTask = last && nw.tasks[ last ];
-				const taskId = lastTask && lastTask.status !== 'done' ? last : this.topTask();
-				if ( ! taskId ) {
-					toast( __( 'Add a task to Now first, then start tracking.', 'novawork' ), 'clock' );
-					return;
-				}
-				const res = await post( 'timer/start', { taskId } );
-				if ( res.stopped ) {
-					nw.upsert( 'timeEntries', res.stopped );
-				}
-				nw.upsert( 'timeEntries', res.entry );
-				nw.upsert( 'tasks', res.task );
-				store( 'nw.lastTask', String( taskId ) );
-				toast( sprintf( /* translators: %s: task title. */ __( 'Timer started: %s', 'novawork' ), res.task.title ), 'play' );
-			}
-		} catch ( e ) {
-			toast( __( 'Could not save. Check your connection and try again.', 'novawork' ), 'x' );
+	toggleTracking() {
+		if ( this.myRun() ) {
+			stopTracking();
+		} else {
+			startTracking( defaultTaskId() );
 		}
-		sync.poll();
 	},
 
 	/* ---------- overlays ---------- */

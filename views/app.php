@@ -96,31 +96,7 @@ wp_print_styles( Assets::styles() );
 	</div>
 </header>
 
-<main class="nw-wrap" id="nw-main">
-	<template x-if="$store.nw.view === 'focus'">
-		<div class="nw-view-head"><div><h1><?php esc_html_e( 'Focus', 'novawork' ); ?></h1><p><span x-text="longDate()"></span>. <?php esc_html_e( 'Three things at a time. Everything else waits in Next.', 'novawork' ); ?></p></div></div>
-	</template>
-	<template x-if="$store.nw.view === 'board'">
-		<div class="nw-view-head"><div><h1><?php esc_html_e( 'Board', 'novawork' ); ?></h1><p>
-		<?php
-		printf(
-			/* translators: %s: the keyboard key N. */
-			esc_html__( 'Drag cards to reorder them or move them between columns. Press %s for a new task.', 'novawork' ),
-			'<kbd>N</kbd>'
-		);
-		?>
-		</p></div></div>
-	</template>
-	<template x-if="$store.nw.view === 'roadmap'">
-		<div class="nw-view-head"><div><h1><?php esc_html_e( 'Roadmap', 'novawork' ); ?></h1><p><?php esc_html_e( 'Each bar runs from a project’s start to its target date and fills as its tasks get done. The dashed red line is a hard deadline.', 'novawork' ); ?></p></div></div>
-	</template>
-	<template x-if="$store.nw.view === 'time'">
-		<div class="nw-view-head"><div><h1><?php esc_html_e( 'Time', 'novawork' ); ?></h1><p><?php esc_html_e( 'Where the hours went. Start and pause tracking from the header or from any task.', 'novawork' ); ?></p></div></div>
-	</template>
-	<template x-if="$store.nw.view === 'decisions'">
-		<div class="nw-view-head"><div><h1><?php esc_html_e( 'Decisions', 'novawork' ); ?></h1><p><?php esc_html_e( 'Questions that block work. Record the answer so nobody has to ask twice.', 'novawork' ); ?></p></div></div>
-	</template>
-</main>
+<main class="nw-wrap" id="nw-main"></main>
 
 <nav class="nw-tabs nw-bn" id="nw-bn" x-ref="bn" aria-label="<?php esc_attr_e( 'Views', 'novawork' ); ?>">
 	<template x-for="v in views" :key="v.key">
@@ -143,6 +119,8 @@ wp_print_styles( Assets::styles() );
 		<button type="button" @click="create('chat')"><span class="nw-nic" style="--nw-c:var(--nw-c-grape);--nw-ci:var(--nw-ci-grape)" x-html="ic('chat-circle-dots')"></span><span><?php esc_html_e( 'Message the team', 'novawork' ); ?><small><?php esc_html_e( 'Opens the team chat', 'novawork' ); ?></small></span></button>
 	</div>
 </div>
+
+<dialog id="nw-dlg" aria-labelledby="nw-dlg-title"><form class="nw-dlg" id="nw-dlg-form" method="dialog"></form></dialog>
 
 <?php wp_print_scripts( array( Assets::SCRIPT ) ); ?>
 </body>

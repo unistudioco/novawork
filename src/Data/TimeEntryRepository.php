@@ -113,16 +113,21 @@ final class TimeEntryRepository extends Repository {
 	}
 
 	/**
-	 * Total finished seconds per task.
+	 * Total finished seconds for each of some tasks.
 	 *
+	 * @param int[] $task_ids Task ids.
 	 * @return array<int, int>
 	 */
-	public function seconds_by_task(): array {
+	public function seconds_by_task( array $task_ids ): array {
 		global $wpdb;
+		$task_ids = self::ids( $task_ids );
+		if ( ! $task_ids ) {
+			return array();
+		}
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT task_id, SUM( TIMESTAMPDIFF( SECOND, started_at, ended_at ) ) AS seconds FROM %i WHERE ended_at IS NOT NULL GROUP BY task_id',
-				$this->table_name()
+				'SELECT task_id, SUM( TIMESTAMPDIFF( SECOND, started_at, ended_at ) ) AS seconds FROM %i WHERE ended_at IS NOT NULL AND task_id IN (' . implode( ',', array_fill( 0, count( $task_ids ), '%d' ) ) . ') GROUP BY task_id',
+				array_merge( array( $this->table_name() ), $task_ids )
 			),
 			ARRAY_A
 		);

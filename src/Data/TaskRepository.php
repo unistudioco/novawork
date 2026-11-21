@@ -85,7 +85,9 @@ final class TaskRepository extends Repository {
 	 * @return list<array<string, mixed>>
 	 */
 	public function present_many( array $rows ): array {
-		$assignees = $this->assignees_of( array_map( static fn( $row ) => (int) $row['id'], $rows ) );
+		$ids       = array_map( static fn( $row ) => (int) $row['id'], $rows );
+		$assignees = $this->assignees_of( $ids );
+		$seconds   = ( new TimeEntryRepository() )->seconds_by_task( $ids );
 		$out       = array();
 		foreach ( $rows as $row ) {
 			$id    = (int) $row['id'];
@@ -100,6 +102,7 @@ final class TaskRepository extends Repository {
 				'assignees' => $assignees[ $id ] ?? array(),
 				'order'     => (int) $row['sort_order'],
 				'doneAt'    => Db::to_ms( $row['done_at'] ),
+				'trackedMs' => ( $seconds[ $id ] ?? 0 ) * 1000,
 				'sample'    => (bool) $row['is_sample'],
 				'createdBy' => (int) $row['created_by'],
 				'createdAt' => Db::to_ms( $row['created_at'] ),

@@ -1,0 +1,228 @@
+/**
+ * Task and project editors (and the comment box they share), ported from the
+ * prototype's openTask() / openProject(). Decisions arrive with the
+ * Decisions view.
+ */
+import { ic } from '../lib/icons.js';
+import { __ } from '../lib/i18n.js';
+import { esc, dur } from '../lib/format.js';
+import { serverNow } from '../store.js';
+import { post, patch, del } from '../lib/api.js';
+import { routeUrl, currentNonce } from '../lib/api.js';
+import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
+import { write, keepTask, stopTracking } from './actions.js';
+import {
+	store, me, people, person, projects, task, project, has, commentsOf, myRun, avatar, COLORS, STATUSES, PRIORITIES, fmt, iso, todayISO, size, byOrder,
+} from './model.js';
+
+/* ---------- comments ---------- */
+
+/** One comment or chat message (the prototype's msgHTML). */
+export function msgHTML( m, highlight ) {
+	const S = store();
+	const agent = m.agent ? S.agents.find( ( a ) => a.key === m.agent ) : null;
+	const p = agent ? null : person( m.by );
+	const name = agent ? agent.name : p ? p.name : __( 'Someone', 'novawork' );
+	const d = new Date( m.at );
+	const when = iso( d ) === todayISO() ? d.toLocaleTimeString( S.locale || undefined, { hour: '2-digit', minute: '2-digit' } ) : fmt( iso( d ) );
+	const files = ( m.files || [] )
+		.map( ( f ) => {
+			const url = esc( f.url + ( f.url.includes( '?' ) ? '&' : '?' ) + '_wpnonce=' + encodeURIComponent( currentNonce() ) );
+			return /^image\//.test( f.type ) && /^image\/(jpeg|png|gif|webp)$/.test( f.type )
+				? `<a href="${ url }" target="_blank" rel="noopener"><img src="${ url }" alt="${ esc( f.name ) }"></a>`
+				: `<a class="nw-fchip" href="${ url }" download>${ ic( 'file' ) }<span class="nw-fn">${ esc( f.name ) }</span><small>${ esc( size( f.size ) ) }</small>${ ic( 'download-simple', 16 ) }</a>`;
+		} )
+		.join( '' );
+	const av = agent ? `<span class="nw-avatar" title="${ esc( name ) }" style="--nw-c:var(--nw-c-${ esc( agent.color ) });--nw-ci:var(--nw-ci-${ esc( agent.color ) })">${ ic( 'sparkle', 13 ) }</span>` : avatar( m.by );
+	return `<div class="nw-msg">${ av }<div class="nw-mwho">${ esc( name ) }<time>${ esc( when ) }</time></div>${ m.text ? `<div class="nw-txt">${ highlight ? highlight( m.text ) : esc( m.text ) }</div>` : '' }${ files ? `<div class="nw-files">${ files }</div>` : '' }</div>`;
+}
+
+function commentBox( kind, id ) {
+	const list = commentsOf( kind, id );
+	return `<div class="nw-field"><span class="nw-flabel">${ esc( __( 'Comments', 'novawork' ) ) }${ list.length ? ' · ' + list.length : '' }</span><div class="nw-comments" id="nw-cmts">${
+		list.length ? list.map( ( c ) => msgHTML( c ) ).join( '' ) : `<span style="color:var(--nw-faint);font-size:13px">${ esc( __( 'No comments yet.', 'novawork' ) ) }</span>`
+	}</div>` +
+		`<div class="nw-cmt-in"><label for="nw-cmt-in" class="nw-vh">${ esc( __( 'Comment', 'novawork' ) ) }</label><input class="nw-input" id="nw-cmt-in" maxlength="2000" placeholder="${ esc( __( 'Write a comment', 'novawork' ) ) }"><button class="nw-btn" type="button" data-cmt="1" aria-label="${ esc( __( 'Send comment', 'novawork' ) ) }">${ ic( 'paper-plane-right', 15 ) }</button></div></div>`;
+}
+
+/** Wire the comment box of the open dialog to an object. */
+function commentsFor( kind, id ) {
+	onComment( async () => {
+		const form = dialogForm();
+		const input = form.querySelector( '#nw-cmt-in' );
+		const text = input.value.trim();
+		if ( ! text ) {
+			return;
+		}
+		const c = await write( () => post( 'comments', { objectType: kind, objectId: Number( id ), text } ) );
+		if ( ! c ) {
+			return;
+		}
+		store().upsert( 'comments', c );
+		input.value = '';
+		const box = form.querySelector( '#nw-cmts' );
+		const list = commentsOf( kind, id );
+		box.innerHTML = list.map( ( x ) => msgHTML( x ) ).join( '' );
+		box.previousElementSibling.textContent = __( 'Comments', 'novawork' ) + ' · ' + list.length;
+		box.scrollTop = box.scrollHeight;
+		input.focus();
+	} );
+}
+
+/* ---------- options ---------- */
+export const projOpts = ( sel ) =>
+	`<option value="0" data-icon="folder-simple">${ esc( __( 'No project', 'novawork' ) ) }</option>` +
+	projects()
+		.map( ( p ) => `<option data-color="${ esc( p.color ) }" value="${ p.id }"${ p.id === Number( sel ) ? ' selected' : '' }>${ esc( p.name ) }</option>` )
+		.join( '' );
+
+export const personOpts = ( sel, none ) =>
+	`<option data-person value="0">${ esc( none ) }</option>` +
+	people()
+		.map( ( p ) => `<option data-person value="${ p.id }"${ p.id === Number( sel ) ? ' selected' : '' }>${ esc( p.name ) }</option>` )
+		.join( '' );
+
+const swatches = ( name, sel ) =>
+	'<div class="nw-swatches">' +
+	COLORS.map( ( c ) => `<label title="${ c }"><input type="radio" name="${ name }" value="${ c }"${ c === sel ? ' checked' : '' }><span style="--nw-c:var(--nw-c-${ c })"></span></label>` ).join( '' ) +
+	'</div>';
+
+/* ---------- task ---------- */
+
+/**
+ * @param {number|null} id       Task id, or null for a new task.
+ * @param {Object}      defaults Fields for a new task (status, projectId).
+ */
+export function openTask( id, defaults ) {
+	const S = store();
+	const fProject = ( () => {
+		try {
+			return window.localStorage.getItem( 'nw.fProject' ) || 'all';
+		} catch ( e ) {
+			return 'all';
+		}
+	} )();
+	const firstProject = projects()[ 0 ];
+	const t = id
+		? task( id )
+		: Object.assign( { title: '', status: 'next', priority: '', assignees: [ me() ], projectId: fProject !== 'all' ? Number( fProject ) : firstProject ? firstProject.id : 0, due: '', notes: '' }, defaults || {} );
+	if ( ! t ) {
+		return;
+	}
+	const run = myRun();
+	const spent = ( t.trackedMs || 0 ) + ( id && run && run.taskId === t.id ? serverNow() - run.start : 0 );
+	const L = ( s ) => esc( s );
+	openDialog(
+		id ? __( 'Edit task', 'novawork' ) : __( 'New task', 'novawork' ),
+		`<div class="nw-field"><label for="nw-f-title" class="nw-vh">${ L( __( 'Task', 'novawork' ) ) }</label><input class="nw-input nw-big" id="nw-f-title" name="title" required maxlength="200" autofocus value="${ esc( t.title ) }" placeholder="${ L( __( 'What needs to happen?', 'novawork' ) ) }"></div>` +
+			`<div class="nw-tabs nw-seg nw-full" role="radiogroup" aria-label="${ L( __( 'Status', 'novawork' ) ) }"><span class="nw-ind" aria-hidden="true"></span>${ STATUSES()
+				.map( ( s ) => `<label class="nw-tab nw-s-${ s.key }${ s.key === t.status ? ' nw-on' : '' }"><input type="radio" name="status" value="${ s.key }"${ s.key === t.status ? ' checked' : '' }><span class="nw-sdot"></span>${ L( s.label ) }</label>` )
+				.join( '' ) }</div>` +
+			`<div class="nw-two"><div class="nw-field"><label for="nw-f-prio">${ L( __( 'Priority', 'novawork' ) ) }</label><select id="nw-f-prio" data-nw-sel data-block="1" name="priority">${ PRIORITIES()
+				.map( ( p ) => `<option data-prio value="${ p.key }"${ p.key === ( t.priority || '' ) ? ' selected' : '' }>${ L( p.label ) }</option>` )
+				.join( '' ) }</select></div>` +
+			`<div class="nw-field"><label for="nw-f-due">${ L( __( 'Due date', 'novawork' ) ) }</label><input class="nw-input" id="nw-f-due" type="date" name="due" value="${ esc( t.due || '' ) }"></div></div>` +
+			`<div class="nw-field"><label for="nw-f-proj">${ L( __( 'Project', 'novawork' ) ) }</label><select id="nw-f-proj" data-nw-sel data-block="1" name="projectId">${ projOpts( t.projectId ) }</select></div>` +
+			`<div class="nw-field"><span class="nw-flabel">${ L( __( 'Assigned to', 'novawork' ) ) }</span><div class="nw-assign">${ people()
+				.map( ( p ) => `<label><input type="checkbox" name="assignees" value="${ p.id }"${ has( t, p.id ) ? ' checked' : '' }><span>${ avatar( p.id ) }${ esc( p.name ) }</span></label>` )
+				.join( '' ) }</div></div>` +
+			`<div class="nw-field"><label for="nw-f-notes">${ L( __( 'Notes', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-f-notes" name="notes" maxlength="4000" placeholder="${ L( __( 'Links, context, what done looks like', 'novawork' ) ) }">${ esc( t.notes || '' ) }</textarea></div>` +
+			( id
+				? `<div class="nw-field"><span class="nw-flabel">${ L( __( 'Time tracked', 'novawork' ) ) }</span><div style="display:flex;align-items:center;gap:10px"><b class="nw-tnum" style="font:700 15px var(--nw-font-head)">${ esc( dur( spent ) ) }</b><span style="color:var(--nw-faint);font-size:12.5px">${ L( __( 'across all sessions', 'novawork' ) ) }</span></div></div><div class="nw-dlg-sep"></div>` +
+				  commentBox( 'task', id )
+				: '' ) +
+			actions( !! id ),
+		async ( fd ) => {
+			const title = String( fd.get( 'title' ) || '' ).trim();
+			if ( ! title ) {
+				return false;
+			}
+			const data = {
+				title,
+				status: String( fd.get( 'status' ) || 'next' ),
+				priority: String( fd.get( 'priority' ) || '' ),
+				assignees: fd.getAll( 'assignees' ).map( Number ),
+				projectId: Number( fd.get( 'projectId' ) || 0 ),
+				due: String( fd.get( 'due' ) || '' ),
+				notes: String( fd.get( 'notes' ) || '' ),
+			};
+			if ( id && data.status === 'done' && t.status !== 'done' ) {
+				const r = myRun();
+				if ( r && r.taskId === t.id ) {
+					await stopTracking( true );
+				}
+			}
+			const saved = await write( () => ( id ? patch( 'tasks/' + id, data ) : post( 'tasks', data ) ), id ? __( 'Saved', 'novawork' ) : __( 'Task added', 'novawork' ) );
+			keepTask( saved );
+			return !! saved;
+		}
+	);
+	if ( id ) {
+		commentsFor( 'task', id );
+		onDelete( async () => {
+			const ok = await write( () => del( 'tasks/' + id ), __( 'Deleted', 'novawork' ) );
+			if ( ok ) {
+				store().remove( 'tasks', id );
+			}
+			return ok;
+		} );
+	}
+}
+
+/* ---------- project ---------- */
+
+export function openProject( id ) {
+	const count = Object.keys( store().projects ).length;
+	const p = id ? project( id ) : { name: '', goal: '', color: COLORS[ count % COLORS.length ], start: todayISO(), target: '', deadline: '', status: 'active' };
+	if ( ! p ) {
+		return;
+	}
+	const L = ( s ) => esc( s );
+	const statuses = [
+		[ 'active', __( 'Active', 'novawork' ) ],
+		[ 'paused', __( 'Paused', 'novawork' ) ],
+		[ 'done', __( 'Done', 'novawork' ) ],
+	];
+	openDialog(
+		id ? __( 'Edit project', 'novawork' ) : __( 'New project', 'novawork' ),
+		`<div class="nw-field"><label for="nw-p-name" class="nw-vh">${ L( __( 'Name', 'novawork' ) ) }</label><input class="nw-input nw-big" id="nw-p-name" name="name" required maxlength="80" autofocus value="${ esc( p.name ) }" placeholder="${ L( __( 'Project name', 'novawork' ) ) }"></div>` +
+			`<div class="nw-field"><label for="nw-p-goal">${ L( __( 'Goal', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-p-goal" name="goal" maxlength="600" placeholder="${ L( __( 'What does done look like?', 'novawork' ) ) }">${ esc( p.goal || '' ) }</textarea></div>` +
+			`<div class="nw-two"><div class="nw-field"><label for="nw-p-start">${ L( __( 'Start', 'novawork' ) ) }</label><input class="nw-input" id="nw-p-start" type="date" name="start" value="${ esc( p.start || '' ) }"></div><div class="nw-field"><label for="nw-p-target">${ L( __( 'Target', 'novawork' ) ) }</label><input class="nw-input" id="nw-p-target" type="date" name="target" value="${ esc( p.target || '' ) }"></div></div>` +
+			`<div class="nw-two"><div class="nw-field"><label for="nw-p-dead">${ L( __( 'Hard deadline', 'novawork' ) ) }</label><input class="nw-input" id="nw-p-dead" type="date" name="deadline" value="${ esc( p.deadline || '' ) }"></div><div class="nw-field"><label for="nw-p-status">${ L( __( 'Status', 'novawork' ) ) }</label><select id="nw-p-status" data-nw-sel data-block="1" name="status">${ statuses
+				.map( ( s ) => `<option value="${ s[ 0 ] }"${ s[ 0 ] === ( p.status || 'active' ) ? ' selected' : '' }>${ L( s[ 1 ] ) }</option>` )
+				.join( '' ) }</select></div></div>` +
+			`<div class="nw-field"><span class="nw-flabel">${ L( __( 'Colour', 'novawork' ) ) }</span>${ swatches( 'color', p.color ) }</div>` +
+			actions( !! id ),
+		async ( fd ) => {
+			const data = {
+				name: String( fd.get( 'name' ) || '' ).trim(),
+				goal: String( fd.get( 'goal' ) || '' ),
+				start: String( fd.get( 'start' ) || '' ),
+				target: String( fd.get( 'target' ) || '' ),
+				deadline: String( fd.get( 'deadline' ) || '' ),
+				status: String( fd.get( 'status' ) || 'active' ),
+				color: String( fd.get( 'color' ) || 'slate' ),
+			};
+			if ( ! data.name ) {
+				return false;
+			}
+			const saved = await write( () => ( id ? patch( 'projects/' + id, data ) : post( 'projects', data ) ), id ? __( 'Saved', 'novawork' ) : __( 'Project added', 'novawork' ) );
+			if ( saved && saved.id ) {
+				store().upsert( 'projects', saved );
+			}
+			return !! saved;
+		}
+	);
+	if ( id ) {
+		onDelete( async () => {
+			const ok = await write( () => del( 'projects/' + id ), __( 'Deleted', 'novawork' ) );
+			if ( ok ) {
+				store().remove( 'projects', id );
+			}
+			return ok;
+		} );
+	}
+}
+
+// Exposed for views that sort projects the same way.
+export { byOrder, routeUrl };

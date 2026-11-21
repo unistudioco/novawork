@@ -11,6 +11,7 @@ import '../css/additions.css';
 import { createStore } from './store.js';
 import { startSync } from './sync.js';
 import shell from './shell.js';
+import { mountViews } from './views/index.js';
 import { setNonce } from './lib/api.js';
 
 const boot = window.novawork || {};
@@ -24,7 +25,8 @@ if ( boot.sync ) {
 }
 
 const sync = startSync( live );
-Alpine.data( 'nwApp', () => shell( sync ) );
+Alpine.data( 'nwApp', () => shell() );
 
 window.Alpine = Alpine;
 Alpine.start();
+mountViews( sync );
