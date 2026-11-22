@@ -36,6 +36,8 @@ rsync -a --exclude-from=.distignore ./ "$COPY/"
 cp composer.lock "$COPY/" 2>/dev/null || true
 composer install --no-dev --optimize-autoloader --no-interaction --quiet --working-dir="$COPY"
 rm -f "$COPY/composer.lock"
+# Finder can write .DS_Store into a folder it shows, even after the copy.
+find "$COPY" -name .DS_Store -delete
 
 REPORT="$OUT/report.csv"
 "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin check "$COPY" --slug=novawork \

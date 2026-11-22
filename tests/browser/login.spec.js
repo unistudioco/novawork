@@ -13,7 +13,8 @@ test( 'sign in on the workspace page and back out again', async ( { browser } ) 
 	const page = await ctx.newPage();
 	await page.goto( APP + '#board' );
 	await expect( page ).toHaveURL( /\/login\/?#board$/ );
-	await expect( page.locator( '.nw-login-card h1' ) ).not.toHaveText( '' );
+	// The workspace's name, as text or as the logo's alt text.
+	await expect( page.locator( '.nw-login-card h1' ) ).toHaveAccessibleName( /\S/ );
 
 	await page.fill( '#nw-login-user', USER );
 	await page.fill( '#nw-login-pass', 'not-the-password' );

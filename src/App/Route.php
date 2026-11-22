@@ -155,6 +155,9 @@ final class Route {
 			wp_safe_redirect( self::login_url() );
 			exit;
 		}
+		// The workspace speaks the member's language (Profile → Language), as
+		// wp-admin does; WordPress uses the site's for front-end pages.
+		switch_to_user_locale( get_current_user_id() );
 		Page::render();
 		exit;
 	}

@@ -53,7 +53,9 @@ export async function api( method, path, body, options = {} ) {
 	if ( body && ! isForm && ! isGet ) {
 		headers[ 'Content-Type' ] = 'application/json';
 	}
-	const response = await fetch( routeUrl( path, isGet ? body : {} ), {
+	// _locale=user: answers (errors, labels) in the member's own language,
+	// as wp-admin does, not the site's.
+	const response = await fetch( routeUrl( path, { ...( isGet ? body : {} ), _locale: 'user' } ), {
 		method,
 		credentials: 'same-origin',
 		headers,

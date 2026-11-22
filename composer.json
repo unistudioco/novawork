@@ -39,7 +39,8 @@
 			"@lint",
 			"@analyse"
 		],
-		"test:api": "bash bin/test-api.sh"
+		"test:api": "bash bin/test-api.sh",
+		"make-pot": "wp i18n make-pot . languages/novawork.pot --slug=novawork --domain=novawork --exclude=assets/dist,build,node_modules,vendor,tests,bin,languages,test-results,playwright-report --headers='{\"Report-Msgid-Bugs-To\":\"https://wordpress.org/support/plugin/novawork/\"}'"
 	},
 	"scripts-descriptions": {
 		"lint": "PHPCS with WordPress Coding Standards and PHP 8.1 compatibility.",
@@ -47,6 +48,7 @@
 		"analyse": "PHPStan level 6 with WordPress stubs.",
 		"plugin-check": "Run the official Plugin Check against the dev site (see bin/plugin-check.sh).",
 		"test": "Both static gates.",
-		"test:api": "API integration tests on the dev site (rolled back)."
+		"test:api": "API integration tests on the dev site (rolled back).",
+		"make-pot": "Regenerate languages/novawork.pot from the PHP and JS source (needs WP-CLI)."
 	}
 }

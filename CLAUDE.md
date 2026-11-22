@@ -219,7 +219,7 @@ one); the app document must have it.
 ## Phase 5, part 1: settings screen (built 2026-11-22)
 
 - wp-admin → NovaWork → Settings (`Admin\SettingsPage`, cap `novawork_manage`),
-  view `views/admin-settings.php`, bundle `js/admin.js` + `css/admin.css`
+  view `views/admin-settings.php`, bundle `js/settings.js` + `css/admin.css`
   (its own Vite entry; tokens + copies of the app's components scoped under
   `.nw-admin`, toasts under the body class `nw-admin-screen`; never import
   app.css there, it styles body/dialog). The cards stay light (wp-admin is
@@ -327,6 +327,27 @@ one); the app document must have it.
   `mysql --socket=… < backup.sql` (`wp db import` ignores the socket).
   Never test from wp-admin → Plugins → Delete: the dev plugin folder is a
   symlink to this repository.
+
+## Phase 5, part 4: translations (built 2026-11-22)
+
+- `composer run make-pot` writes `languages/novawork.pot` (PHP + JS
+  source; excludes dist, build, vendor, tests). Every string is a literal
+  with the `novawork` domain; JS imports `__`/`_n`/`_x`/`sprintf` from
+  `lib/i18n.js` (wp-i18n).
+- JS translations are looked up per source file (`novawork-{locale}-{md5(
+  path)}.json`, as language packs and `wp i18n make-json` name them). The
+  bundles are hashed and span many sources, so the Vite plugin in
+  vite.config.js writes `assets/dist/i18n.json` (sources per bundle) and
+  `App\Translations` merges their JSON on `pre_load_script_translations`
+  (plugin `languages/` first, then wp-content/languages/plugins, which wins).
+- Never name a JS source `admin.js`: WP-CLI's make-json mangles it to
+  `a.js` (why the settings bundle is `js/settings.js`).
+- The app and its REST calls use the member's language (Profile →
+  Language): `switch_to_user_locale()` in Route before rendering, and
+  `_locale=user` on every `api()` request. The sign-in page uses the site's.
+  `switch_to_user_locale()` ignores locales without a core language pack,
+  so testing a language needs `wp language core install xx_XX` (remove it
+  after).
 
 ## Owner decision, 2026-11-21: toasts with an action
 
