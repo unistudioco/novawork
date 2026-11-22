@@ -282,7 +282,7 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
 
 /* Members' sign-in page (owner mark): the workspace's name, NovaWork's look. */
 .nw-login .nw-login-card { width: min(400px, 100%); display: grid; gap: 14px; padding: 30px 28px 26px; border: 1px solid var(--nw-line); border-radius: 20px; background: var(--nw-surface); box-shadow: var(--nw-shadow); }
-.nw-login-head { display: grid; justify-items: center; gap: 6px; text-align: center; margin-bottom: 6px; }
+.nw-login-head { display: grid; justify-items: center; gap: 12px; text-align: center; margin-bottom: 6px; }
 .nw-login-mark { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--nw-accent-soft); color: var(--nw-accent-on-soft); margin-bottom: 4px; }
 .nw-login-head h1 { font: 700 21px/1.2 var(--nw-font-head); letter-spacing: -.02em; color: var(--nw-fg); overflow-wrap: anywhere; }
 .nw-login-head p { margin: 0; color: var(--nw-muted); font-size: 13.5px; }
@@ -314,7 +314,7 @@ a.nw-login-go { text-decoration: none; }
 .nw-mark.nw-mark-img img { display: block; width: 24px; height: 24px; border-radius: 6px; object-fit: cover; }
 .nw-brand-logo { display: block; height: 30px; width: auto; max-width: 220px; object-fit: contain; }
 .nw-login-logo { display: flex; justify-content: center; }
-.nw-login-logo .nw-brand-logo { height: 44px; max-width: 280px; }
+.nw-login-logo .nw-brand-logo { height: 38px; max-width: 168px; }
 .nw-login-mark img { display: block; width: 48px; height: 48px; border-radius: 14px; object-fit: cover; }
 .nw-login-mark:has(img) { background: none; }
 .nw-only-dark { display: none; }
