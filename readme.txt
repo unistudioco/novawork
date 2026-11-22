@@ -12,7 +12,7 @@ A calm team workspace inside WordPress: projects, a board, a roadmap, decisions,
 
 == Description ==
 
-NovaWork gives a small team a shared workspace on a WordPress site they already own: projects, a board, a roadmap, decisions, a focus timer with time analytics, team chat and notifications. No subscription, no outside service.
+NovaWork gives a small team a shared workspace on a WordPress site they already own: projects, a board, a roadmap, decisions, a focus timer with time analytics, team chat and notifications. No subscription, no external service.
 
 This is an early development build. The full description, FAQ and screenshots come with the first release.
 

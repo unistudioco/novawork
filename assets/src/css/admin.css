@@ -189,3 +189,6 @@
   .nw-color { display: flex; align-items: center; gap: 8px; }
   .nw-color .nw-input { width: 150px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
 }
+
+/* Links to a section (#nw-s-members) stop clear of the admin bar. */
+.nw-admin .nw-scard { scroll-margin-top: 48px; }

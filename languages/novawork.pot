@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-22T02:59:47+00:00\n"
+"POT-Creation-Date: 2026-11-22T03:08:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -1524,7 +1524,7 @@ msgid "Could not save. Check your connection and try again."
 msgstr ""
 
 #: assets/src/js/shell.js:44
-#: assets/src/js/views/focus.js:131
+#: assets/src/js/views/focus.js:145
 msgid "Focus"
 msgstr ""
 
@@ -1558,7 +1558,7 @@ msgid "Start tracking"
 msgstr ""
 
 #: assets/src/js/shell.js:57
-#: assets/src/js/views/focus.js:54
+#: assets/src/js/views/focus.js:68
 msgid "Pause tracking"
 msgstr ""
 
@@ -1571,12 +1571,12 @@ msgid "Tracked today. Open Time"
 msgstr ""
 
 #: assets/src/js/shell.js:60
-#: assets/src/js/views/focus.js:30
+#: assets/src/js/views/focus.js:44
 msgid "Online"
 msgstr ""
 
 #: assets/src/js/shell.js:61
-#: assets/src/js/views/focus.js:30
+#: assets/src/js/views/focus.js:44
 msgid "Away"
 msgstr ""
 
@@ -1970,7 +1970,7 @@ msgid "What does done look like?"
 msgstr ""
 
 #: assets/src/js/views/editors.js:253
-#: assets/src/js/views/focus.js:93
+#: assets/src/js/views/focus.js:107
 msgid "Start"
 msgstr ""
 
@@ -2042,60 +2042,68 @@ msgstr ""
 msgid "Decision added"
 msgstr ""
 
-#: assets/src/js/views/focus.js:52
+#: assets/src/js/views/focus.js:21
+msgid "Invite your team"
+msgstr ""
+
+#: assets/src/js/views/focus.js:21
+msgid "Send a link from Settings → Members."
+msgstr ""
+
+#: assets/src/js/views/focus.js:66
 msgid "Running"
 msgstr ""
 
 #. translators: 1: time today, 2: time this week.
-#: assets/src/js/views/focus.js:53
+#: assets/src/js/views/focus.js:67
 #, js-format
 msgid "%1$s today · %2$s this week"
 msgstr ""
 
-#: assets/src/js/views/focus.js:55
-#: assets/src/js/views/focus.js:113
+#: assets/src/js/views/focus.js:69
+#: assets/src/js/views/focus.js:127
 msgid "Tracked today"
 msgstr ""
 
 #. translators: %s: time this week.
-#: assets/src/js/views/focus.js:56
+#: assets/src/js/views/focus.js:70
 #, js-format
 msgid "%s this week"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/views/focus.js:56
+#: assets/src/js/views/focus.js:70
 #, js-format
 msgid "Next: %s"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/views/focus.js:58
+#: assets/src/js/views/focus.js:72
 #, js-format
 msgid "Start tracking %s"
 msgstr ""
 
-#: assets/src/js/views/focus.js:66
+#: assets/src/js/views/focus.js:80
 msgid "Open slot"
 msgstr ""
 
-#: assets/src/js/views/focus.js:66
+#: assets/src/js/views/focus.js:80
 msgid "Add"
 msgstr ""
 
-#: assets/src/js/views/focus.js:69
+#: assets/src/js/views/focus.js:83
 msgid "Your day"
 msgstr ""
 
 #. translators: %s: your name.
-#: assets/src/js/views/focus.js:72
+#: assets/src/js/views/focus.js:86
 #, js-format
 msgid "%s, your three"
 msgstr ""
 
-#: assets/src/js/views/focus.js:72
-#: assets/src/js/views/focus.js:73
-#: assets/src/js/views/focus.js:111
+#: assets/src/js/views/focus.js:86
+#: assets/src/js/views/focus.js:87
+#: assets/src/js/views/focus.js:125
 #: assets/src/js/views/notes.js:65
 #: assets/src/js/views/select.js:35
 #: assets/src/js/views/time.js:90
@@ -2103,58 +2111,58 @@ msgid "You"
 msgstr ""
 
 #. translators: 1: your name, 2: the Now limit.
-#: assets/src/js/views/focus.js:73
+#: assets/src/js/views/focus.js:87
 #, js-format
 msgid "%1$s, your top %2$d"
 msgstr ""
 
 #. translators: 1: tasks in Now, 2: the Now limit.
-#: assets/src/js/views/focus.js:74
+#: assets/src/js/views/focus.js:88
 #, js-format
 msgid "%1$d of %2$d"
 msgstr ""
 
 #. translators: %d: tasks in Now.
-#: assets/src/js/views/focus.js:79
+#: assets/src/js/views/focus.js:93
 #, js-format
 msgid "%d things in Now. Three at a time works best: drag the rest down to Up next."
 msgstr ""
 
 #. translators: 1: tasks in Now, 2: the Now limit.
-#: assets/src/js/views/focus.js:80
+#: assets/src/js/views/focus.js:94
 #, js-format
 msgid "%1$d things in Now. %2$d at a time works best: drag the rest down to Up next."
 msgstr ""
 
-#: assets/src/js/views/focus.js:84
+#: assets/src/js/views/focus.js:98
 msgid "Up next for you"
 msgstr ""
 
-#: assets/src/js/views/focus.js:96
+#: assets/src/js/views/focus.js:110
 msgid "Your Next list is empty."
 msgstr ""
 
-#: assets/src/js/views/focus.js:108
+#: assets/src/js/views/focus.js:122
 msgid "Team today"
 msgstr ""
 
-#: assets/src/js/views/focus.js:116
+#: assets/src/js/views/focus.js:130
 msgid "Due in the next 3 weeks"
 msgstr ""
 
-#: assets/src/js/views/focus.js:119
+#: assets/src/js/views/focus.js:133
 msgid "No deadlines in the next three weeks."
 msgstr ""
 
-#: assets/src/js/views/focus.js:121
+#: assets/src/js/views/focus.js:135
 msgid "Waiting on a decision"
 msgstr ""
 
-#: assets/src/js/views/focus.js:127
+#: assets/src/js/views/focus.js:141
 msgid "Nothing waiting on a decision."
 msgstr ""
 
-#: assets/src/js/views/focus.js:131
+#: assets/src/js/views/focus.js:145
 msgid "Three things at a time. Everything else waits in Next."
 msgstr ""
 

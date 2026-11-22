@@ -122,7 +122,7 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_end( 'accent_text' ); ?>
 	</section>
 
-	<section class="nw-scard" aria-labelledby="nw-s-members">
+	<section class="nw-scard" id="nw-members" aria-labelledby="nw-s-members">
 		<h3 id="nw-s-members"><?php esc_html_e( 'Members', 'novawork' ); ?></h3>
 		<div class="nw-srow">
 			<div class="nw-srow-l">

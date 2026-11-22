@@ -53,6 +53,8 @@ final class Page {
 			'logoutUrl' => esc_url_raw( wp_specialchars_decode( wp_logout_url( Route::login_url( true ) ) ) ),
 			'locale'    => str_replace( '_', '-', determine_locale() ),
 			'version'   => NOVAWORK_VERSION,
+			// Where an administrator invites people (the "Invite your team" row).
+			'inviteUrl' => current_user_can( Capabilities::MANAGE ) ? esc_url_raw( admin_url( 'admin.php?page=novawork-settings#nw-members' ) ) : '',
 			'sync'      => $response->is_error() ? null : $response->get_data(),
 		);
 	}

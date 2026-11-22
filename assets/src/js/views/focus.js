@@ -6,6 +6,20 @@ import { ic, icf } from '../lib/icons.js';
 import { __, sprintf } from '../lib/i18n.js';
 import { esc, dur, dayStart, longDate, shortTitle } from '../lib/format.js';
 import { serverNow } from '../store.js';
+
+/**
+ * Owner decision (2026-11-22): while the administrator is alone in the
+ * workspace, Team today offers to invite the team (Settings → Members).
+ *
+ * @param {number} count Members.
+ */
+const inviteRow = ( count ) => {
+	const url = ( window.novawork || {} ).inviteUrl;
+	if ( count > 1 || ! url ) {
+		return '';
+	}
+	return `<a class="nw-row nw-invite" href="${ esc( url ) }"><span class="nw-invite-ic">${ ic( 'user-plus', 17 ) }</span><div class="nw-tm"><b>${ esc( __( 'Invite your team', 'novawork' ) ) }</b><span>${ esc( __( 'Send a link from Settings → Members.', 'novawork' ) ) }</span></div></a>`;
+};
 import { orderTeam } from '../lib/team.js';
 import {
 	canDecide, nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days,
@@ -112,7 +126,7 @@ export function viewFocus() {
 						p.id
 					) }</span></div><span class="nw-tstat" title="${ esc( __( 'Tracked today', 'novawork' ) ) }" data-today="${ p.id }">${ esc( dur( tracked( p.id, dayStart( now ) ) ) ) }</span></div>`
 			)
-			.join( '' ) }</div></section>` +
+			.join( '' ) }${ inviteRow( people().length ) }</div></section>` +
 		`<section class="nw-sec-due"><div class="nw-label">${ esc( __( 'Due in the next 3 weeks', 'novawork' ) ) }<span class="nw-n nw-tnum">${ soon.length }</span></div>` +
 		( soon.length
 			? `<div class="nw-list">${ soon.map( ( t ) => `<div class="nw-row">${ avatars( t ) }<span class="nw-grow" data-act="edit-task" data-id="${ t.id }">${ esc( t.title ) }</span>${ dueHTML( t.due, t.status ) }</div>` ).join( '' ) }</div>`

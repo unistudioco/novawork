@@ -337,3 +337,8 @@ a.nw-login-go { text-decoration: none; }
 .nw-samples p { margin: 0; flex: 1; min-width: 0; }
 .nw-samples-ic { display: grid; place-items: center; flex: none; }
 .nw-samples .nw-btn { flex: none; }
+
+/* "Invite your team" while the administrator is alone (owner 2026-11-22). */
+.nw-list.nw-team a.nw-invite { color: inherit; text-decoration: none; border-radius: 10px; }
+.nw-list.nw-team a.nw-invite:hover b { color: var(--nw-accent-ink); }
+.nw-invite-ic { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px dashed var(--nw-line-strong); color: var(--nw-muted); }
