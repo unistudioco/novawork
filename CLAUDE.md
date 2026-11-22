@@ -238,6 +238,56 @@ one); the app document must have it.
   role; locked when the role already grants access; admins only).
 - Dev admin login: `NOVAWORK_ADMIN` in .dev.env.
 
+## Phase 5, part 2: members' sign-in page (built 2026-11-22)
+
+- `{workspace}/login` (`/login` in home mode; `?novawork=login` with plain
+  links) → `App\Login` + `views/login.php`, the app document's look with the
+  workspace's name. Signed-out app visits go there (not wp-login.php); the
+  #view travels through the form; signing out returns with "You've signed
+  out" (`Route::login_url( true )`; `logoutUrl` is decoded from
+  wp_logout_url()'s HTML escaping).
+- `wp_signon()` so `authenticate`-hooked plugins apply; the form fires core's
+  `login_form` for captcha/security fields; nonce `novawork_login`. Wrong
+  username/email/password all get one message; another plugin's refusal
+  (too many attempts…) is shown as text, status 403. "Forgot password?" is
+  WordPress's reset (`wp_lostpassword_url()`).
+- The login address under an earlier address (or under the path in home
+  mode) forwards (`?novawork=go-login`). `Route::RULES_VERSION` bumps make
+  existing sites rebuild rewrite rules once.
+- Reset pages: `?action=lost` (retrieve_password(); one answer whether or
+  not the account exists) and `?action=rp&key&login` (check_password_reset_key,
+  core's `validate_password_reset` hook, reset_password()). A member's reset
+  email is rewritten to link there (`retrieve_password_notification_email`);
+  anyone else keeps WordPress's link.
+- Invites: table `{prefix}novawork_invites` (schema v7; only an HMAC of the
+  token is stored), `Services\Invites`, `GET|POST /invites`,
+  `DELETE /invites/{id}` (admins), setting `invite_days` (7). The join page
+  is `?action=join&invite=…`: a new person gets the Member role and is signed
+  in; a signed-in or signing-in person gains access and keeps their role
+  ("Already have an account?" carries the invite through sign-in). An
+  email-bound invite always uses that address. Feed verb `member_joined`;
+  hook `novawork_member_joined`. The link is shown once (Copy falls back to
+  execCommand on plain-http sites).
+- `workspace_only` (off): `Route::only_workspace()` at template_redirect 1
+  sends every other front-end request to the workspace; sitemaps off,
+  robots.txt disallows all. wp-admin, REST, ajax, cron, wp-login.php untouched.
+
+## Owner decisions, 2026-11-22: sign-up, demo, reset pages, site mode
+
+- **No open sign-up.** WordPress's "Anyone can register" never makes members.
+  Members join by **invite links**: an administrator creates an invite (link
+  or email); the person signs up on a NovaWork page and gets the Member role.
+- **Demo:** a **WordPress Playground blueprint** (sample data, a demo user
+  signed in), which also powers WordPress.org's Live Preview. Phase 6. No
+  demo mode inside the plugin.
+- **Reset pages** are NovaWork pages ({workspace}/login?action=lost|reset),
+  built on WordPress's own reset functions; the reset email links there.
+- **Setting "Show only the workspace"** (`workspace_only`, off): every other
+  public front-end request (pages, posts, archives, search, 404s, feeds,
+  sitemaps) goes to the workspace or its sign-in page; wp-admin, REST,
+  admin-ajax, cron and wp-login.php keep working; search engines are told
+  not to index.
+
 ## Owner decision, 2026-11-21: toasts with an action
 
 Deleting (a task, project, decision, comment…) still arms on the first click

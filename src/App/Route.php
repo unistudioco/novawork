@@ -43,11 +43,21 @@ final class Route {
 	public const OLD_SLUGS_OPTION = 'novawork_old_slugs';
 
 	/**
+	 * Bump when the rules below change, so existing sites rebuild them once.
+	 */
+	private const RULES_VERSION = 3;
+
+	/**
 	 * Register hooks.
 	 */
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'add_rewrite_rule' ) );
 		add_filter( 'query_vars', array( self::class, 'query_vars' ) );
+		add_filter( 'retrieve_password_notification_email', array( Login::class, 'reset_email' ), 10, 4 );
+		// Owner decision: a site that shows only the workspace.
+		add_action( 'template_redirect', array( self::class, 'only_workspace' ), 1 );
+		add_filter( 'wp_sitemaps_enabled', array( self::class, 'sitemaps' ) );
+		add_filter( 'robots_txt', array( self::class, 'robots_txt' ), 99 );
 		add_action( 'template_redirect', array( self::class, 'maybe_render' ), 0 );
 	}
 
@@ -65,10 +75,21 @@ final class Route {
 	public static function add_rewrite_rule(): void {
 		$current = self::slug();
 		add_rewrite_rule( '^' . preg_quote( $current, '/' ) . '/?$', 'index.php?' . self::QUERY_VAR . '=' . ( 'home' === Settings::location() ? 'go' : '1' ), 'top' );
+		// The members' sign-in page: {workspace}/login.
+		add_rewrite_rule( '^' . ( 'home' === Settings::location() ? '' : preg_quote( $current, '/' ) . '/' ) . 'login/?$', 'index.php?' . self::QUERY_VAR . '=login', 'top' );
+		// The sign-in page under an earlier address (or the path, in home mode) forwards.
+		$elsewhere = 'home' === Settings::location() ? array_merge( array( $current ), self::old_slugs() ) : array_diff( self::old_slugs(), array( $current ) );
+		foreach ( array_unique( $elsewhere ) as $old ) {
+			add_rewrite_rule( '^' . preg_quote( $old, '/' ) . '/login/?$', 'index.php?' . self::QUERY_VAR . '=go-login', 'top' );
+		}
 		foreach ( self::old_slugs() as $old ) {
 			if ( $old !== $current ) {
 				add_rewrite_rule( '^' . preg_quote( $old, '/' ) . '/?$', 'index.php?' . self::QUERY_VAR . '=go', 'top' );
 			}
+		}
+		if ( (int) get_option( 'novawork_rewrite_version' ) < self::RULES_VERSION ) {
+			update_option( 'novawork_rewrite_version', self::RULES_VERSION );
+			update_option( self::FLUSH_OPTION, 1 );
 		}
 		if ( get_option( self::FLUSH_OPTION ) ) {
 			delete_option( self::FLUSH_OPTION );
@@ -105,9 +126,17 @@ final class Route {
 	 */
 	public static function maybe_render(): void {
 		$var = (string) get_query_var( self::QUERY_VAR );
+		if ( 'go-login' === $var ) {
+			wp_safe_redirect( self::login_url(), 301 );
+			exit;
+		}
 		if ( 'go' === $var ) {
 			// An earlier address (or the path while the workspace is the home page).
 			wp_safe_redirect( self::url(), 301 );
+			exit;
+		}
+		if ( 'login' === $var ) {
+			Login::handle();
 			exit;
 		}
 		if ( '' === $var && ! self::is_home_request() ) {
@@ -115,7 +144,8 @@ final class Route {
 		}
 		nocache_headers();
 		if ( ! is_user_logged_in() ) {
-			auth_redirect();
+			// Owner mark: the workspace's own sign-in page, not wp-login.php.
+			wp_safe_redirect( self::login_url() );
 			exit;
 		}
 		Page::render();
@@ -135,6 +165,20 @@ final class Route {
 		$path = trim( (string) wp_parse_url( $uri, PHP_URL_PATH ), '/' );
 		$home = trim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
 		return $path === $home && '' === (string) wp_parse_url( $uri, PHP_URL_QUERY );
+	}
+
+	/**
+	 * The members' sign-in page.
+	 *
+	 * @param bool $signed_out Add the "You've signed out" note.
+	 */
+	public static function login_url( bool $signed_out = false ): string {
+		if ( get_option( 'permalink_structure' ) ) {
+			$url = trailingslashit( self::url() ) . user_trailingslashit( 'login' );
+		} else {
+			$url = add_query_arg( self::QUERY_VAR, 'login', home_url( '/' ) );
+		}
+		return $signed_out ? add_query_arg( 'signed-out', '1', $url ) : $url;
 	}
 
 	/**
@@ -160,5 +204,37 @@ final class Route {
 		$list = array_values( array_diff( self::old_slugs(), array( $slug ) ) );
 		array_unshift( $list, $slug );
 		update_option( self::OLD_SLUGS_OPTION, array_slice( $list, 0, 5 ), false );
+	}
+
+	/**
+	 * "Show only the workspace" (setting `workspace_only`): every other public
+	 * page (posts, pages, archives, search, 404s, feeds) goes to the
+	 * workspace, which sends signed-out visitors to its sign-in page. wp-admin,
+	 * the REST API, admin-ajax, cron and wp-login.php never come through here.
+	 */
+	public static function only_workspace(): void {
+		if ( ! Settings::get( 'workspace_only' ) || is_admin() || wp_doing_ajax() || wp_doing_cron() || is_robots() || is_favicon() || is_customize_preview() ) {
+			return;
+		}
+		wp_safe_redirect( self::url(), 302 );
+		exit;
+	}
+
+	/**
+	 * No sitemaps while the site shows only the workspace.
+	 *
+	 * @param bool $enabled Whether WordPress's sitemaps are on.
+	 */
+	public static function sitemaps( bool $enabled ): bool {
+		return Settings::get( 'workspace_only' ) ? false : $enabled;
+	}
+
+	/**
+	 * Ask search engines to stay out while the site shows only the workspace.
+	 *
+	 * @param string $output robots.txt as WordPress would send it.
+	 */
+	public static function robots_txt( string $output ): string {
+		return Settings::get( 'workspace_only' ) ? "User-agent: *\nDisallow: /\n" : $output;
 	}
 }

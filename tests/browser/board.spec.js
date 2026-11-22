@@ -33,6 +33,9 @@ test( 'create, edit, drag, comment and delete a task', async ( { page } ) => {
 	await page.click( '#nw-dlg button[value="save"]' );
 	await expect.poll( async () => ( await serverData( page ) ).tasks.find( ( t ) => t.title === E )?.priority ).toBe( 'high' );
 
+	// The dialog animates out and the board redraws: wait for both before dragging.
+	await expect( page.locator( '#nw-dlg[open]' ) ).toHaveCount( 0 );
+	await expect( page.locator( 'article', { hasText: E } ) ).toBeVisible();
 	await pointerDrag( page, page.locator( 'article', { hasText: E } ), page.locator( '.nw-lane.nw-s-later header' ) );
 	await expect( page.locator( '.nw-lane.nw-s-later article', { hasText: E } ) ).toHaveCount( 1 );
 	await expect.poll( async () => ( await serverData( page ) ).tasks.find( ( t ) => t.title === E )?.status ).toBe( 'later' );

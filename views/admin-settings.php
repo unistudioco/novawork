@@ -66,6 +66,9 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 				<button type="button" role="radio" :aria-checked="String(values.location === 'home')" :class="{ 'nw-on': values.location === 'home' }" @click="values.location = 'home'"><?php esc_html_e( 'The site’s home page', 'novawork' ); ?></button>
 			</div>
 		<?php $novawork_row_end( 'location' ); ?>
+		<?php $novawork_row_start( 'workspace_only', __( 'Show only the workspace', 'novawork' ), __( 'Every other page of the site (posts, pages, archives, search, error pages) opens the workspace instead, and search engines are asked to stay out. wp-admin keeps working.', 'novawork' ) ); ?>
+			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-workspace_only" :aria-checked="String(!!values.workspace_only)" @click="values.workspace_only = !values.workspace_only"><span></span></button>
+		<?php $novawork_row_end( 'workspace_only' ); ?>
 		<div x-show="values.location === 'path'">
 			<?php $novawork_row_start( 'app_slug', __( 'Address', 'novawork' ), __( 'Letters, numbers and dashes. The old address keeps working and forwards here.', 'novawork' ), 'nw-f-slug' ); ?>
 				<div class="nw-affix"><span x-text="homeLabel()" :title="site.home"></span><input class="nw-input" id="nw-f-slug" maxlength="60" x-model="values.app_slug" spellcheck="false"></div>
@@ -88,6 +91,34 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 			</div>
 			<div class="nw-srow-c"><a class="nw-btn" href="<?php echo esc_url( $novawork_users ); ?>"><?php esc_html_e( 'Manage members in Users', 'novawork' ); ?></a></div>
 		</div>
+			<div class="nw-srow">
+			<div class="nw-srow-l">
+				<label class="nw-slabel" for="nw-inv-email"><?php esc_html_e( 'Invite people', 'novawork' ); ?></label>
+				<p class="nw-shelp"><?php esc_html_e( 'Create a link for someone to join. Add their email to send it for you, or leave it empty and share the link yourself. Each link works once.', 'novawork' ); ?></p>
+			</div>
+			<div class="nw-srow-c">
+				<input class="nw-input" id="nw-inv-email" type="email" maxlength="100" x-model="invite.email" placeholder="<?php esc_attr_e( 'name@example.com (optional)', 'novawork' ); ?>" @keydown.enter.prevent="createInvite()">
+				<label class="nw-check" x-show="invite.email.trim()"><input type="checkbox" x-model="invite.send"> <?php esc_html_e( 'Email the invite', 'novawork' ); ?></label>
+				<button type="button" class="nw-btn nw-primary" @click="createInvite()" :disabled="invite.busy"><?php esc_html_e( 'Create invite', 'novawork' ); ?></button>
+				<p class="nw-serr" role="alert" x-show="invite.error" x-text="invite.error"></p>
+			</div>
+		</div>
+		<div class="nw-invlink" x-show="invite.link" role="status">
+			<p x-text="invite.note"></p>
+			<div class="nw-affix"><input class="nw-input" readonly :value="invite.link" @focus="$event.target.select()" aria-label="<?php esc_attr_e( 'Invite link', 'novawork' ); ?>"><button type="button" class="nw-btn" @click="copyInvite()" x-text="copyLabel()"></button></div>
+		</div>
+		<ul class="nw-invites" x-show="invites.length">
+			<template x-for="inv in invites" :key="inv.id">
+				<li :class="'nw-inv-' + inv.status">
+					<span class="nw-inv-who" x-text="inv.email || anyoneLabel()"></span>
+					<span class="nw-inv-state" x-text="inviteState(inv)"></span>
+					<button type="button" class="nw-btn nw-ghost" x-show="inv.status === 'open'" @click="revokeInvite(inv)"><?php esc_html_e( 'Revoke', 'novawork' ); ?></button>
+				</li>
+			</template>
+		</ul>
+		<?php $novawork_row_start( 'invite_days', __( 'Invites last', 'novawork' ), __( 'After this, an unused link stops working.', 'novawork' ), 'nw-f-invdays' ); ?>
+			<div class="nw-unit"><input class="nw-input" id="nw-f-invdays" type="number" min="1" max="90" x-model.number="values.invite_days"><span><?php esc_html_e( 'days', 'novawork' ); ?></span></div>
+		<?php $novawork_row_end( 'invite_days' ); ?>
 	</section>
 
 	<section class="nw-scard" aria-labelledby="nw-s-team">

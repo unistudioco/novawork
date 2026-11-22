@@ -43,6 +43,7 @@ final class Plugin {
 		Rest\SearchController::class,
 		Rest\ActivityController::class,
 		Rest\SettingsController::class,
+		Rest\InvitesController::class,
 	);
 
 	/**

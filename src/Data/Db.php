@@ -33,6 +33,7 @@ final class Db {
 		'attachments',
 		'notifications',
 		'activity',
+		'invites',
 		'reads',
 		'changes',
 	);

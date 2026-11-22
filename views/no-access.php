@@ -25,7 +25,7 @@ wp_print_styles( Assets::styles() );
 	<div class="nw-empty">
 		<h1><?php echo esc_html( sprintf( /* translators: %s: the workspace's name. */ __( 'You’re not in %s yet', 'novawork' ), \NovaWork\Settings::workspace_name() ) ); ?></h1>
 		<p><?php esc_html_e( 'Members are added by a site administrator in WordPress, under Users. Ask them to add you, then reload this page.', 'novawork' ); ?></p>
-		<p><a class="nw-btn" href="<?php echo esc_url( wp_logout_url() ); ?>"><?php esc_html_e( 'Sign out', 'novawork' ); ?></a></p>
+		<p><a class="nw-btn" href="<?php echo esc_url( wp_logout_url( \NovaWork\App\Route::login_url( true ) ) ); ?>"><?php esc_html_e( 'Sign out', 'novawork' ); ?></a></p>
 	</div>
 </main>
 </body>

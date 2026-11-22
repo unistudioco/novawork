@@ -23,7 +23,7 @@ use NovaWork\Data\Db;
  */
 final class Schema {
 
-	public const VERSION = 6;
+	public const VERSION = 7;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -151,6 +151,18 @@ created_at datetime NOT NULL,
 PRIMARY KEY  (id),
 KEY created_at (created_at),
 KEY object (object_type,object_id)
+) $c;",
+			"CREATE TABLE {$t( 'invites' )} (
+id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+token_hash char(64) NOT NULL DEFAULT '',
+email varchar(100) NOT NULL DEFAULT '',
+created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+created_at datetime NOT NULL,
+expires_at datetime NOT NULL,
+used_by bigint(20) unsigned NOT NULL DEFAULT 0,
+used_at datetime DEFAULT NULL,
+PRIMARY KEY  (id),
+UNIQUE KEY token_hash (token_hash)
 ) $c;",
 			"CREATE TABLE {$t( 'messages' )} (
 id bigint(20) unsigned NOT NULL AUTO_INCREMENT,

@@ -8,7 +8,7 @@ import '../css/admin.css';
 import Alpine from 'alpinejs';
 import { ic, icf } from './lib/icons.js';
 import { __, _n, sprintf } from './lib/i18n.js';
-import { post } from './lib/api.js';
+import { get, post, del } from './lib/api.js';
 import { toast } from './lib/ui.js';
 import { enhance } from './views/select.js';
 
@@ -22,8 +22,78 @@ Alpine.data( 'nwSettings', () => ( {
 	site: state.site || {},
 	errors: {},
 	saving: false,
+	invites: [],
+	invite: { email: '', send: true, busy: false, link: '', note: '', copied: false, error: '' },
+
+	async loadInvites() {
+		try {
+			this.invites = await get( 'invites' );
+		} catch ( e ) {}
+	},
+	copyLabel() {
+		return this.invite.copied ? __( 'Copied', 'novawork' ) : __( 'Copy', 'novawork' );
+	},
+	anyoneLabel() {
+		return __( 'Anyone with the link', 'novawork' );
+	},
+	inviteState( inv ) {
+		const days = Math.max( 1, Math.ceil( ( inv.expiresAt - Date.now() ) / 864e5 ) );
+		if ( inv.status === 'used' ) {
+			return sprintf( /* translators: %s: a person's name. */ __( 'Joined: %s', 'novawork' ), inv.usedByName );
+		}
+		if ( inv.status === 'expired' ) {
+			return __( 'Expired', 'novawork' );
+		}
+		return sprintf( /* translators: %d: number of days. */ _n( 'Open, %d day left', 'Open, %d days left', days, 'novawork' ), days );
+	},
+	async createInvite() {
+		if ( this.invite.busy ) {
+			return;
+		}
+		this.invite.busy = true;
+		this.invite.error = '';
+		try {
+			const email = this.invite.email.trim();
+			const res = await post( 'invites', { email, send: !! email && this.invite.send } );
+			this.invite.link = res.link;
+			this.invite.copied = false;
+			this.invite.note = res.sent
+				? sprintf( /* translators: %s: email address. */ __( 'Sent to %s. You can also share this link; it works once.', 'novawork' ), email )
+				: __( 'Copy this link and send it to them. It works once, and you won’t see it again.', 'novawork' );
+			this.invite.email = '';
+			await this.loadInvites();
+		} catch ( e ) {
+			this.invite.error = ( e && e.message ) || __( 'The invite wasn’t created. Try again.', 'novawork' );
+		} finally {
+			this.invite.busy = false;
+		}
+	},
+	async copyInvite() {
+		try {
+			await navigator.clipboard.writeText( this.invite.link );
+			this.invite.copied = true;
+		} catch ( e ) {
+			// No clipboard API on plain-http sites: select the link and copy it the old way.
+			const field = this.$root.querySelector( '.nw-invlink input' );
+			field.focus();
+			field.select();
+			try {
+				this.invite.copied = document.execCommand( 'copy' );
+			} catch ( err ) {}
+		}
+	},
+	async revokeInvite( inv ) {
+		try {
+			await del( 'invites/' + inv.id );
+			this.invites = this.invites.filter( ( x ) => x.id !== inv.id );
+			toast( __( 'Invite revoked.', 'novawork' ), 'check' );
+		} catch ( e ) {
+			toast( __( 'Could not revoke it. Try again.', 'novawork' ), 'x' );
+		}
+	},
 
 	init() {
+		this.loadInvites();
 		this.$nextTick( () => {
 			enhance( this.$root );
 			this.steppers();
