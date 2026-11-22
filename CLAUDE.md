@@ -648,7 +648,8 @@ running for good. Now:
 ```
 composer run lint          # PHPCS: WordPress + PHPCompatibilityWP (8.1-)
 composer run analyse       # PHPStan level 6 + WordPress stubs
-composer run plugin-check  # bin/plugin-check.sh: Plugin Check on the release copy
+bash bin/build-zip.sh      # the release zip: build/novawork-<version>.zip
+composer run plugin-check  # bin/plugin-check.sh: Plugin Check on that zip, unpacked
 composer run test:api      # bin/test-api.sh: REST integration tests, rolled back
 bash bin/test-http.sh      # real HTTP: nonce, two-member sync, upload/download
 bash bin/seed-dev.sh       # generic demo data on an empty dev workspace
@@ -658,12 +659,17 @@ npm run dev                # Vite dev server on :5175
 ```
 
 - Read gate exit codes from a file, never through `| tail`.
-- `bin/plugin-check.sh` builds a release copy from `.distignore` (with
-  `composer install --no-dev`) into `build/check/novawork` and checks that, so
-  dev files never show as false errors. Plugin Check itself exits 0 even with
-  errors; the script counts ERROR rows and fails on any.
-- `.distignore` is the single list of what never ships; the Phase 6 zip build
-  must use it too. Built assets ship with their source (`assets/src`,
+- `bin/build-zip.sh` (Phase 6) builds the release: `.distignore` decides what
+  never ships, vendor/ is rebuilt with `composer install --no-dev`, and it
+  refuses to build when the version differs between the plugin header,
+  `NOVAWORK_VERSION`, readme's Stable tag and package.json, when a file that
+  must ship is missing, or when a dev file slipped in. Output:
+  `build/novawork-<version>.zip` (one `novawork/` folder) and
+  `build/release/novawork`.
+- `bin/plugin-check.sh` builds that zip, unpacks it into `build/check` and
+  checks exactly what ships. Plugin Check itself exits 0 even with errors;
+  the script counts ERROR rows and fails on any.
+- `.distignore` is the single list of what never ships. Built assets ship with their source (`assets/src`,
   `package.json`, `vite.config.js`) and the readme links the public repo.
 - Visual parity: Playwright screenshots side by side with the prototype, light
   and dark, 1366px and 390px touch. **Look at the screenshots.**
