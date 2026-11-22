@@ -736,6 +736,46 @@ try {
 	wp_delete_user( (int) $editor );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Personal data: export, erase, uninstall' );
+	$ex = apply_filters( 'wp_privacy_personal_data_exporters', array() );
+	$er = apply_filters( 'wp_privacy_personal_data_erasers', array() );
+	$t->ok( isset( $ex['novawork-messages'], $ex['novawork-comments'], $ex['novawork-time'], $ex['novawork-votes'], $ex['novawork-notifications'], $ex['novawork-activity'], $ex['novawork-profile'], $er['novawork'] ), 'NovaWork registers its exporters and eraser with WordPress' );
+	$pd_mail = 'pd-' . wp_generate_password( 6, false ) . '@example.com';
+	$pd      = wp_insert_user( array( 'user_login' => 'nw_pd_' . wp_generate_password( 6, false ), 'user_email' => $pd_mail, 'user_pass' => wp_generate_password(), 'role' => NovaWork\Access\Capabilities::ROLE, 'display_name' => 'Pat Data' ) );
+	list( , $pm ) = $t->call( (int) $pd, 'POST', '/messages', array( 'text' => 'Personal hello' ) );
+	list( , $pt ) = $t->call( (int) $pd, 'POST', '/tasks', array( 'title' => 'Pat task', 'assignees' => array( (int) $pd, $alex ) ) );
+	$t->call( (int) $pd, 'POST', '/comments', array( 'objectType' => 'task', 'objectId' => $pt['id'], 'text' => 'Pat comment' ) );
+	( new NovaWork\Data\TimeEntryRepository() )->insert( array( 'user_id' => (int) $pd, 'task_id' => $pt['id'], 'started_at' => gmdate( 'Y-m-d H:i:s', time() - 300 ), 'ended_at' => gmdate( 'Y-m-d H:i:s', time() - 180 ) ) );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'decision_votes' => true ) ) ); // An earlier check turned votes off.
+	list( , $pdd ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Pat decides?', 'ownerId' => (int) $pd, 'voting' => true, 'options' => array( array( 'label' => 'A' ), array( 'label' => 'B' ) ) ) );
+	$t->call( (int) $pd, 'POST', '/decisions/' . $pdd['id'] . '/vote', array( 'option' => 'o1' ) );
+	$out = array();
+	foreach ( array( 'messages', 'comments', 'time', 'votes', 'activity', 'profile' ) as $k ) {
+		$page   = call_user_func( $ex[ 'novawork-' . $k ]['callback'], $pd_mail, 1 );
+		$out[ $k ] = $page;
+	}
+	$vals = fn( $page ) => array_merge( ...array_map( fn( $i ) => array_column( $i['data'], 'value' ), $page['data'] ?: array( array( 'data' => array() ) ) ) );
+	$t->ok( in_array( 'Personal hello', $vals( $out['messages'] ), true ) && in_array( 'Pat comment', $vals( $out['comments'] ), true ) && in_array( 'Pat task', $vals( $out['time'] ), true ) && $out['messages']['done'], 'the export has their messages, comments and time', array_map( fn( $p ) => count( $p['data'] ), $out ) );
+	$t->ok( 1 === count( $out['votes']['data'] ) && 1 === count( $out['profile']['data'] ) && count( $out['activity']['data'] ) >= 1, 'and their votes, team-feed rows and profile' );
+	$empty = call_user_func( $ex['novawork-messages']['callback'], 'nobody-' . wp_generate_password( 6, false ) . '@example.com', 1 );
+	$t->ok( array() === $empty['data'] && $empty['done'], 'an address with no account exports nothing' );
+
+	$round = 0;
+	do {
+		$res = call_user_func( $er['novawork']['callback'], $pd_mail, ++$round );
+	} while ( ! $res['done'] && $round < 20 );
+	$count = fn( $table, $col ) => (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE %i = %d', $wpdb->prefix . 'novawork_' . $table, $col, (int) $pd ) );
+	$t->ok( $res['done'] && 0 === $count( 'messages', 'user_id' ) + $count( 'comments', 'user_id' ) + $count( 'time_entries', 'user_id' ) + $count( 'decision_votes', 'user_id' ) + $count( 'notifications', 'user_id' ) + $count( 'activity', 'actor_id' ) + $count( 'task_assignees', 'user_id' ), 'erasing removes their messages, comments, time, votes, notifications, feed rows and assignments', $res );
+	$kept = ( new NovaWork\Data\TaskRepository() )->find( $pt['id'] );
+	$dec  = ( new NovaWork\Data\DecisionRepository() )->find( $pdd['id'] );
+	$t->ok( $kept && 0 === (int) $kept['created_by'] && $dec && 0 === (int) $dec['owner_id'] && $res['items_retained'] && $res['messages'], 'their task and the decision they owned stay with the team, no longer naming them', $res['messages'] );
+	$t->ok( '' === get_user_meta( (int) $pd, NovaWork\Members::COLOR_META, true ), 'their NovaWork profile details are gone' );
+	wp_delete_user( (int) $pd );
+
+	$t->ok( false === NovaWork\Install\Uninstaller::site(), 'uninstall removes nothing while "delete everything" is off' );
+	$t->ok( is_readable( dirname( __DIR__, 2 ) . '/uninstall.php' ) && str_contains( (string) file_get_contents( dirname( __DIR__, 2 ) . '/uninstall.php' ), 'WP_UNINSTALL_PLUGIN' ), 'uninstall.php exists and only runs from WordPress' );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Removing a member' );
 	$t->call( $alex, 'PATCH', '/tasks/' . $due['id'], array( 'assignees' => array( $sam, $alex ) ) );
 	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $due['id'] ) );

@@ -301,6 +301,33 @@ one); the app document must have it.
   default blue prints nothing, so the prototype's tokens stay exact.
 - No live preview. wp-admin keeps NovaWork's own flag and blue.
 
+## Phase 5, part 3: privacy and uninstall (built 2026-11-22)
+
+- `Services\Privacy`: seven exporters (messages, comments, time, votes,
+  notifications, team feed, profile; 100 per page) and one eraser (200 rows
+  a pass, called until done). The eraser removes the person's messages
+  (with files), comments, time, votes, notifications, feed rows, read
+  markers, unsent uploads, invites to their address and NovaWork user meta;
+  it unassigns them and clears created_by / owner_id / decided_by /
+  actor_id / invite links, so shared work stays without their name (it
+  says so in its message). Deletes and updates go through the
+  repositories, so open apps hear about them.
+- Suggested privacy-policy text (Settings → Privacy) covers what is stored,
+  retention, browser storage, Fontshare and Gravatar.
+- `uninstall.php` → `Install\Uninstaller`: only when `delete_data` is on;
+  per site on a network: clears cron, takes access from members (NovaWork
+  Members move to the default role), removes the role and caps, drops the
+  tables, deletes `novawork_*` options, transients and user meta, and
+  deletes uploads/novawork. Never on deactivation.
+- Testing uninstall for real (verified 2026-11-22): back up first (Local's
+  mysqldump: `wp db export … --socket=$NOVAWORK_MYSQL_SOCKET` with Local's
+  mysql bin on PATH; copy uploads/novawork), run uninstall.php with
+  `--skip-plugins=novawork` (an active NovaWork reinstalls itself on the
+  next load), inspect with `--skip-plugins`, then restore with Local's
+  `mysql --socket=… < backup.sql` (`wp db import` ignores the socket).
+  Never test from wp-admin → Plugins → Delete: the dev plugin folder is a
+  symlink to this repository.
+
 ## Owner decision, 2026-11-21: toasts with an action
 
 Deleting (a task, project, decision, comment…) still arms on the first click
