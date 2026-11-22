@@ -618,6 +618,24 @@ running for good. Now:
   tab running. A browser that freezes or discards background tabs (Chrome's
   Memory Saver, phones) makes the app go quiet, and the timer stops there.
 
+## Phase 6: release (built 2026-11-22)
+
+- `bin/build-zip.sh` → `build/novawork-<version>.zip`; `bin/plugin-check.sh`
+  checks that zip unpacked (0 errors, 0 warnings). Verified installing the
+  zip on a brand-new WordPress.
+- `readme.txt` is complete (description, FAQ, screenshots, External
+  services for Fontshare and Gravatar, privacy, changelog).
+- `.wordpress-org/` (never ships) holds what goes to SVN `assets/`:
+  `screenshot-N.png` from `node bin/screenshots.mjs` (needs Fontshare
+  reachable for the real fonts) and `blueprints/blueprint.json` from
+  `node bin/blueprint.mjs`, which builds the Live Preview from
+  `tests/seed/dev-data.php` (one demo; the visitor is the admin, shown as
+  Alex). Rerun both after changing the demo data or the UI.
+- Every PHP file starts with `defined( 'ABSPATH' ) || exit;` (after the
+  namespace and imports in src/); reviewers flag direct file access.
+- `RELEASE.md` (never ships): the owner's decisions, the submission and SVN
+  steps, and the guideline-by-guideline check. The owner submits.
+
 ## Owner requests queued for later phases
 
 - (Built.) Chat @mentions: see "Chat" below.
@@ -707,7 +725,8 @@ npm run dev                # Vite dev server on :5175
 
 0 Understand ✓ · 1 Scaffold ✓ · 2 Data and API ✓ · 3 App shell ✓ · 4 Features ✓
 (Board+Projects → Focus+Time → Roadmap → Decisions+Comments → Chat →
-Notifications → Search) · 5 Product layer · 6 Release.
+Notifications → Search) · 5 Product layer ✓ · 6 Release ✓ (built; the owner
+submits, see RELEASE.md).
 
 Search (final pass, 2026-11-21): tasks, projects and decisions from the
 store; messages from the store plus older ones from `GET /messages?q=`
