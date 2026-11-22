@@ -446,6 +446,57 @@ try {
 	$t->ok( count( $mine_e ) >= 2 && ! array_filter( $mine_e, fn( $e ) => $e['by'] !== $alex ), "sam can see alex's tracked time for the Time view" );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Timer: a running timer needs a sign of life (owner, 2026-11-22)' );
+	$away_after = NovaWork\Services\Timer::away_after();
+	$t->ok( 10 * MINUTE_IN_SECONDS === $away_after, 'the away limit is the inactivity setting (10 minutes)' );
+	$backdate   = static function ( int $user, int $started_ago, int $seen_ago ) use ( $entries ) {
+		$run = $entries->running_for( $user );
+		$entries->update( (int) $run['id'], array( 'started_at' => gmdate( 'Y-m-d H:i:s', time() - $started_ago ) ) );
+		update_user_meta( $user, NovaWork\Members::SEEN_META, time() - $seen_ago );
+		return (int) $run['id'];
+	};
+	list( , $ta ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Folded laptop', 'status' => 'now' ) );
+
+	// Laptop folded 40 minutes ago after 30 minutes of work: back, the first poll stops it.
+	$t->call( $alex, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$rid           = $backdate( $alex, 70 * MINUTE_IN_SECONDS, 40 * MINUTE_IN_SECONDS );
+	list( , $back ) = $t->call( $alex, 'GET', '/sync' );
+	$row           = $entries->find( $rid );
+	$t->ok( null === $entries->running_for( $alex ), 'back after a folded laptop: the first poll stops the timer' );
+	$t->ok( $row && abs( (int) strtotime( $row['ended_at'] . ' UTC' ) - ( time() - 40 * MINUTE_IN_SECONDS ) ) <= 2, 'it ends at the last sign of life, 40 minutes ago' );
+	$t->ok( isset( $back['timerAway'] ) && abs( $back['timerAway']['awayMs'] - 40 * MINUTE_IN_SECONDS * 1000 ) < 3000 && $ta['id'] === $back['timerAway']['taskId'], 'the app is told how long was not counted', $back['timerAway'] ?? null );
+	list( , $again ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( ! isset( $again['timerAway'] ), 'and only once' );
+
+	// Quiet for less than the limit (a background tab polls about once a minute): it keeps running.
+	$t->call( $alex, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$backdate( $alex, 30 * MINUTE_IN_SECONDS, 2 * MINUTE_IN_SECONDS );
+	list( , $ok ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( null !== $entries->running_for( $alex ) && ! isset( $ok['timerAway'] ), 'two quiet minutes are not away: it keeps running' );
+
+	// Started after the last poll (a fresh start counts as a sign of life).
+	$backdate( $alex, 60, 50 * MINUTE_IN_SECONDS );
+	$t->call( $alex, 'GET', '/sync' );
+	$t->ok( null !== $entries->running_for( $alex ), 'a timer started a minute ago is not stopped for an old last poll' );
+	NovaWork\Services\Timer::stop( $alex );
+
+	// A teammate's poll stops a timer left running on a closed tab.
+	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$sid = $backdate( $sam, 50 * MINUTE_IN_SECONDS, 25 * MINUTE_IN_SECONDS );
+	delete_transient( 'novawork_away_sweep' );
+	$t->call( $alex, 'GET', '/sync' );
+	$t->ok( null === $entries->running_for( $sam ), "sam's tab closed 25 minutes ago: alex's poll stops sam's timer" );
+	$srow = $entries->find( $sid );
+	$kept = $srow ? (int) strtotime( $srow['ended_at'] . ' UTC' ) - (int) strtotime( $srow['started_at'] . ' UTC' ) : 0;
+	$t->ok( abs( $kept - 25 * MINUTE_IN_SECONDS ) <= 2, 'it keeps the 25 minutes before sam went quiet', $kept );
+
+	// The hourly cron does the same when nobody is online.
+	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$backdate( $sam, 3 * HOUR_IN_SECONDS, 2 * HOUR_IN_SECONDS );
+	NovaWork\Services\Cron::run();
+	$t->ok( null === $entries->running_for( $sam ), 'the hourly job stops it when nobody is online' );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Chat and private files' );
 	list( $s ) = $t->call( $alex, 'POST', '/messages', array( 'text' => '  ' ) );
 	$t->ok( 400 === $s, 'empty message → 400', $s );

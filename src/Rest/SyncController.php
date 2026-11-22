@@ -24,6 +24,7 @@ use NovaWork\Data\TimeEntryRepository;
 use NovaWork\Members;
 use NovaWork\Services\Files;
 use NovaWork\Services\Notifier;
+use NovaWork\Services\Timer;
 use NovaWork\Settings;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -113,7 +114,11 @@ final class SyncController extends Controller {
 		$me    = self::me();
 		$since = $request->get_param( 'since' );
 
+		// Before this poll counts as a sign of life: back after a folded laptop
+		// or a closed tab, a timer left running stops where they went quiet.
+		$away = Timer::stop_if_away( $me );
 		Members::touch( $me );
+		Timer::sweep_away();
 		Notifier::check_due();
 
 		// Read the bound first: anything written after it waits for the next poll.
@@ -152,6 +157,11 @@ final class SyncController extends Controller {
 				'uploadTypes'    => array_keys( Files::allowed_mimes() ),
 			),
 		);
+
+		if ( $away ) {
+			// The app says why the timer stopped.
+			$body['timerAway'] = $away;
+		}
 
 		$response = self::respond( $body );
 		$response->header( 'Cache-Control', 'no-store' );
