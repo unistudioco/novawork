@@ -50,7 +50,7 @@
 /* Rows are 54px: 300px shows five whole rows and half of the sixth, which
    tells people the list scrolls. */
 .nw-pop .nw-crew-list { max-height: 1900px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
-.nw-list.nw-team { max-height: 190px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.nw-list.nw-team { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 
 /* Prototype bug: the selected option's check mark had 12px of padding inside
    a 14px border-box, leaving a 2px sliver. Keep the spacing, show the icon. */
