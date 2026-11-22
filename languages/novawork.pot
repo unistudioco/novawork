@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-22T02:31:58+00:00\n"
+"POT-Creation-Date: 2026-11-22T02:59:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -375,7 +375,7 @@ msgid "NovaWork profile"
 msgstr ""
 
 #: src/Services/Privacy.php:131
-#: views/app.php:132
+#: views/app.php:135
 msgid "Message"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgstr ""
 
 #: src/Services/Privacy.php:180
 #: src/Services/Privacy.php:213
-#: views/app.php:121
+#: views/app.php:124
 msgid "When"
 msgstr ""
 
@@ -530,6 +530,42 @@ msgstr ""
 
 #: src/Services/Privacy.php:459
 msgid "Automattic privacy policy"
+msgstr ""
+
+#: src/Services/Samples.php:87
+msgid "Getting started"
+msgstr ""
+
+#: src/Services/Samples.php:88
+msgid "A sample project. Projects group tasks and decisions, and show on the Roadmap. Rename it, or remove the samples when you’re ready."
+msgstr ""
+
+#: src/Services/Samples.php:102
+msgid "Edit this task, then drag it to Done"
+msgstr ""
+
+#: src/Services/Samples.php:103
+msgid "Click a card to edit it. Press play to track time on it. Now holds three tasks per person; everything else waits in Next."
+msgstr ""
+
+#: src/Services/Samples.php:118
+msgid "Which day works for our weekly check-in?"
+msgstr ""
+
+#: src/Services/Samples.php:119
+msgid "A sample decision. Write down what needs deciding, let the team weigh in, then record the answer so it’s easy to find later."
+msgstr ""
+
+#: src/Services/Samples.php:128
+msgid "Monday"
+msgstr ""
+
+#: src/Services/Samples.php:132
+msgid "Wednesday"
+msgstr ""
+
+#: src/Services/Samples.php:136
+msgid "Friday"
 msgstr ""
 
 #: src/Services/Timer.php:43
@@ -978,20 +1014,28 @@ msgstr ""
 msgid "Data"
 msgstr ""
 
-#: views/admin-settings.php:257
-msgid "Delete everything when NovaWork is deleted"
+#: views/admin-settings.php:258
+msgid "Sample items"
 msgstr ""
 
-#: views/admin-settings.php:257
-msgid "Tasks, projects, decisions, chat, time, files and settings are removed for good when you delete the plugin. Off: deactivating or deleting keeps them."
+#: views/admin-settings.php:258
+msgid "The project, task and decision NovaWork made on its first run to show where to start. Removing them also removes their comments and votes."
 msgstr ""
 
 #: views/admin-settings.php:262
-#: assets/src/js/settings.js:271
+msgid "Delete everything when NovaWork is deleted"
+msgstr ""
+
+#: views/admin-settings.php:262
+msgid "Tasks, projects, decisions, chat, time, files and settings are removed for good when you delete the plugin. Off: deactivating or deleting keeps them."
+msgstr ""
+
+#: views/admin-settings.php:267
+#: assets/src/js/settings.js:287
 msgid "Save changes"
 msgstr ""
 
-#: views/admin-settings.php:264
+#: views/admin-settings.php:269
 msgid "Discard"
 msgstr ""
 
@@ -1021,13 +1065,13 @@ msgstr ""
 
 #: views/app.php:49
 #: views/app.php:68
-#: views/app.php:116
-#: views/app.php:118
+#: views/app.php:119
+#: views/app.php:121
 msgid "Team chat"
 msgstr ""
 
 #: views/app.php:51
-#: assets/src/js/shell.js:255
+#: assets/src/js/shell.js:284
 #: assets/src/js/views/notes.js:235
 msgid "Notifications"
 msgstr ""
@@ -1053,34 +1097,38 @@ msgid "Theme"
 msgstr ""
 
 #: views/app.php:92
-#: views/app.php:103
+#: views/app.php:106
 msgid "Views"
 msgstr ""
 
-#: views/app.php:110
-#: views/app.php:138
-#: views/app.php:140
+#: views/app.php:102
+msgid "Remove them"
+msgstr ""
+
+#: views/app.php:113
+#: views/app.php:141
+#: views/app.php:143
 msgid "Create"
 msgstr ""
 
-#: views/app.php:118
+#: views/app.php:121
 msgid "Drag to move. Drop at an edge to dock."
 msgstr ""
 
-#: views/app.php:118
-#: views/app.php:120
+#: views/app.php:121
+#: views/app.php:123
 msgid "Search messages"
 msgstr ""
 
-#: views/app.php:118
+#: views/app.php:121
 msgid "Close chat"
 msgstr ""
 
-#: views/app.php:121
+#: views/app.php:124
 msgid "Any time"
 msgstr ""
 
-#: views/app.php:121
+#: views/app.php:124
 #: assets/src/js/views/chat.js:126
 #: assets/src/js/views/notes.js:181
 #: assets/src/js/views/roadmap.js:113
@@ -1089,88 +1137,88 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: views/app.php:121
+#: views/app.php:124
 #: assets/src/js/views/chat.js:131
 msgid "Yesterday"
 msgstr ""
 
-#: views/app.php:121
+#: views/app.php:124
 msgid "Last 7 days"
 msgstr ""
 
-#: views/app.php:121
+#: views/app.php:124
 msgid "Last 30 days"
 msgstr ""
 
-#: views/app.php:121
+#: views/app.php:124
 msgid "On a date…"
 msgstr ""
 
-#: views/app.php:122
+#: views/app.php:125
 msgid "Date"
 msgstr ""
 
-#: views/app.php:130
+#: views/app.php:133
 msgid "Attach files"
 msgstr ""
 
-#: views/app.php:132
-#: views/app.php:145
+#: views/app.php:135
+#: views/app.php:148
 msgid "Message the team"
 msgstr ""
 
-#: views/app.php:133
+#: views/app.php:136
 msgid "Send"
 msgstr ""
 
-#: views/app.php:142
+#: views/app.php:145
 #: assets/src/js/views/editors.js:182
 msgid "New task"
 msgstr ""
 
-#: views/app.php:142
+#: views/app.php:145
 msgid "Goes to Now, assigned to you"
 msgstr ""
 
-#: views/app.php:143
+#: views/app.php:146
 #: assets/src/js/views/editors.js:250
 #: assets/src/js/views/roadmap.js:47
 msgid "New project"
 msgstr ""
 
-#: views/app.php:143
+#: views/app.php:146
 msgid "With dates for the roadmap"
 msgstr ""
 
-#: views/app.php:144
+#: views/app.php:147
 #: assets/src/js/views/decisions.js:44
 #: assets/src/js/views/editors.js:364
 msgid "New decision"
 msgstr ""
 
-#: views/app.php:144
+#: views/app.php:147
 msgid "A question that blocks work"
 msgstr ""
 
-#: views/app.php:145
+#: views/app.php:148
 msgid "Opens the team chat"
 msgstr ""
 
-#: views/app.php:149
+#: views/app.php:152
 msgid "Still working?"
 msgstr ""
 
 #. translators: 1: time without activity, e.g. "10m"; 2: seconds left.
-#: views/app.php:153
+#: views/app.php:156
 #, php-format
 msgid "No activity for %1$s. The timer pauses in %2$ss, and the time you were away won’t be counted."
 msgstr ""
 
-#: views/app.php:158
+#: views/app.php:161
 msgid "Pause now"
 msgstr ""
 
-#: views/app.php:158
+#: views/app.php:161
 msgid "I’m still working"
 msgstr ""
 
@@ -1403,55 +1451,73 @@ msgstr ""
 msgid "Copy this link and send it to them. It works once, and you won’t see it again."
 msgstr ""
 
-#: assets/src/js/settings.js:151
+#. translators: %d: number of sample items.
+#: assets/src/js/settings.js:149
+#, js-format
+msgid "Remove %d sample item"
+msgid_plural "Remove %d sample items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/src/js/settings.js:156
+#: assets/src/js/shell.js:265
+msgid "Sample items removed."
+msgstr ""
+
+#: assets/src/js/settings.js:158
+#: assets/src/js/shell.js:267
+msgid "Could not remove them. Try again."
+msgstr ""
+
+#: assets/src/js/settings.js:167
 msgid "Invite revoked."
 msgstr ""
 
-#: assets/src/js/settings.js:153
+#: assets/src/js/settings.js:169
 msgid "Could not revoke it. Try again."
 msgstr ""
 
-#: assets/src/js/settings.js:247
+#: assets/src/js/settings.js:263
 msgid "More"
 msgstr ""
 
-#: assets/src/js/settings.js:247
+#: assets/src/js/settings.js:263
 msgid "Less"
 msgstr ""
 
 #. translators: %d: megabytes.
-#: assets/src/js/settings.js:256
+#: assets/src/js/settings.js:272
 #, js-format
 msgid "Your server accepts files up to %d MB, so that is the real limit until your host raises it."
 msgstr ""
 
 #. translators: %d: number of settings with a problem.
-#: assets/src/js/settings.js:267
+#: assets/src/js/settings.js:283
 #, js-format
 msgid "%d setting needs a look."
 msgid_plural "%d settings need a look."
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/src/js/settings.js:268
+#: assets/src/js/settings.js:284
 msgid "You have unsaved changes."
 msgstr ""
 
-#: assets/src/js/settings.js:271
+#: assets/src/js/settings.js:287
 msgid "Saving…"
 msgstr ""
 
 #. translators: %s: the workspace's address.
-#: assets/src/js/settings.js:298
+#: assets/src/js/settings.js:314
 #, js-format
 msgid "Saved. The workspace is now at %s"
 msgstr ""
 
-#: assets/src/js/settings.js:298
+#: assets/src/js/settings.js:314
 msgid "Settings saved."
 msgstr ""
 
-#: assets/src/js/settings.js:308
+#: assets/src/js/settings.js:324
 #: assets/src/js/views/actions.js:37
 #: assets/src/js/views/thread.js:222
 msgid "Could not save. Check your connection and try again."
@@ -1478,7 +1544,7 @@ msgid "Time"
 msgstr ""
 
 #: assets/src/js/shell.js:48
-#: assets/src/js/shell.js:471
+#: assets/src/js/shell.js:500
 #: assets/src/js/views/decisions.js:41
 msgid "Decisions"
 msgstr ""
@@ -1528,54 +1594,62 @@ msgstr[1] ""
 msgid "Online · %s today"
 msgstr ""
 
+#. translators: %d: number of sample items.
+#: assets/src/js/shell.js:251
+#, js-format
+msgid "%d sample item shows where to start."
+msgid_plural "%d sample items show where to start."
+msgstr[0] ""
+msgstr[1] ""
+
 #. translators: %d: number of unread notifications.
-#: assets/src/js/shell.js:255
+#: assets/src/js/shell.js:284
 #, js-format
 msgid "%d unread notifications"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/shell.js:262
+#: assets/src/js/shell.js:291
 #, js-format
 msgid "Pause: %s"
 msgstr ""
 
-#: assets/src/js/shell.js:457
+#: assets/src/js/shell.js:486
 msgid "active"
 msgstr ""
 
-#: assets/src/js/shell.js:457
+#: assets/src/js/shell.js:486
 msgid "paused"
 msgstr ""
 
-#: assets/src/js/shell.js:457
+#: assets/src/js/shell.js:486
 msgid "done"
 msgstr ""
 
-#: assets/src/js/shell.js:469
+#: assets/src/js/shell.js:498
 msgid "Tasks"
 msgstr ""
 
-#: assets/src/js/shell.js:470
+#: assets/src/js/shell.js:499
 msgid "Projects"
 msgstr ""
 
-#: assets/src/js/shell.js:471
+#: assets/src/js/shell.js:500
 #: assets/src/js/views/decisions.js:48
 msgid "Decided"
 msgstr ""
 
-#: assets/src/js/shell.js:471
+#: assets/src/js/shell.js:500
 #: assets/src/js/views/decisions.js:45
 msgid "Open"
 msgstr ""
 
-#: assets/src/js/shell.js:473
+#: assets/src/js/shell.js:502
 msgid "Messages"
 msgstr ""
 
 #. translators: %s: what was searched for.
-#: assets/src/js/shell.js:487
+#: assets/src/js/shell.js:516
 #, js-format
 msgid "Nothing matches “%s”."
 msgstr ""

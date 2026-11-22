@@ -776,6 +776,48 @@ try {
 	$t->ok( is_readable( dirname( __DIR__, 2 ) . '/uninstall.php' ) && str_contains( (string) file_get_contents( dirname( __DIR__, 2 ) . '/uninstall.php' ), 'WP_UNINSTALL_PLUGIN' ), 'uninstall.php exists and only runs from WordPress' );
 
 	// ------------------------------------------------------------------
+	$t->section( 'First run: sample items' );
+	delete_option( \NovaWork\Services\Samples::OPTION );
+	\NovaWork\Services\Samples::mark_due();
+	$t->ok( 'due' === get_option( \NovaWork\Services\Samples::OPTION ), 'activation marks the samples as due' );
+	\NovaWork\Services\Samples::maybe_create( $admin );
+	$t->ok( 'made' === get_option( \NovaWork\Services\Samples::OPTION ) && 0 === \NovaWork\Services\Samples::count(), 'a workspace that already has work gets none' );
+	\NovaWork\Services\Samples::mark_due();
+	$t->ok( 'made' === get_option( \NovaWork\Services\Samples::OPTION ), 'reactivating never asks again' );
+	$made = \NovaWork\Services\Samples::create( $admin );
+	$t->ok( 3 === \NovaWork\Services\Samples::count(), 'an empty workspace gets three: a project, a task and a decision' );
+	list( , $snap ) = $t->call( $admin, 'GET', '/sync' );
+	$s_task = current( array_filter( $snap['data']['tasks'], static fn( $x ) => $x['id'] === $made['task'] ) );
+	$s_proj = current( array_filter( $snap['data']['projects'], static fn( $x ) => $x['id'] === $made['project'] ) );
+	$s_dec  = current( array_filter( $snap['data']['decisions'], static fn( $x ) => $x['id'] === $made['decision'] ) );
+	$t->ok( $s_task && true === $s_task['sample'] && 'now' === $s_task['status'] && array( $admin ) === $s_task['assignees'] && $made['project'] === $s_task['projectId'], 'the task is in Now, in the project, assigned to whoever opened the app' );
+	$t->ok( $s_proj && true === $s_proj['sample'] && $s_dec && true === $s_dec['sample'] && 'open' === $s_dec['status'], 'the app sees all three as samples' );
+	$keep = ( new TaskRepository() )->insert(
+		array(
+			'project_id' => $made['project'],
+			'title'      => 'A real task someone added to the sample project',
+			'status'     => 'next',
+		)
+	);
+	( new \NovaWork\Data\CommentRepository() )->insert(
+		array(
+			'object_type' => 'task',
+			'object_id'   => $made['task'],
+			'user_id'     => $alex,
+			'body'        => 'A comment on the sample task',
+		)
+	);
+	$t->call( $sam, 'POST', '/timer/stop' );
+	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $made['task'] ) );
+	list( $s ) = $t->call( $alex, 'DELETE', '/samples' );
+	$t->ok( 403 === $s, 'members cannot remove them' );
+	list( $s, $gone ) = $t->call( $admin, 'DELETE', '/samples' );
+	$t->ok( 200 === $s && 3 === $gone['removed'] && 0 === \NovaWork\Services\Samples::count(), 'an administrator removes all three in one step' );
+	$t->ok( array() === ( new \NovaWork\Data\CommentRepository() )->for_object( 'task', $made['task'] ), 'their comments go with them' );
+	$t->ok( null === $entries->running_for( $sam ), 'a timer running on the sample task stops' );
+	$t->ok( 0 === (int) ( ( new TaskRepository() )->find( $keep )['project_id'] ?? -1 ), 'real work in the sample project stays, without a project' );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Translations for the JS bundles' );
 	$sources = \NovaWork\App\Translations::sources( 'app' );
 	$t->ok( in_array( 'assets/src/js/views/board.js', $sources, true ) && in_array( 'assets/src/js/lib/format.js', $sources, true ), 'the build lists the app bundle’s sources, shared chunk included' );

@@ -121,6 +121,7 @@ final class SettingsController extends Controller {
 				'prettyLinks'   => (bool) get_option( 'permalink_structure' ),
 				'serverMaxMb'   => (int) floor( wp_max_upload_size() / MB_IN_BYTES ),
 				'workspaceName' => Settings::workspace_name(),
+				'samples'       => \NovaWork\Services\Samples::count(),
 			),
 			// Previews of the uploaded branding images.
 			'media'    => array(
