@@ -61,6 +61,7 @@ wp_print_styles( Assets::styles() );
 						<div class="nw-me-txt"><span x-text="meMember().name"></span><span class="nw-you"><?php echo esc_html_x( 'You', 'badge next to your own name', 'novawork' ); ?></span>
 							<small><template x-if="myRun()"><span><span data-since x-text="clock($store.nw.now - myRun().start)"></span><template x-if="taskOf(myRun())"><span> · <span class="nw-tname" :title="taskOf(myRun()).title" x-text="shortTitle(taskOf(myRun()).title)"></span></span></template></span></template><template x-if="!myRun()"><span x-text="onlineToday()"></span></template></small>
 						</div>
+						<a class="nw-signout" :href="logoutUrl"><?php esc_html_e( 'Sign out', 'novawork' ); ?></a>
 					</div>
 					<div class="nw-me-acts">
 						<button class="nw-btn nw-primary nw-wide" type="button" @click="toggleTracking()"><span x-html="myRun() ? icf('pause', 15) : icf('play', 15)" style="display:contents"></span><span x-text="myRun() ? t.pauseTracking : t.startTracking"></span></button>

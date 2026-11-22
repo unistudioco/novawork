@@ -66,6 +66,8 @@ export default () => ( {
 	compact: false,
 	chatOpen: false,
 	notesOpen: false,
+	// Signing out comes back to the workspace's sign-in page.
+	logoutUrl: ( window.novawork || {} ).logoutUrl || '',
 	notesClosing: false,
 	theme: store( 'nw.theme' ) || 'system',
 	pop: { open: false },

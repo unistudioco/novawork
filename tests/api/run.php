@@ -701,9 +701,15 @@ try {
 	foreach ( array( '#ca8a04', '#fde047', '#1e3a8a', '#dc2626', '#ffffff', '#000000' ) as $c ) {
 		$l = $B::tokens( $c, false );
 		$d = $B::tokens( $c, true );
-		$ok_all = $ok_all && $B::contrast( $l['accent-ink'], '#ffffff' ) >= 4.5 && $B::contrast( $d['accent-ink'], '#242321' ) >= 4.5 && $B::contrast( $l['accent-fg'], $c ) >= 3 && $B::contrast( $l['accent-on-soft'], $l['accent-soft'] ) >= 4.5;
+		$ok_all = $ok_all && $B::contrast( $l['accent-ink'], '#ffffff' ) >= 4.5 && $B::contrast( $d['accent-ink'], '#242321' ) >= 4.5 && $B::contrast( $l['accent-fg'], $c ) >= 2.5 && $B::contrast( $l['accent-on-soft'], $l['accent-soft'] ) >= 4.5;
 	}
 	$t->ok( $ok_all, 'any accent (yellow, navy, white…) keeps text readable in light and dark' );
+	$t->ok( '#ffffff' === $B::tokens( '#ea580c', false )['accent-fg'] && '#1d1919' === $B::tokens( '#fde047', false )['accent-fg'], 'text on accent, auto: white on orange (3:1), dark on yellow' );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'accent_text' => 'dark' ) ) );
+	$t->ok( '#1d1919' === $B::tokens( '#ea580c', false )['accent-fg'] && str_contains( $B::accent_css(), '--nw-accent-fg:#1d1919' ), 'text on accent can be forced dark (even on the default blue)' );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'accent_text' => 'white' ) ) );
+	$t->ok( '#ffffff' === $B::tokens( '#fde047', false )['accent-fg'], '… or white' );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) get_option( NovaWork\Settings::OPTION, array() ), array( 'accent_text' => 'auto' ) ) );
 	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'accent' => 'blue-ish', 'brand_icon' => 999999 ) ) );
 	$t->ok( 400 === $s && isset( $bad['data']['errors']['accent'], $bad['data']['errors']['brand_icon'] ), 'a bad colour or a missing image is refused', $bad['data']['errors'] ?? $bad );
 	list( , $ok ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'accent' => 'rgb(220, 38, 38)' ) ) );

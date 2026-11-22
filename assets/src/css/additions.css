@@ -283,7 +283,7 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
 /* Members' sign-in page (owner mark): the workspace's name, NovaWork's look. */
 .nw-login .nw-login-card { width: min(400px, 100%); display: grid; gap: 14px; padding: 30px 28px 26px; border: 1px solid var(--nw-line); border-radius: 20px; background: var(--nw-surface); box-shadow: var(--nw-shadow); }
 .nw-login-head { display: grid; justify-items: center; gap: 6px; text-align: center; margin-bottom: 6px; }
-.nw-login-mark { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--nw-accent-soft); color: var(--nw-accent-ink); margin-bottom: 4px; }
+.nw-login-mark { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--nw-accent-soft); color: var(--nw-accent-on-soft); margin-bottom: 4px; }
 .nw-login-head h1 { font: 700 21px/1.2 var(--nw-font-head); letter-spacing: -.02em; color: var(--nw-fg); overflow-wrap: anywhere; }
 .nw-login-head p { margin: 0; color: var(--nw-muted); font-size: 13.5px; }
 .nw-login .nw-field { display: grid; gap: 6px; }
@@ -325,3 +325,7 @@ a.nw-login-go { text-decoration: none; }
   :root:not([data-theme="light"]) .nw-only-light { display: none; }
 }
 @media (max-width: 719px) { .nw-brand-logo { height: 26px; max-width: 160px; } }
+
+/* Sign out (owner): a danger-coloured link at the right of your row. */
+.nw-me-row .nw-signout { margin-left: auto; align-self: center; padding: 4px 2px; font: 500 13px/1 var(--nw-font-head); color: var(--nw-danger-on-soft); text-decoration: none; }
+.nw-me-row .nw-signout:hover, .nw-me-row .nw-signout:focus-visible { text-decoration: underline; }

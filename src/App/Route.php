@@ -127,7 +127,14 @@ final class Route {
 	public static function maybe_render(): void {
 		$var = (string) get_query_var( self::QUERY_VAR );
 		if ( 'go-login' === $var ) {
-			wp_safe_redirect( self::login_url(), 301 );
+			// Keep what the link carries (an invite, a reset key, a note).
+			$keep = array();
+			foreach ( array( 'action', 'invite', 'key', 'login', 'signed-out', 'reset' ) as $arg ) {
+				if ( isset( $_GET[ $arg ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Passed on unchanged.
+					$keep[ $arg ] = rawurlencode( sanitize_text_field( wp_unslash( $_GET[ $arg ] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Passed on unchanged.
+				}
+			}
+			wp_safe_redirect( add_query_arg( $keep, self::login_url() ), 301 );
 			exit;
 		}
 		if ( 'go' === $var ) {

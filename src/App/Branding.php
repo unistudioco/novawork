@@ -18,9 +18,11 @@ use NovaWork\Settings;
  *   full logo (replaces icon + name), with an optional dark-mode logo.
  *   Without an icon the NovaWork flag stays.
  * - One accent colour. Every accent token the design uses is derived from it
- *   for light and dark, keeping text on and in the accent readable (WCAG
- *   contrast 4.5:1). The default blue prints nothing, so the approved
- *   prototype's values stay exact.
+ *   for light and dark, keeping text in the accent readable (WCAG 4.5:1).
+ *   Text on the accent (buttons, badges) follows the `accent_text` setting:
+ *   auto prefers white whenever it reaches 3:1 (orange, red, teal…), dark
+ *   otherwise; white or dark force it. The default blue with auto prints
+ *   nothing, so the approved prototype's values stay exact.
  */
 final class Branding {
 
@@ -73,8 +75,8 @@ final class Branding {
 	 */
 	public static function accent_css(): string {
 		$c = self::accent();
-		if ( self::DEFAULT_ACCENT === $c ) {
-			return '';
+		if ( self::DEFAULT_ACCENT === $c && 'dark' !== Settings::get( 'accent_text' ) ) {
+			return ''; // White on the default blue already.
 		}
 		$light = self::tokens( $c, false );
 		$dark  = self::tokens( $c, true );
@@ -100,13 +102,13 @@ final class Branding {
 	 */
 	public static function tokens( string $c, bool $dark ): array {
 		$surface = $dark ? self::DARK_SURFACE : self::LIGHT_SURFACE;
-		$fg      = self::contrast( '#ffffff', $c ) >= self::contrast( self::INK, $c ) ? '#ffffff' : self::INK;
+		$fg      = self::on_accent( $c );
 		// Text in the accent colour: pushed darker (light) or lighter (dark)
 		// until it reads on the surface.
 		$ink = self::readable( $c, $surface, $dark ? '#ffffff' : '#000000' );
 		if ( $dark ) {
 			$soft    = $c;
-			$on_soft = self::contrast( '#ffffff', $c ) >= 4.5 ? self::mix( $c, '#ffffff', 0.92 ) : self::INK;
+			$on_soft = '#ffffff' === $fg ? self::mix( $c, '#ffffff', 0.92 ) : self::INK;
 			$line    = self::mix( $c, '#ffffff', 0.2 );
 		} else {
 			$soft    = self::mix( $c, '#ffffff', 0.885 );
@@ -121,6 +123,23 @@ final class Branding {
 			'accent-on-soft' => $on_soft,
 			'accent-line'    => $line,
 		);
+	}
+
+	/**
+	 * Text on the accent: the setting, or (auto) white when it reaches 3:1,
+	 * the large-text and icon level, otherwise the app's near-black.
+	 *
+	 * @param string $c Accent.
+	 */
+	public static function on_accent( string $c ): string {
+		$rule = (string) Settings::get( 'accent_text' );
+		if ( 'white' === $rule ) {
+			return '#ffffff';
+		}
+		if ( 'dark' === $rule ) {
+			return self::INK;
+		}
+		return self::contrast( '#ffffff', $c ) >= 3 ? '#ffffff' : self::INK;
 	}
 
 	/**
