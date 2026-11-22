@@ -21,6 +21,7 @@ import { serverNow } from '../store.js';
 import { store, person } from './model.js';
 import { plainText } from './rich.js';
 import { attachComposer } from './composer.js';
+import { multiline, isSendKey } from '../lib/multiline.js';
 import { deleteWithUndo } from './undo.js';
 
 const KEY = { message: 'messages', comment: 'comments' };
@@ -157,7 +158,7 @@ export function wireThread( o ) {
 		const txt = el.querySelector( '.nw-txt' );
 		const box = document.createElement( 'div' );
 		box.className = 'nw-edit';
-		box.innerHTML = `<label class="nw-vh" for="nw-edit-in">${ esc( __( 'Edit message', 'novawork' ) ) }</label><input class="nw-input" id="nw-edit-in" maxlength="2000" autocomplete="off"><div class="nw-edit-foot"><span>${ esc(
+		box.innerHTML = `<label class="nw-vh" for="nw-edit-in">${ esc( __( 'Edit message', 'novawork' ) ) }</label><textarea class="nw-input nw-grow" id="nw-edit-in" rows="1" maxlength="2000"></textarea><div class="nw-edit-foot"><span>${ esc(
 			__( 'Enter to save · Esc to cancel', 'novawork' )
 		) }</span><button type="button" class="nw-btn nw-ghost nw-sm" data-tact="edit-cancel">${ esc( __( 'Cancel', 'novawork' ) ) }</button><button type="button" class="nw-btn nw-primary nw-sm" data-tact="edit-save">${ esc( __( 'Save', 'novawork' ) ) }</button></div>`;
 		if ( txt ) {
@@ -166,7 +167,7 @@ export function wireThread( o ) {
 			el.querySelector( '.nw-mwho' ).after( box );
 		}
 		el.classList.add( 'nw-editing' );
-		const input = box.querySelector( 'input' );
+		const input = box.querySelector( 'textarea' );
 		input.value = m.text || '';
 		const composer = attachComposer( input, { parent: box, id: 'nw-edit-suggest', seed: { mentions: m.mentions, refs: m.refs } } );
 		edit = { m, el, input, composer };
@@ -179,12 +180,16 @@ export function wireThread( o ) {
 				e.preventDefault();
 				e.stopPropagation();
 				stopEdit();
-			} else if ( e.key === 'Enter' ) {
+			} else if ( isSendKey( e ) ) {
 				e.preventDefault();
 				e.stopPropagation();
 				saveEdit();
+			} else if ( e.key === 'Enter' ) {
+				// Shift+Enter: a new line, kept inside the edit.
+				e.stopPropagation();
 			}
 		} );
+		multiline( input );
 		input.focus();
 		input.setSelectionRange( input.value.length, input.value.length );
 	}

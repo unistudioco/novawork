@@ -16,6 +16,7 @@ import { enhance } from './select.js';
 import { msgHTML } from './editors.js';
 import { attachComposer } from './composer.js';
 import { wireThread } from './thread.js';
+import { multiline, fit } from '../lib/multiline.js';
 
 const $ = ( id ) => document.getElementById( id );
 const MAX_FILES = 6;
@@ -335,6 +336,7 @@ async function send() {
 		const m = await post( 'messages', Object.assign( { text, attachmentIds: files, replyTo: thread.replyTo() }, composer.payload() ) );
 		store().upsert( 'messages', m );
 		input.value = '';
+		fit( input );
 		pending = [];
 		composer.reset();
 		thread.clearReply();
@@ -526,6 +528,8 @@ export function mountChat() {
 		}
 	} );
 	composer = attachComposer( $( 'nw-chat-in' ), { parent: $( 'nw-chat-form' ), id: 'nw-mention-list' } );
+	// After the composer, so Enter in its suggestion list picks instead of sending.
+	multiline( $( 'nw-chat-in' ), () => $( 'nw-chat-form' ).requestSubmit() );
 	thread = wireThread( {
 		list: () => $( 'nw-msgs' ),
 		input: () => $( 'nw-chat-in' ),

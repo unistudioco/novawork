@@ -50,6 +50,7 @@ final class Settings {
 			'team_order'      => 'dynamic',
 			'decide_rule'     => 'named',
 			'decision_votes'  => true,
+			'desktop_alerts'  => true,
 			'message_edits'   => 'always',
 			'edit_minutes'    => 15,
 			'activity_days'   => 30,
@@ -143,6 +144,7 @@ final class Settings {
 			'choices' => array( 'named', 'anyone' ),
 		),
 		'decision_votes'  => array( 'type' => 'bool' ),
+		'desktop_alerts'  => array( 'type' => 'bool' ),
 		'message_edits'   => array(
 			'type'    => 'choice',
 			'choices' => array( 'always', 'window', 'never' ),

@@ -23,7 +23,7 @@ const inviteRow = ( count ) => {
 import { orderTeam } from '../lib/team.js';
 import {
 	canDecide, nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days,
-	projChip, dueHTML, prio, avatars, presAvatar, tbtn, checkBtn, since,
+	projChip, dueHTML, prio, avatars, presAvatar, tbtn, checkBtn, since, subChip,
 } from './model.js';
 
 /** Start of the current week, using the site's first day of the week. */
@@ -74,9 +74,15 @@ export function viewFocus() {
 
 	const limit = nowLimit();
 	const three = limit === 3;
+	// The meta row only exists when it has something to show; an empty one
+	// would still take a grid row (and its gap) under the title.
+	const meta = ( t ) => {
+		const inner = projChip( t.projectId ) + dueHTML( t.due, t.status ) + subChip( t ) + ( assignees( t ).length > 1 ? avatars( t ) : '' );
+		return inner ? `<div class="nw-meta">${ inner }</div>` : '';
+	};
 	const slot = ( t ) =>
 		t
-			? `<li class="nw-slot${ r && r.taskId === t.id ? ' nw-run' : '' }" data-drag data-id="${ t.id }">${ checkBtn( t ) }<div class="nw-t" data-act="edit-task" data-id="${ t.id }">${ esc( t.title ) }</div>${ prio( t.priority ) || '<span></span>' }${ tbtn( t ) }<div class="nw-meta">${ projChip( t.projectId ) }${ dueHTML( t.due, t.status ) }${ assignees( t ).length > 1 ? avatars( t ) : '' }</div></li>`
+			? `<li class="nw-slot${ r && r.taskId === t.id ? ' nw-run' : '' }" data-drag data-id="${ t.id }">${ checkBtn( t ) }<div class="nw-t" data-act="edit-task" data-id="${ t.id }">${ esc( t.title ) }</div>${ prio( t.priority ) || '<span></span>' }${ tbtn( t ) }${ meta( t ) }</li>`
 			: `<li class="nw-slot nw-empty" data-tail>${ ic( 'circle-dashed' ) }<div class="nw-t">${ esc( __( 'Open slot', 'novawork' ) ) }</div><button class="nw-btn nw-sm nw-ghost" type="button" data-act="new-task" data-status="now">${ ic( 'plus', 14 ) }${ esc( __( 'Add', 'novawork' ) ) }</button></li>`;
 
 	const left =

@@ -191,6 +191,9 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_start( 'due_soon_days', __( 'Due date reminders', 'novawork' ), __( 'Tell assignees and deciders this many days ahead. 0 tells them on the day.', 'novawork' ), 'nw-f-due' ); ?>
 			<div class="nw-unit"><input class="nw-input" id="nw-f-due" type="number" min="0" max="30" x-model.number="values.due_soon_days"><span><?php esc_html_e( 'days before', 'novawork' ); ?></span></div>
 		<?php $novawork_row_end( 'due_soon_days' ); ?>
+		<?php $novawork_row_start( 'desktop_alerts', __( 'Desktop alerts', 'novawork' ), __( 'Members can choose to get a browser alert for their notifications while the workspace is open in a background tab. Each member turns it on for their own device, from the bell.', 'novawork' ) ); ?>
+			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-desktop_alerts" :aria-checked="String(!!values.desktop_alerts)" @click="values.desktop_alerts = !values.desktop_alerts"><span></span></button>
+		<?php $novawork_row_end( 'desktop_alerts' ); ?>
 	</section>
 
 	<section class="nw-scard" aria-labelledby="nw-s-time">
