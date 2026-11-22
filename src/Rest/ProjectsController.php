@@ -78,7 +78,7 @@ final class ProjectsController extends Controller {
 		/**
 		 * Fires after a member adds a project.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $project Project as the API presents it.
 		 * @param int                  $actor   Member who added it.
@@ -111,7 +111,7 @@ final class ProjectsController extends Controller {
 		/**
 		 * Fires after a member changes a project.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $project Project as the API presents it.
 		 * @param array<string, mixed> $before  Database row before the change.

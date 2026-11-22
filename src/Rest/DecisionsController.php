@@ -122,7 +122,7 @@ final class DecisionsController extends Controller {
 		/**
 		 * Fires after a decision is opened through the API.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $decision Decision as the API presents it.
 		 * @param int                  $actor    Member who opened it.
@@ -186,7 +186,7 @@ final class DecisionsController extends Controller {
 		 * Fires after a member changes a decision (including deciding or
 		 * reopening it from the editor).
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $decision Decision as the API presents it.
 		 * @param array<string, mixed> $before   Database row before the change.
@@ -275,7 +275,7 @@ final class DecisionsController extends Controller {
 		/**
 		 * Fires after a decision is recorded.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $decision Decision as the API presents it.
 		 * @param int                  $actor    Member who decided.

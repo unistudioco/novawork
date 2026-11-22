@@ -4,7 +4,7 @@ Tags: project management, kanban, time tracking, team chat, roadmap
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -146,7 +146,7 @@ NovaWork stores everything on your own site. It contacts outside services only f
 
 The workspace uses the Satoshi and Supreme typefaces, which Fontshare (by Indian Type Foundry) provides only from its own servers. When the setting "Load Satoshi and Supreme from Fontshare" is on (the default), each time someone opens the workspace or its sign-in page their browser requests the stylesheet from api.fontshare.com and the font files from cdn.fontshare.com. Fontshare receives the visitor's IP address and browser details, as with any web request. No other data is sent. Turn the setting off in NovaWork → Settings → Fonts and privacy and the workspace uses the device's own fonts and loads nothing from outside.
 
-Fontshare terms: https://www.fontshare.com/terms
+Fontshare's license for Satoshi and Supreme (ITF Free Font License): https://www.fontshare.com/licenses/itf-ffl
 
 = Gravatar (profile pictures) =
 
@@ -162,10 +162,10 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 
 == Changelog ==
 
-= 0.1.0 =
+= 1.0.0 =
 * First release: Focus with a server-side timer, the board with subtasks, projects and the roadmap, decisions with team votes, time analytics, team chat with mentions, links and private files, notifications with desktop alerts, quick search, invites, branding, privacy tools and translations.
 
 == Upgrade Notice ==
 
-= 0.1.0 =
+= 1.0.0 =
 First release.

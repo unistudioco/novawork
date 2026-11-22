@@ -459,7 +459,7 @@ final class Privacy {
 		$html .= '<p>' . esc_html__( 'Notifications are kept for a time set by the site administrator once read; the team activity feed and the change history are kept for a set number of days. Members can ask for an export or erasure of their data through the site administrator.', 'novawork' ) . '</p>';
 		$html .= '<p>' . esc_html__( 'The workspace remembers some preferences in the browser (local storage), such as light or dark appearance and the last filters used. These never leave the device.', 'novawork' ) . '</p>';
 		$html .= '<h2>' . esc_html__( 'Services from other companies', 'novawork' ) . '</h2>';
-		$html .= '<p>' . esc_html__( 'Fonts: when the site loads its typefaces from Fontshare (Indian Type Foundry), the browser requests the font files from Fontshare each time the workspace opens, which shares the visitor’s IP address with Fontshare.', 'novawork' ) . ' <a href="https://www.fontshare.com/terms">' . esc_html__( 'Fontshare terms', 'novawork' ) . '</a>.</p>';
+		$html .= '<p>' . esc_html__( 'Fonts: when the site loads its typefaces from Fontshare (Indian Type Foundry), the browser requests the font files from Fontshare each time the workspace opens, which shares the visitor’s IP address with Fontshare.', 'novawork' ) . ' <a href="https://www.fontshare.com/licenses/itf-ffl">' . esc_html__( 'Fontshare’s font license', 'novawork' ) . '</a>.</p>';
 		$html .= '<p>' . esc_html__( 'Profile pictures: members’ avatars may come from Gravatar (Automattic), which receives a hashed form of the member’s email address.', 'novawork' ) . ' <a href="https://automattic.com/privacy/">' . esc_html__( 'Automattic privacy policy', 'novawork' ) . '</a>.</p>';
 		wp_add_privacy_policy_content( 'NovaWork', wp_kses_post( $html ) );
 	}

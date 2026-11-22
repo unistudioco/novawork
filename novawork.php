@@ -3,7 +3,7 @@
  * Plugin Name:       NovaWork
  * Plugin URI:        https://github.com/unistudioco/novawork
  * Description:       A calm team workspace inside WordPress: projects, a board, a roadmap, decisions, time tracking and team chat.
- * Version:           0.1.0
+ * Version:           1.0.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            UniStudio
@@ -25,7 +25,7 @@ if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
 	return;
 }
 
-define( 'NOVAWORK_VERSION', '0.1.0' );
+define( 'NOVAWORK_VERSION', '1.0.0' );
 define( 'NOVAWORK_FILE', __FILE__ );
 define( 'NOVAWORK_PATH', plugin_dir_path( __FILE__ ) );
 define( 'NOVAWORK_URL', plugin_dir_url( __FILE__ ) );

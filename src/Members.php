@@ -180,7 +180,7 @@ final class Members {
 		 * an AI teammate. Each entry needs a unique "key", a "name" and a
 		 * "color" from the NovaWork palette.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<int, mixed> $agents Agents.
 		 */

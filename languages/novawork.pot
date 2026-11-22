@@ -2,23 +2,23 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: NovaWork 0.1.0\n"
+"Project-Id-Version: NovaWork 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/novawork/\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-22T19:56:48+00:00\n"
+"POT-Creation-Date: 2026-11-22T20:53:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
 
 #. Plugin Name of the plugin
 #: novawork.php
-#: src/Admin/Menu.php:43
-#: src/Admin/Menu.php:44
-#: src/Services/Privacy.php:86
+#: src/Admin/Menu.php:45
+#: src/Admin/Menu.php:46
+#: src/Services/Privacy.php:88
 msgid "NovaWork"
 msgstr ""
 
@@ -42,227 +42,227 @@ msgstr ""
 msgid "https://unistudio.co"
 msgstr ""
 
-#: src/Access/Capabilities.php:133
+#: src/Access/Capabilities.php:135
 msgid "NovaWork Member"
 msgstr ""
 
-#: src/Access/Profile.php:68
+#: src/Access/Profile.php:70
 msgid "NovaWork member"
 msgstr ""
 
 #. translators: %s: the workspace's name.
-#: src/Access/Profile.php:75
+#: src/Access/Profile.php:77
 #, php-format
 msgid "Can use %s"
 msgstr ""
 
 #. translators: %s: a role name, such as Administrator.
-#: src/Access/Profile.php:82
+#: src/Access/Profile.php:84
 #, php-format
 msgid "Included with the %s role."
 msgstr ""
 
-#: src/Access/Profile.php:84
+#: src/Access/Profile.php:86
 msgid "Gives this user access to the workspace and keeps their role as it is."
 msgstr ""
 
-#: src/Admin/Menu.php:51
+#: src/Admin/Menu.php:53
 msgid "Open NovaWork"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:59
+#: src/Admin/SettingsPage.php:61
 #: views/admin-settings.php:45
 msgid "NovaWork settings"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:59
+#: src/Admin/SettingsPage.php:61
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:117
-#: src/Rest/Controller.php:60
+#: src/Admin/SettingsPage.php:119
+#: src/Rest/Controller.php:62
 msgid "Only an administrator can change NovaWork’s settings."
 msgstr ""
 
-#: src/App/Login.php:80
-#: src/App/Login.php:96
+#: src/App/Login.php:82
+#: src/App/Login.php:98
 msgid "This invite has expired or was already used. Ask whoever invited you for a new one."
 msgstr ""
 
-#: src/App/Login.php:99
-#: src/App/Login.php:136
-#: src/App/Login.php:182
-#: src/App/Login.php:230
+#: src/App/Login.php:101
+#: src/App/Login.php:138
+#: src/App/Login.php:184
+#: src/App/Login.php:232
 msgid "This page was open for a while. Please try again."
 msgstr ""
 
-#: src/App/Login.php:140
+#: src/App/Login.php:142
 msgid "Enter your email or username."
 msgstr ""
 
-#: src/App/Login.php:147
+#: src/App/Login.php:149
 msgid "If that matches an account, a link to set a new password is on its way. Check your email."
 msgstr ""
 
-#: src/App/Login.php:168
+#: src/App/Login.php:170
 msgid "This link has expired or was already used. Ask for a new one."
 msgstr ""
 
-#: src/App/Login.php:187
+#: src/App/Login.php:189
 msgid "Enter a new password."
 msgstr ""
 
-#: src/App/Login.php:235
+#: src/App/Login.php:237
 msgid "Enter your email or username and your password."
 msgstr ""
 
-#: src/App/Login.php:249
+#: src/App/Login.php:251
 msgid "That email or username and password don’t match. Try again, or reset your password."
 msgstr ""
 
-#: src/Rest/ChatController.php:116
+#: src/Rest/ChatController.php:118
 msgid "Write a message or add a file."
 msgstr ""
 
-#: src/Rest/ChatController.php:131
+#: src/Rest/ChatController.php:133
 msgid "The message wasn’t sent. Try again."
 msgstr ""
 
-#: src/Rest/ChatController.php:136
+#: src/Rest/ChatController.php:138
 msgid "Those files are no longer available. Add them again."
 msgstr ""
 
-#: src/Rest/ChatController.php:178
+#: src/Rest/ChatController.php:180
 msgid "You can’t edit this message."
 msgstr ""
 
-#: src/Rest/ChatController.php:182
+#: src/Rest/ChatController.php:184
 #: assets/src/js/views/thread.js:217
 msgid "A message needs some text. To remove it, delete it."
 msgstr ""
 
-#: src/Rest/ChatController.php:213
+#: src/Rest/ChatController.php:215
 msgid "You can’t delete this message."
 msgstr ""
 
-#: src/Rest/ChatController.php:240
+#: src/Rest/ChatController.php:242
 msgid "Choose a file to upload."
 msgstr ""
 
-#: src/Rest/CommentsController.php:69
+#: src/Rest/CommentsController.php:71
 msgid "Write a comment first."
 msgstr ""
 
-#: src/Rest/CommentsController.php:122
+#: src/Rest/CommentsController.php:124
 msgid "You can’t edit this comment."
 msgstr ""
 
-#: src/Rest/CommentsController.php:126
+#: src/Rest/CommentsController.php:128
 #: assets/src/js/views/thread.js:217
 msgid "A comment needs some text. To remove it, delete it."
 msgstr ""
 
-#: src/Rest/CommentsController.php:156
+#: src/Rest/CommentsController.php:158
 msgid "You can’t delete this comment."
 msgstr ""
 
-#: src/Rest/Controller.php:43
+#: src/Rest/Controller.php:45
 msgid "Sign in to use NovaWork."
 msgstr ""
 
-#: src/Rest/Controller.php:46
+#: src/Rest/Controller.php:48
 msgid "You aren’t a member of this NovaWork workspace."
 msgstr ""
 
-#: src/Rest/Controller.php:137
+#: src/Rest/Controller.php:139
 msgid "That item no longer exists."
 msgstr ""
 
-#: src/Rest/Controller.php:238
+#: src/Rest/Controller.php:240
 msgid "Use a date like 2026-12-31."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:101
-#: src/Rest/DecisionsController.php:151
+#: src/Rest/DecisionsController.php:103
+#: src/Rest/DecisionsController.php:153
 msgid "Say what needs deciding."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:162
-#: src/Rest/DecisionsController.php:260
+#: src/Rest/DecisionsController.php:164
+#: src/Rest/DecisionsController.php:262
 msgid "Write down what was decided."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:212
+#: src/Rest/DecisionsController.php:214
 msgid "This decision isn’t open for votes."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:215
+#: src/Rest/DecisionsController.php:217
 msgid "This decision has been made; voting is closed."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:219
+#: src/Rest/DecisionsController.php:221
 msgid "That option no longer exists."
 msgstr ""
 
 #. translators: %s: name of the person who decides.
-#: src/Rest/DecisionsController.php:236
+#: src/Rest/DecisionsController.php:238
 #, php-format
 msgid "Only %s can record this decision."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:237
+#: src/Rest/DecisionsController.php:239
 msgid "You can’t record this decision."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:387
-#: src/Rest/TasksController.php:255
+#: src/Rest/DecisionsController.php:389
+#: src/Rest/TasksController.php:257
 msgid "That project no longer exists."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:394
-#: src/Rest/TimeController.php:109
+#: src/Rest/DecisionsController.php:396
+#: src/Rest/TimeController.php:111
 msgid "That person isn’t a member."
 msgstr ""
 
-#: src/Rest/ProjectsController.php:58
-#: src/Rest/ProjectsController.php:104
+#: src/Rest/ProjectsController.php:60
+#: src/Rest/ProjectsController.php:106
 msgid "Give the project a name."
 msgstr ""
 
-#: src/Rest/SettingsController.php:76
+#: src/Rest/SettingsController.php:78
 msgid "Some settings need a look."
 msgstr ""
 
-#: src/Rest/SubtasksController.php:73
-#: src/Rest/SubtasksController.php:136
-#: src/Rest/TasksController.php:74
-#: src/Rest/TasksController.php:130
+#: src/Rest/SubtasksController.php:75
+#: src/Rest/SubtasksController.php:138
+#: src/Rest/TasksController.php:76
+#: src/Rest/TasksController.php:132
 msgid "Say what needs to happen."
 msgstr ""
 
 #. translators: %d: most subtasks on one task.
-#: src/Rest/SubtasksController.php:80
+#: src/Rest/SubtasksController.php:82
 #, php-format
 msgid "A task holds up to %d subtasks. Split the work into another task."
 msgstr ""
 
-#: src/Rest/SubtasksController.php:98
+#: src/Rest/SubtasksController.php:100
 msgid "The subtask wasn’t saved. Try again."
 msgstr ""
 
-#: src/Rest/SubtasksController.php:254
+#: src/Rest/SubtasksController.php:256
 msgid "Only members of the workspace can be assigned."
 msgstr ""
 
-#: src/Rest/TasksController.php:90
+#: src/Rest/TasksController.php:92
 msgid "The task wasn’t saved. Try again."
 msgstr ""
 
-#: src/Rest/TimeController.php:102
+#: src/Rest/TimeController.php:104
 msgid "The end of the range must come after its start."
 msgstr ""
 
-#: src/Rest/TimeController.php:105
+#: src/Rest/TimeController.php:107
 msgid "Ask for a year or less at a time."
 msgstr ""
 
@@ -286,27 +286,27 @@ msgstr ""
 msgid "Files can be up to %s."
 msgstr ""
 
-#: src/Services/Invites.php:44
+#: src/Services/Invites.php:46
 msgid "That email address doesn’t look right."
 msgstr ""
 
-#: src/Services/Invites.php:49
+#: src/Services/Invites.php:51
 msgid "That person is already a member."
 msgstr ""
 
-#: src/Services/Invites.php:63
+#: src/Services/Invites.php:65
 #: assets/src/js/settings.js:128
 msgid "The invite wasn’t created. Try again."
 msgstr ""
 
 #. translators: 1: a person's name, 2: the workspace's name.
-#: src/Services/Invites.php:103
+#: src/Services/Invites.php:105
 #, php-format
 msgid "%1$s invited you to %2$s"
 msgstr ""
 
 #. translators: 1: a person's name, 2: the workspace's name.
-#: src/Services/Invites.php:103
+#: src/Services/Invites.php:105
 #: assets/src/js/views/editors.js:42
 #: assets/src/js/views/notes.js:63
 #: assets/src/js/views/notes.js:66
@@ -316,7 +316,7 @@ msgid "Someone"
 msgstr ""
 
 #. translators: 1: the workspace's name, 2: join link, 3: number of days.
-#: src/Services/Invites.php:107
+#: src/Services/Invites.php:109
 #, php-format
 msgid ""
 "You're invited to join %1$s, where the team keeps its tasks, decisions and chat.\n"
@@ -335,297 +335,297 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Services/Invites.php:163
+#: src/Services/Invites.php:165
 msgid "Enter your name."
 msgstr ""
 
-#: src/Services/Invites.php:166
+#: src/Services/Invites.php:168
 msgid "Enter your email address."
 msgstr ""
 
-#: src/Services/Invites.php:169
+#: src/Services/Invites.php:171
 msgid "There’s already an account for this email. Sign in below to join."
 msgstr ""
 
-#: src/Services/Invites.php:172
+#: src/Services/Invites.php:174
 msgid "Choose a password."
 msgstr ""
 
-#: src/Services/Invites.php:195
+#: src/Services/Invites.php:197
 msgid "The account wasn’t created. Try again."
-msgstr ""
-
-#: src/Services/Privacy.php:61
-#: src/Services/Privacy.php:113
-msgid "NovaWork chat messages"
-msgstr ""
-
-#: src/Services/Privacy.php:62
-#: src/Services/Privacy.php:114
-msgid "NovaWork comments"
 msgstr ""
 
 #: src/Services/Privacy.php:63
 #: src/Services/Privacy.php:115
-msgid "NovaWork time entries"
+msgid "NovaWork chat messages"
 msgstr ""
 
 #: src/Services/Privacy.php:64
 #: src/Services/Privacy.php:116
-msgid "NovaWork votes"
+msgid "NovaWork comments"
 msgstr ""
 
 #: src/Services/Privacy.php:65
 #: src/Services/Privacy.php:117
-msgid "NovaWork notifications"
+msgid "NovaWork time entries"
 msgstr ""
 
 #: src/Services/Privacy.php:66
 #: src/Services/Privacy.php:118
-msgid "NovaWork team feed"
+msgid "NovaWork votes"
 msgstr ""
 
 #: src/Services/Privacy.php:67
 #: src/Services/Privacy.php:119
+msgid "NovaWork notifications"
+msgstr ""
+
+#: src/Services/Privacy.php:68
+#: src/Services/Privacy.php:120
+msgid "NovaWork team feed"
+msgstr ""
+
+#: src/Services/Privacy.php:69
+#: src/Services/Privacy.php:121
 msgid "NovaWork profile"
 msgstr ""
 
-#: src/Services/Privacy.php:132
+#: src/Services/Privacy.php:134
 #: views/app.php:135
 msgid "Message"
 msgstr ""
 
-#: src/Services/Privacy.php:133
-#: src/Services/Privacy.php:197
+#: src/Services/Privacy.php:135
+#: src/Services/Privacy.php:199
 msgid "Sent"
 msgstr ""
 
-#: src/Services/Privacy.php:134
+#: src/Services/Privacy.php:136
 msgid "Files"
 msgstr ""
 
-#: src/Services/Privacy.php:147
+#: src/Services/Privacy.php:149
 #: assets/src/js/views/editors.js:66
 msgid "Comment"
 msgstr ""
 
-#: src/Services/Privacy.php:148
-#: src/Services/Privacy.php:213
+#: src/Services/Privacy.php:150
+#: src/Services/Privacy.php:215
 msgid "On"
 msgstr ""
 
-#: src/Services/Privacy.php:149
+#: src/Services/Privacy.php:151
 msgid "Written"
 msgstr ""
 
-#: src/Services/Privacy.php:163
+#: src/Services/Privacy.php:165
 #: assets/src/js/views/composer.js:15
 #: assets/src/js/views/editors.js:188
 msgid "Task"
 msgstr ""
 
-#: src/Services/Privacy.php:164
+#: src/Services/Privacy.php:166
 msgid "Started"
 msgstr ""
 
-#: src/Services/Privacy.php:165
+#: src/Services/Privacy.php:167
 msgid "Ended"
 msgstr ""
 
-#: src/Services/Privacy.php:165
+#: src/Services/Privacy.php:167
 msgid "Still running"
 msgstr ""
 
-#: src/Services/Privacy.php:166
+#: src/Services/Privacy.php:168
 msgid "Minutes"
 msgstr ""
 
-#: src/Services/Privacy.php:179
+#: src/Services/Privacy.php:181
 #: assets/src/js/views/composer.js:15
 #: assets/src/js/views/editors.js:393
 msgid "Decision"
 msgstr ""
 
-#: src/Services/Privacy.php:180
+#: src/Services/Privacy.php:182
 msgid "Option"
 msgstr ""
 
-#: src/Services/Privacy.php:181
-#: src/Services/Privacy.php:214
+#: src/Services/Privacy.php:183
+#: src/Services/Privacy.php:216
 #: views/app.php:124
 msgid "When"
 msgstr ""
 
-#: src/Services/Privacy.php:195
+#: src/Services/Privacy.php:197
 msgid "Kind"
 msgstr ""
 
-#: src/Services/Privacy.php:196
+#: src/Services/Privacy.php:198
 msgid "About"
 msgstr ""
 
-#: src/Services/Privacy.php:198
+#: src/Services/Privacy.php:200
 msgid "Read"
 msgstr ""
 
-#: src/Services/Privacy.php:198
-#: src/Services/Privacy.php:227
+#: src/Services/Privacy.php:200
+#: src/Services/Privacy.php:229
 msgid "No"
 msgstr ""
 
-#: src/Services/Privacy.php:212
+#: src/Services/Privacy.php:214
 msgid "What"
 msgstr ""
 
-#: src/Services/Privacy.php:226
+#: src/Services/Privacy.php:228
 #: views/admin-settings.php:59
 #: assets/src/js/views/notes.js:249
 msgid "Workspace"
 msgstr ""
 
-#: src/Services/Privacy.php:227
+#: src/Services/Privacy.php:229
 msgid "Member"
 msgstr ""
 
-#: src/Services/Privacy.php:227
+#: src/Services/Privacy.php:229
 msgid "Yes"
 msgstr ""
 
-#: src/Services/Privacy.php:228
+#: src/Services/Privacy.php:230
 #: assets/src/js/views/editors.js:267
 msgid "Colour"
 msgstr ""
 
-#: src/Services/Privacy.php:229
+#: src/Services/Privacy.php:231
 msgid "Last seen"
 msgstr ""
 
-#: src/Services/Privacy.php:327
+#: src/Services/Privacy.php:329
 msgid "NovaWork: tasks, projects and decisions this person created stay with the team, no longer linked to them."
 msgstr ""
 
-#: src/Services/Privacy.php:442
+#: src/Services/Privacy.php:444
 msgid "(deleted)"
 msgstr ""
 
-#: src/Services/Privacy.php:454
+#: src/Services/Privacy.php:456
 msgid "Suggested text for a site that uses NovaWork. Edit it to match how you use the workspace."
 msgstr ""
 
-#: src/Services/Privacy.php:455
+#: src/Services/Privacy.php:457
 msgid "Team workspace"
 msgstr ""
 
-#: src/Services/Privacy.php:456
+#: src/Services/Privacy.php:458
 msgid "Members of our team workspace use it to plan work, track time and talk. It stores what members write and do there: tasks and projects, decisions and votes, comments, chat messages and shared files, time tracked, notifications, and when a member was last online. Only signed-in members can see the workspace; files are private to it and never public."
 msgstr ""
 
-#: src/Services/Privacy.php:457
+#: src/Services/Privacy.php:459
 msgid "Notifications are kept for a time set by the site administrator once read; the team activity feed and the change history are kept for a set number of days. Members can ask for an export or erasure of their data through the site administrator."
 msgstr ""
 
-#: src/Services/Privacy.php:458
+#: src/Services/Privacy.php:460
 msgid "The workspace remembers some preferences in the browser (local storage), such as light or dark appearance and the last filters used. These never leave the device."
 msgstr ""
 
-#: src/Services/Privacy.php:459
+#: src/Services/Privacy.php:461
 msgid "Services from other companies"
 msgstr ""
 
-#: src/Services/Privacy.php:460
+#: src/Services/Privacy.php:462
 msgid "Fonts: when the site loads its typefaces from Fontshare (Indian Type Foundry), the browser requests the font files from Fontshare each time the workspace opens, which shares the visitor’s IP address with Fontshare."
 msgstr ""
 
-#: src/Services/Privacy.php:460
-msgid "Fontshare terms"
+#: src/Services/Privacy.php:462
+msgid "Fontshare’s font license"
 msgstr ""
 
-#: src/Services/Privacy.php:461
+#: src/Services/Privacy.php:463
 msgid "Profile pictures: members’ avatars may come from Gravatar (Automattic), which receives a hashed form of the member’s email address."
 msgstr ""
 
-#: src/Services/Privacy.php:461
+#: src/Services/Privacy.php:463
 msgid "Automattic privacy policy"
 msgstr ""
 
-#: src/Services/Samples.php:87
+#: src/Services/Samples.php:89
 msgid "Getting started"
 msgstr ""
 
-#: src/Services/Samples.php:88
+#: src/Services/Samples.php:90
 msgid "A sample project. Projects group tasks and decisions, and show on the Roadmap. Rename it, or remove the samples when you’re ready."
 msgstr ""
 
-#: src/Services/Samples.php:102
+#: src/Services/Samples.php:104
 msgid "Edit this task, then drag it to Done"
 msgstr ""
 
-#: src/Services/Samples.php:103
+#: src/Services/Samples.php:105
 msgid "Click a card to edit it. Press play to track time on it. Now holds three tasks per person; everything else waits in Next."
 msgstr ""
 
-#: src/Services/Samples.php:118
+#: src/Services/Samples.php:120
 msgid "Which day works for our weekly check-in?"
 msgstr ""
 
-#: src/Services/Samples.php:119
+#: src/Services/Samples.php:121
 msgid "A sample decision. Write down what needs deciding, let the team weigh in, then record the answer so it’s easy to find later."
 msgstr ""
 
-#: src/Services/Samples.php:128
+#: src/Services/Samples.php:130
 msgid "Monday"
 msgstr ""
 
-#: src/Services/Samples.php:132
+#: src/Services/Samples.php:134
 msgid "Wednesday"
 msgstr ""
 
-#: src/Services/Samples.php:136
+#: src/Services/Samples.php:138
 msgid "Friday"
 msgstr ""
 
-#: src/Services/Timer.php:113
+#: src/Services/Timer.php:115
 msgid "That task no longer exists."
 msgstr ""
 
-#: src/Services/Timer.php:135
+#: src/Services/Timer.php:137
 msgid "The timer didn’t start. Try again."
 msgstr ""
 
-#: src/Settings.php:179
-#: src/Settings.php:227
+#: src/Settings.php:181
+#: src/Settings.php:229
 msgid "Unknown setting."
 msgstr ""
 
-#: src/Settings.php:184
+#: src/Settings.php:186
 msgid "Enter a number."
 msgstr ""
 
-#: src/Settings.php:191
+#: src/Settings.php:193
 msgid "Choose one of the options."
 msgstr ""
 
-#: src/Settings.php:203
+#: src/Settings.php:205
 msgid "Allow at least one type of file."
 msgstr ""
 
-#: src/Settings.php:207
+#: src/Settings.php:209
 msgid "Enter an address, such as “work”."
 msgstr ""
 
-#: src/Settings.php:210
+#: src/Settings.php:212
 msgid "WordPress already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:214
+#: src/Settings.php:216
 msgid "A page of this site already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:220
+#: src/Settings.php:222
 msgid "Choose an image from the media library."
 msgstr ""
 
-#: src/Settings.php:225
+#: src/Settings.php:227
 #: assets/src/js/settings.js:92
 msgid "Enter a colour as #hex or rgb(r, g, b)."
 msgstr ""

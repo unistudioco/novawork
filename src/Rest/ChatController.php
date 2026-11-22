@@ -154,7 +154,7 @@ final class ChatController extends Controller {
 		/**
 		 * Fires after a member posts in team chat.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $message Message row.
 		 */
@@ -188,7 +188,7 @@ final class ChatController extends Controller {
 		/**
 		 * Fires after a member edits a chat message.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $after  Message row after the edit.
 		 * @param array<string, mixed> $before Message row before it.
@@ -220,7 +220,7 @@ final class ChatController extends Controller {
 		/**
 		 * Fires after a chat message is deleted.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $row Deleted message row.
 		 */

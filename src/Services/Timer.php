@@ -154,7 +154,7 @@ final class Timer {
 		/**
 		 * Fires when a member starts tracking time.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $entry   Time entry row.
 		 * @param int                  $user_id Member.
@@ -209,7 +209,7 @@ final class Timer {
 		/**
 		 * Fires when a member stops tracking time and the session is kept.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $entry   Time entry row.
 		 * @param int                  $user_id Member.

@@ -107,7 +107,7 @@ final class SubtasksController extends Controller {
 		/**
 		 * Fires after a subtask is added through the API.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $subtask Subtask as the API presents it.
 		 * @param int                  $task_id Its task.
@@ -165,7 +165,7 @@ final class SubtasksController extends Controller {
 		/**
 		 * Fires after a subtask is changed through the API.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $subtask Subtask as the API presents it.
 		 * @param array<string, mixed> $before  Database row before the change.
@@ -193,7 +193,7 @@ final class SubtasksController extends Controller {
 		/**
 		 * Fires after a subtask is removed through the API.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $row   Database row that was removed.
 		 * @param int                  $actor Member who removed it.
