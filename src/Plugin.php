@@ -67,6 +67,7 @@ final class Plugin {
 	public static function register(): void {
 		Cron::register();
 		Services\Activity::register();
+		Services\Privacy::register();
 		App\Route::register();
 		Admin\Menu::register();
 		Admin\SettingsPage::register();
