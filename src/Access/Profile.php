@@ -12,6 +12,8 @@ namespace NovaWork\Access;
 use NovaWork\Settings;
 use WP_User;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decision: a user who already has a role (an Editor, say) becomes a
  * member through a checkbox on their profile (wp-admin → Users → Edit). It

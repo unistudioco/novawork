@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Tasks live in one of four board columns, ordered within each.
  */

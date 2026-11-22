@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * One row per team event (a task finished, a decision made…), shown to every
  * member under Notifications → Workspace. It is not anyone's notification:

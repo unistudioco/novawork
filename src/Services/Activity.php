@@ -11,6 +11,8 @@ namespace NovaWork\Services;
 
 use NovaWork\Data\ActivityRepository;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Listens to NovaWork's own action hooks and writes one feed row per event
  * (owner request, Notifications → Workspace): a task added or finished, a

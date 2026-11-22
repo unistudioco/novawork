@@ -16,6 +16,8 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * GET|POST /settings, administrators only. A save checks every sent value
  * against Settings::SCHEMA and stores nothing if any of them is wrong, so the

@@ -17,6 +17,8 @@ use NovaWork\Settings;
 use WP_Error;
 use WP_User;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decision (2026-11-22): there is no open sign-up. An administrator
  * creates an invite (for anyone with the link, or for one email address,

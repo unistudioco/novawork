@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * One team channel. Like comments, a message is written by a member or by an
  * agent. Attachments are presented inline as "files".

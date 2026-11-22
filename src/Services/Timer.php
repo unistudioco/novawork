@@ -16,6 +16,8 @@ use NovaWork\Members;
 use NovaWork\Settings;
 use WP_Error;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * The timer lives on the server: starting stores the start time, so a reload
  * or a second device never loses or double-counts time. Each member has at

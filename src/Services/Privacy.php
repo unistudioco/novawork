@@ -28,6 +28,8 @@ use NovaWork\Members;
 use NovaWork\Settings;
 use WP_User;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * A member's chat messages, comments and time entries are personal data
  * (WordPress.org requirement). Tools → Export Personal Data gets one section

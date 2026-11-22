@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\App;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * WordPress finds a script's translations by its file path:
  * `novawork-{locale}-{md5( path )}.json`, one file per source file the

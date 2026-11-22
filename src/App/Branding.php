@@ -11,6 +11,8 @@ namespace NovaWork\App;
 
 use NovaWork\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decisions (2026-11-22):
  *

@@ -13,6 +13,8 @@ use NovaWork\Access\Capabilities;
 use NovaWork\App\Assets;
 use WP_REST_Request;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decision: the screen sits inside the normal wp-admin shell (menu and
  * admin bar stay), like WordPress 7's Settings → Connectors, but its content

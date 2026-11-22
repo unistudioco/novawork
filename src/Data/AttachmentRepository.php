@@ -13,6 +13,8 @@ namespace NovaWork\Data;
 
 use NovaWork\Services\Files;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * An upload starts unclaimed (object_id 0, visible only to its uploader) and
  * is claimed when the message it belongs to is sent. Unclaimed uploads older

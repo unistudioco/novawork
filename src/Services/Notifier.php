@@ -17,6 +17,8 @@ use NovaWork\Data\TaskRepository;
 use NovaWork\Members;
 use NovaWork\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Who hears about what:
  *

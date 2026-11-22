@@ -11,6 +11,8 @@ namespace NovaWork\App;
 
 use NovaWork\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * NovaWork lives at its own logged-in URL (site.com/novawork/ by default) and
  * prints its own HTML document, the way wp-login.php does, so the active

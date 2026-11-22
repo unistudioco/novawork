@@ -12,6 +12,8 @@ namespace NovaWork\Admin;
 use NovaWork\Access\Capabilities;
 use NovaWork\App\Route;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * A top-level "NovaWork" menu for members that opens the app. Phase 5 adds
  * the Settings screen under it.
