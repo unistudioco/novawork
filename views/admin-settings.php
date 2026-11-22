@@ -77,6 +77,44 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		</div>
 	</section>
 
+	<section class="nw-scard" aria-labelledby="nw-s-brand">
+		<h3 id="nw-s-brand"><?php esc_html_e( 'Branding', 'novawork' ); ?></h3>
+		<?php
+		$novawork_images = array(
+			'brand_icon'      => array( __( 'Icon', 'novawork' ), __( 'Square, shown beside the workspace name and as the browser tab icon. Without one, the NovaWork flag is shown.', 'novawork' ) ),
+			'brand_logo'      => array( __( 'Full logo', 'novawork' ), __( 'Optional. A wide logo that replaces the icon and name in the header and on the sign-in page.', 'novawork' ) ),
+			'brand_logo_dark' => array( __( 'Full logo for dark mode', 'novawork' ), __( 'Optional. Used in dark mode, when your logo needs a light version.', 'novawork' ) ),
+		);
+		foreach ( $novawork_images as $novawork_key => $novawork_text ) :
+			$novawork_row_start( $novawork_key, $novawork_text[0], $novawork_text[1] );
+			?>
+			<div class="nw-media" :class="{ 'nw-wide': '<?php echo esc_attr( $novawork_key ); ?>' !== 'brand_icon' }">
+				<span class="nw-media-box">
+					<img x-show="media.<?php echo esc_attr( $novawork_key ); ?>" :src="media.<?php echo esc_attr( $novawork_key ); ?>" alt="">
+					<span x-show="!media.<?php echo esc_attr( $novawork_key ); ?>" class="nw-media-none" x-html="'<?php echo esc_attr( $novawork_key ); ?>' === 'brand_icon' ? icon('flag-banner-fold', 22, true) : ''"></span>
+				</span>
+				<button type="button" class="nw-btn" @click="chooseImage('<?php echo esc_attr( $novawork_key ); ?>')" x-text="media.<?php echo esc_attr( $novawork_key ); ?> ? changeLabel() : chooseLabel()"></button>
+				<button type="button" class="nw-btn nw-ghost" x-show="values.<?php echo esc_attr( $novawork_key ); ?>" @click="removeImage('<?php echo esc_attr( $novawork_key ); ?>')"><?php esc_html_e( 'Remove', 'novawork' ); ?></button>
+			</div>
+			<?php
+			$novawork_row_end( $novawork_key );
+		endforeach;
+		?>
+		<?php $novawork_row_start( 'accent', __( 'Accent colour', 'novawork' ), __( 'Buttons, links, the selected tab and highlights. Lighter and darker shades for light and dark mode are made from it and kept readable.', 'novawork' ) ); ?>
+			<div class="nw-swatches" role="radiogroup" aria-labelledby="nw-l-accent">
+				<template x-for="c in presets" :key="c">
+					<button type="button" role="radio" class="nw-swatch" :style="'--nw-c:' + c" :aria-checked="String(values.accent === c)" :aria-label="c" :title="c" @click="setAccent(c)"><span></span></button>
+				</template>
+				<label class="nw-swatch nw-swatch-custom" :class="{ 'nw-on': !presets.includes(values.accent) }" title="<?php esc_attr_e( 'Custom colour', 'novawork' ); ?>">
+					<input type="color" :value="values.accent" @input="setAccent($event.target.value)" aria-label="<?php esc_attr_e( 'Pick a custom colour', 'novawork' ); ?>">
+				</label>
+			</div>
+			<div class="nw-color">
+				<input class="nw-input" type="text" spellcheck="false" maxlength="24" x-model="accentText" @change="readAccent()" @keydown.enter.prevent="readAccent()" aria-label="<?php esc_attr_e( 'Colour as hex or RGB', 'novawork' ); ?>" placeholder="#2065f5">
+			</div>
+		<?php $novawork_row_end( 'accent' ); ?>
+	</section>
+
 	<section class="nw-scard" aria-labelledby="nw-s-members">
 		<h3 id="nw-s-members"><?php esc_html_e( 'Members', 'novawork' ); ?></h3>
 		<div class="nw-srow">

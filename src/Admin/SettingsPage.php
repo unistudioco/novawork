@@ -94,6 +94,7 @@ final class SettingsPage {
 			return;
 		}
 		Assets::register_admin();
+		wp_enqueue_media(); // Branding images come from the media library.
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/novawork/v1/settings' ) );
 		$boot     = array(
 			'restUrl'  => esc_url_raw( rest_url( 'novawork/v1/' ) ),

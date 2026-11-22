@@ -23,12 +23,74 @@ Alpine.data( 'nwSettings', () => ( {
 	errors: {},
 	saving: false,
 	invites: [],
+	media: copy( state.media || {} ),
+	presets: state.presets || [],
+	accentText: state.values.accent || '',
 	invite: { email: '', send: true, busy: false, link: '', note: '', copied: false, error: '' },
 
 	async loadInvites() {
 		try {
 			this.invites = await get( 'invites' );
 		} catch ( e ) {}
+	},
+	chooseLabel() {
+		return __( 'Choose image', 'novawork' );
+	},
+	changeLabel() {
+		return __( 'Change', 'novawork' );
+	},
+	/** WordPress's media library, images only. */
+	chooseImage( key ) {
+		if ( ! window.wp || ! window.wp.media ) {
+			return;
+		}
+		const frame = window.wp.media( {
+			title: key === 'brand_icon' ? __( 'Choose an icon', 'novawork' ) : __( 'Choose a logo', 'novawork' ),
+			library: { type: 'image' },
+			multiple: false,
+			button: { text: __( 'Use this image', 'novawork' ) },
+		} );
+		frame.on( 'select', () => {
+			const a = frame.state().get( 'selection' ).first().toJSON();
+			const sizes = a.sizes || {};
+			this.values[ key ] = a.id;
+			this.media[ key ] = ( key === 'brand_icon' ? sizes.thumbnail : sizes.medium || sizes.full || {} )?.url || a.url;
+		} );
+		frame.open();
+	},
+	removeImage( key ) {
+		this.values[ key ] = 0;
+		this.media[ key ] = '';
+	},
+	/** #rgb, #rrggbb or rgb(r, g, b) → #rrggbb, or '' when it isn't a colour. */
+	toHex( text ) {
+		const v = String( text ).trim().toLowerCase();
+		let m = v.match( /^#?([0-9a-f]{3})$/ );
+		if ( m ) {
+			return '#' + m[ 1 ].split( '' ).map( ( c ) => c + c ).join( '' );
+		}
+		m = v.match( /^#?([0-9a-f]{6})$/ );
+		if ( m ) {
+			return '#' + m[ 1 ];
+		}
+		m = v.match( /^rgba?\(\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*[, ]\s*(\d{1,3})/ );
+		if ( m && m.slice( 1, 4 ).every( ( n ) => +n <= 255 ) ) {
+			return '#' + m.slice( 1, 4 ).map( ( n ) => ( +n ).toString( 16 ).padStart( 2, '0' ) ).join( '' );
+		}
+		return '';
+	},
+	setAccent( c ) {
+		this.values.accent = c;
+		this.accentText = c;
+		delete this.errors.accent;
+	},
+	readAccent() {
+		const hex = this.toHex( this.accentText );
+		if ( hex ) {
+			this.setAccent( hex );
+		} else {
+			this.errors = Object.assign( {}, this.errors, { accent: __( 'Enter a colour as #hex or rgb(r, g, b).', 'novawork' ) } );
+		}
 	},
 	copyLabel() {
 		return this.invite.copied ? __( 'Copied', 'novawork' ) : __( 'Copy', 'novawork' );
@@ -210,6 +272,8 @@ Alpine.data( 'nwSettings', () => ( {
 	},
 	discard() {
 		this.values = copy( this.saved );
+		this.media = copy( state.media || {} );
+		this.accentText = this.values.accent;
 		this.showTypes();
 		this.errors = {};
 		this.$nextTick( () => enhance( this.$root ) );
@@ -227,6 +291,8 @@ Alpine.data( 'nwSettings', () => ( {
 			this.values = copy( res.values );
 			this.saved = copy( res.values );
 			this.site = res.site || this.site;
+			this.media = res.media || this.media;
+			this.accentText = this.values.accent;
 			this.showTypes();
 			this.$nextTick( () => enhance( this.$root ) );
 			toast( changedAddress ? sprintf( /* translators: %s: the workspace's address. */ __( 'Saved. The workspace is now at %s', 'novawork' ), this.site.appUrl ) : __( 'Settings saved.', 'novawork' ), 'check' );

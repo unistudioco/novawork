@@ -28,13 +28,14 @@ if ( in_array( Assets::FONTS, Assets::styles(), true ) ) {
 }
 wp_print_styles( Assets::styles() );
 ?>
+<?php \NovaWork\App\Branding::head(); ?>
 </head>
 <body class="nw-body" x-data="nwApp" x-cloak>
 
 <header class="nw-hdr" id="nw-hdr" :class="{ 'nw-stuck': stuck, 'nw-compact': compact }">
 	<div class="nw-hdr-in">
 		<div class="nw-row1">
-			<a class="nw-logo" href="#focus" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the workspace's name. */ __( '%s, Focus', 'novawork' ), \NovaWork\Settings::workspace_name() ) ); ?>"><span class="nw-mark" x-html="icf('flag-banner-fold', 24)"></span><?php echo esc_html( \NovaWork\Settings::workspace_name() ); ?></a>
+			<a class="nw-logo" href="#focus" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the workspace's name. */ __( '%s, Focus', 'novawork' ), \NovaWork\Settings::workspace_name() ) ); ?>"><?php echo \NovaWork\App\Branding::mark_html( 24 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></a>
 			<div class="nw-qs" id="nw-qs" role="search" x-ref="qs" :class="{ 'nw-open': qs.open, 'nw-closing': qs.closing, 'nw-has-q': qs.q.trim() !== '' }">
 				<div class="nw-qs-row"><label class="nw-qs-field"><span x-html="ic('magnifying-glass')"></span><input id="nw-qs-in" x-ref="qsIn" type="search" autocomplete="off" placeholder="<?php esc_attr_e( 'Quick search…', 'novawork' ); ?>" aria-label="<?php esc_attr_e( 'Search tasks, projects, decisions and messages', 'novawork' ); ?>" aria-controls="nw-qs-res" x-model="qs.q" @input="qsRun()" @focus="qsFocus()" @keydown="qsKey($event)"><kbd>/</kbd></label><button type="button" id="nw-qs-cancel" class="nw-btn nw-ghost" @click="qsCancel()"><?php esc_html_e( 'Cancel', 'novawork' ); ?></button></div>
 				<div class="nw-qs-res" id="nw-qs-res" x-ref="qsRes" x-show="qs.showRes" x-html="qs.html" @click="qsClick($event)"></div>

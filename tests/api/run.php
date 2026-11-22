@@ -693,6 +693,22 @@ try {
 	wp_delete_user( $joined->ID );
 	wp_delete_user( $mismatch->ID );
 
+	// Branding (owner, 2026-11-22): accent colour maths.
+	$B = 'NovaWork\App\Branding';
+	$t->ok( '#aabbcc' === $B::normalize( 'abc' ) && '#0d9488' === $B::normalize( 'rgb(13, 148, 136)' ) && '#dc2626' === $B::normalize( '#DC2626' ) && null === $B::normalize( 'rgb(300,0,0)' ) && null === $B::normalize( 'red' ), 'colours are read from #rgb, #rrggbb and rgb(), and anything else refused' );
+	$t->ok( '' === $B::accent_css(), 'the default blue prints nothing (the prototype tokens stay exact)' );
+	$ok_all = true;
+	foreach ( array( '#ca8a04', '#fde047', '#1e3a8a', '#dc2626', '#ffffff', '#000000' ) as $c ) {
+		$l = $B::tokens( $c, false );
+		$d = $B::tokens( $c, true );
+		$ok_all = $ok_all && $B::contrast( $l['accent-ink'], '#ffffff' ) >= 4.5 && $B::contrast( $d['accent-ink'], '#242321' ) >= 4.5 && $B::contrast( $l['accent-fg'], $c ) >= 3 && $B::contrast( $l['accent-on-soft'], $l['accent-soft'] ) >= 4.5;
+	}
+	$t->ok( $ok_all, 'any accent (yellow, navy, white…) keeps text readable in light and dark' );
+	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'accent' => 'blue-ish', 'brand_icon' => 999999 ) ) );
+	$t->ok( 400 === $s && isset( $bad['data']['errors']['accent'], $bad['data']['errors']['brand_icon'] ), 'a bad colour or a missing image is refused', $bad['data']['errors'] ?? $bad );
+	list( , $ok ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'accent' => 'rgb(220, 38, 38)' ) ) );
+	$t->ok( '#dc2626' === $ok['values']['accent'] && str_contains( $B::accent_css(), '--nw-accent:#dc2626' ), 'a custom accent is saved as hex and printed for the app' );
+
 	// The "NovaWork member" checkbox on a profile (owner decision).
 	$editor = wp_insert_user( array( 'user_login' => 'nw_editor_' . wp_generate_password( 6, false ), 'user_pass' => wp_generate_password(), 'role' => 'editor', 'display_name' => 'Ed Itor' ) );
 	wp_set_current_user( $admin );

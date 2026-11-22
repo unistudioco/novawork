@@ -25,29 +25,33 @@ final class Settings {
 	 */
 	public static function defaults(): array {
 		return array(
-			'workspace_name' => '',
-			'location'       => 'path',
-			'workspace_only' => false,
-			'invite_days'    => 7,
-			'app_slug'       => 'novawork',
-			'idle_minutes'   => 10,
-			'poll_seconds'   => 4,
-			'week_start'     => (int) get_option( 'start_of_week', 1 ),
-			'upload_max_mb'  => 10,
-			'upload_types'   => array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'mp4', 'mov', 'mp3', 'm4a' ),
-			'load_fontshare' => true,
-			'delete_data'    => false,
-			'now_limit'      => 3,
-			'due_soon_days'  => 3,
-			'idle_grace'     => 60,
-			'log_days'       => 30,
-			'read_note_days' => 90,
-			'team_order'     => 'dynamic',
-			'decide_rule'    => 'named',
-			'decision_votes' => true,
-			'message_edits'  => 'always',
-			'edit_minutes'   => 15,
-			'activity_days'  => 30,
+			'workspace_name'  => '',
+			'location'        => 'path',
+			'workspace_only'  => false,
+			'brand_icon'      => 0,
+			'brand_logo'      => 0,
+			'brand_logo_dark' => 0,
+			'accent'          => '#2065f5',
+			'invite_days'     => 7,
+			'app_slug'        => 'novawork',
+			'idle_minutes'    => 10,
+			'poll_seconds'    => 4,
+			'week_start'      => (int) get_option( 'start_of_week', 1 ),
+			'upload_max_mb'   => 10,
+			'upload_types'    => array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'mp4', 'mov', 'mp3', 'm4a' ),
+			'load_fontshare'  => true,
+			'delete_data'     => false,
+			'now_limit'       => 3,
+			'due_soon_days'   => 3,
+			'idle_grace'      => 60,
+			'log_days'        => 30,
+			'read_note_days'  => 90,
+			'team_order'      => 'dynamic',
+			'decide_rule'     => 'named',
+			'decision_votes'  => true,
+			'message_edits'   => 'always',
+			'edit_minutes'    => 15,
+			'activity_days'   => 30,
 		);
 	}
 
@@ -58,88 +62,92 @@ final class Settings {
 	 * @var array<string, array<string, mixed>>
 	 */
 	public const SCHEMA = array(
-		'workspace_name' => array(
+		'workspace_name'  => array(
 			'type' => 'text',
 			'max'  => 60,
 		),
-		'workspace_only' => array( 'type' => 'bool' ),
-		'invite_days'    => array(
+		'workspace_only'  => array( 'type' => 'bool' ),
+		'brand_icon'      => array( 'type' => 'image' ),
+		'brand_logo'      => array( 'type' => 'image' ),
+		'brand_logo_dark' => array( 'type' => 'image' ),
+		'accent'          => array( 'type' => 'color' ),
+		'invite_days'     => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 90,
 		),
-		'location'       => array(
+		'location'        => array(
 			'type'    => 'choice',
 			'choices' => array( 'path', 'home' ),
 		),
-		'app_slug'       => array( 'type' => 'slug' ),
-		'idle_minutes'   => array(
+		'app_slug'        => array( 'type' => 'slug' ),
+		'idle_minutes'    => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 240,
 		),
-		'idle_grace'     => array(
+		'idle_grace'      => array(
 			'type' => 'int',
 			'min'  => 15,
 			'max'  => 600,
 		),
-		'poll_seconds'   => array(
+		'poll_seconds'    => array(
 			'type' => 'int',
 			'min'  => 2,
 			'max'  => 60,
 		),
-		'week_start'     => array(
+		'week_start'      => array(
 			'type' => 'int',
 			'min'  => 0,
 			'max'  => 6,
 		),
-		'upload_max_mb'  => array(
+		'upload_max_mb'   => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 2048,
 		),
-		'upload_types'   => array( 'type' => 'types' ),
-		'load_fontshare' => array( 'type' => 'bool' ),
-		'delete_data'    => array( 'type' => 'bool' ),
-		'now_limit'      => array(
+		'upload_types'    => array( 'type' => 'types' ),
+		'load_fontshare'  => array( 'type' => 'bool' ),
+		'delete_data'     => array( 'type' => 'bool' ),
+		'now_limit'       => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 20,
 		),
-		'due_soon_days'  => array(
+		'due_soon_days'   => array(
 			'type' => 'int',
 			'min'  => 0,
 			'max'  => 30,
 		),
-		'log_days'       => array(
+		'log_days'        => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 365,
 		),
-		'read_note_days' => array(
+		'read_note_days'  => array(
 			'type' => 'int',
 			'min'  => 7,
 			'max'  => 3650,
 		),
-		'team_order'     => array(
+		'team_order'      => array(
 			'type'    => 'choice',
 			'choices' => self::TEAM_ORDERS,
 		),
-		'decide_rule'    => array(
+		'decide_rule'     => array(
 			'type'    => 'choice',
 			'choices' => array( 'named', 'anyone' ),
 		),
-		'decision_votes' => array( 'type' => 'bool' ),
-		'message_edits'  => array(
+		'decision_votes'  => array( 'type' => 'bool' ),
+		'message_edits'   => array(
 			'type'    => 'choice',
 			'choices' => array( 'always', 'window', 'never' ),
 		),
-		'edit_minutes'   => array(
+		'edit_minutes'    => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 1440,
 		),
-		'activity_days'  => array(
+		'activity_days'   => array(
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 3650,
@@ -199,6 +207,15 @@ final class Settings {
 					return new \WP_Error( 'novawork_taken_slug', __( 'A page of this site already uses this address. Choose another.', 'novawork' ) );
 				}
 				return $slug;
+			case 'image':
+				$id = absint( $value );
+				if ( 0 !== $id && ! wp_attachment_is_image( $id ) ) {
+					return new \WP_Error( 'novawork_not_image', __( 'Choose an image from the media library.', 'novawork' ) );
+				}
+				return $id;
+			case 'color':
+				$color = \NovaWork\App\Branding::normalize( (string) $value );
+				return null === $color ? new \WP_Error( 'novawork_bad_color', __( 'Enter a colour as #hex or rgb(r, g, b).', 'novawork' ) ) : $color;
 			default:
 				return new \WP_Error( 'novawork_unknown_setting', __( 'Unknown setting.', 'novawork' ) );
 		}
