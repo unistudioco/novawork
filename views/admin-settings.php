@@ -254,6 +254,11 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 
 	<section class="nw-scard nw-danger-zone" aria-labelledby="nw-s-data">
 		<h3 id="nw-s-data"><?php esc_html_e( 'Data', 'novawork' ); ?></h3>
+		<div x-show="site.samples > 0">
+			<?php $novawork_row_start( 'samples', __( 'Sample items', 'novawork' ), __( 'The project, task and decision NovaWork made on its first run to show where to start. Removing them also removes their comments and votes.', 'novawork' ) ); ?>
+				<button type="button" class="nw-btn" @click="removeSamples()" :disabled="samplesBusy" x-text="samplesLabel()"></button>
+			<?php $novawork_row_end( 'samples' ); ?>
+		</div>
 		<?php $novawork_row_start( 'delete_data', __( 'Delete everything when NovaWork is deleted', 'novawork' ), __( 'Tasks, projects, decisions, chat, time, files and settings are removed for good when you delete the plugin. Off: deactivating or deleting keeps them.', 'novawork' ) ); ?>
 			<button type="button" class="nw-switch nw-red" role="switch" aria-labelledby="nw-l-delete_data" :aria-checked="String(!!values.delete_data)" @click="values.delete_data = !values.delete_data"><span></span></button>
 		<?php $novawork_row_end( 'delete_data' ); ?>

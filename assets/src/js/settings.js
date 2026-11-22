@@ -144,6 +144,22 @@ Alpine.data( 'nwSettings', () => ( {
 			} catch ( err ) {}
 		}
 	},
+	samplesBusy: false,
+	samplesLabel() {
+		return sprintf( /* translators: %d: number of sample items. */ _n( 'Remove %d sample item', 'Remove %d sample items', this.site.samples, 'novawork' ), this.site.samples );
+	},
+	async removeSamples() {
+		this.samplesBusy = true;
+		try {
+			await del( 'samples' );
+			this.site = Object.assign( {}, this.site, { samples: 0 } );
+			toast( __( 'Sample items removed.', 'novawork' ), 'check' );
+		} catch ( e ) {
+			toast( ( e && e.message ) || __( 'Could not remove them. Try again.', 'novawork' ), 'x' );
+		} finally {
+			this.samplesBusy = false;
+		}
+	},
 	async revokeInvite( inv ) {
 		try {
 			await del( 'invites/' + inv.id );

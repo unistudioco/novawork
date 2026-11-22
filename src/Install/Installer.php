@@ -39,6 +39,7 @@ final class Installer {
 	 */
 	public static function activate(): void {
 		self::install();
+		\NovaWork\Services\Samples::mark_due();
 	}
 
 	/**

@@ -329,3 +329,11 @@ a.nw-login-go { text-decoration: none; }
 /* Sign out (owner): a danger-coloured link at the right of your row. */
 .nw-me-row .nw-signout { margin-left: auto; align-self: center; padding: 4px 2px; font: 500 13px/1 var(--nw-font-head); color: var(--nw-danger-on-soft); text-decoration: none; }
 .nw-me-row .nw-signout:hover, .nw-me-row .nw-signout:focus-visible { text-decoration: underline; }
+
+/* First-run note (owner decision 2026-11-22): admins only, until the
+   sample items are gone. */
+.nw-samples-wrap { margin-top: 18px; }
+.nw-samples { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 12px; background: var(--nw-accent-soft); color: var(--nw-accent-on-soft); font-size: 13.5px; }
+.nw-samples p { margin: 0; flex: 1; min-width: 0; }
+.nw-samples-ic { display: grid; place-items: center; flex: none; }
+.nw-samples .nw-btn { flex: none; }

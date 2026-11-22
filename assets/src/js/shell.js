@@ -12,7 +12,7 @@ import { __, _n, sprintf } from './lib/i18n.js';
 import { clock, dur, esc, initials, dayStart, longDate, shortTitle, ago } from './lib/format.js';
 import { serverNow } from './store.js';
 import { orderTeam } from './lib/team.js';
-import { get } from './lib/api.js';
+import { get, del } from './lib/api.js';
 import { plainText } from './views/rich.js';
 import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
 import { isPhone, PHONE, placeInd, lockBgScroll, unlockBgScroll, sheetOut, swipeToClose, toast } from './lib/ui.js';
@@ -239,6 +239,35 @@ export default () => ( {
 	},
 	longDate() {
 		return longDate( this.$store.nw.now, this.$store.nw.locale );
+	},
+	/** Sample items left (owner decision: admins see a note until they're gone). */
+	samples() {
+		const s = this.$store.nw;
+		return [ s.projects, s.tasks, s.decisions ].reduce( ( n, rows ) => n + Object.values( rows ).filter( ( r ) => r.sample ).length, 0 );
+	},
+	samplesText() {
+		return sprintf(
+			/* translators: %d: number of sample items. */
+			_n( '%d sample item shows where to start.', '%d sample items show where to start.', this.samples(), 'novawork' ),
+			this.samples()
+		);
+	},
+	samplesBusy: false,
+	async removeSamples() {
+		if ( this.samplesBusy ) {
+			return;
+		}
+		this.samplesBusy = true;
+		try {
+			await del( 'samples' );
+			const s = this.$store.nw;
+			[ 'projects', 'tasks', 'decisions' ].forEach( ( key ) => Object.values( s[ key ] ).filter( ( r ) => r.sample ).forEach( ( r ) => s.remove( key, r.id ) ) );
+			toast( __( 'Sample items removed.', 'novawork' ), 'check' );
+		} catch ( e ) {
+			toast( ( e && e.message ) || __( 'Could not remove them. Try again.', 'novawork' ), 'x' );
+		} finally {
+			this.samplesBusy = false;
+		}
 	},
 	openDecisions() {
 		return Object.values( this.$store.nw.decisions ).filter( ( d ) => d.status !== 'decided' ).length;

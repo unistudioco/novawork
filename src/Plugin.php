@@ -44,6 +44,7 @@ final class Plugin {
 		Rest\ActivityController::class,
 		Rest\SettingsController::class,
 		Rest\InvitesController::class,
+		Rest\SamplesController::class,
 	);
 
 	/**

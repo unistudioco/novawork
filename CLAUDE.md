@@ -349,6 +349,23 @@ one); the app document must have it.
   so testing a language needs `wp language core install xx_XX` (remove it
   after).
 
+## Phase 5, part 5: first run (owner decisions 2026-11-22)
+
+- Three sample items (`is_sample = 1`): project "Getting started", a task
+  in it in Now (assigned to the admin), and an open decision (voting with
+  Monday/Wednesday/Friday when decision votes are on). `Services\Samples`.
+- Activation only sets `novawork_samples = due`; the first app load by an
+  administrator makes them (so WP-CLI/Playground activations work) and sets
+  `made`. Never in a workspace that already has projects, tasks or
+  decisions; reactivation never asks again.
+- Removal in one step: an admin-only note above the views ("N sample items
+  show where to start. Remove them"), counted live from the store, and
+  Settings → Data → "Remove N sample items" (only while some remain).
+  `DELETE /samples` (admins). Removing works like deleting each item:
+  comments, votes, notifications go; timers on the task stop; real tasks in
+  the sample project stay, without a project.
+- Empty states are the prototype's, verified on an empty workspace.
+
 ## Owner decision, 2026-11-21: toasts with an action
 
 Deleting (a task, project, decision, comment…) still arms on the first click

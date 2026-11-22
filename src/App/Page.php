@@ -29,6 +29,9 @@ final class Page {
 			self::view( 'no-access', array() );
 			return;
 		}
+		if ( current_user_can( Capabilities::MANAGE ) ) {
+			\NovaWork\Services\Samples::maybe_create( get_current_user_id() );
+		}
 		wp_add_inline_script( Assets::SCRIPT, 'window.novawork = ' . wp_json_encode( self::boot() ) . ';', 'before' );
 		self::view( 'app', array() );
 	}

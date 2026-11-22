@@ -98,6 +98,9 @@ wp_print_styles( Assets::styles() );
 	</div>
 </header>
 
+<div class="nw-wrap nw-samples-wrap" x-show="$store.nw.canManage && samples() > 0">
+	<div class="nw-samples" role="status"><span class="nw-samples-ic" x-html="ic('sparkle', 18)"></span><p x-text="samplesText()"></p><button class="nw-btn nw-sm" type="button" @click="removeSamples()" :disabled="samplesBusy"><?php esc_html_e( 'Remove them', 'novawork' ); ?></button></div>
+</div>
 <main class="nw-wrap" id="nw-main"></main>
 
 <nav class="nw-tabs nw-bn" id="nw-bn" x-ref="bn" aria-label="<?php esc_attr_e( 'Views', 'novawork' ); ?>">
