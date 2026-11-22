@@ -100,7 +100,7 @@ final class TasksController extends Controller {
 		/**
 		 * Fires after a task is created through the API.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $task  Task as the API presents it.
 		 * @param int                  $actor Member who created it.
@@ -147,7 +147,7 @@ final class TasksController extends Controller {
 		/**
 		 * Fires after a task is changed through the API.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $task   Task as the API presents it.
 		 * @param array<string, mixed> $before Database row before the change.

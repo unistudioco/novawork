@@ -23,7 +23,10 @@ one); the app document must have it.
 
 ## Identity and prefixes
 
-- Slug, folder, text domain: `novawork`. Version stays `0.1.0` until release.
+- Slug, folder, text domain: `novawork`. First public release: `1.0.0` (owner,
+  2026-11-22). The version lives in four places that must match (plugin
+  header, `NOVAWORK_VERSION`, readme Stable tag, package.json; `bin/build-zip.sh`
+  checks); new hooks get `@since` with the release that ships them.
 - PHP functions, options, hooks, meta, transients: `novawork_`. Constants:
   `NOVAWORK_`. Namespace: `NovaWork\` → `src/` (PSR-4).
 - **Never `nw_` in PHP** (reviewers reject short prefixes). `nw-` is fine for

@@ -2,20 +2,20 @@
 
 The owner submits. Never submit, tag or commit to SVN on the owner's behalf.
 
-## 1. Decisions only the owner can make
+## 1. Owner decisions (2026-11-22)
 
-| # | Decision | Why it matters | Suggestion |
-|---|---|---|---|
-| 1 | **Version of the first release**: keep `0.1.0` or go to `1.0.0`? | It is the first number users see. Change it in four places at once (the plugin header, `NOVAWORK_VERSION`, readme `Stable tag`, `package.json`); `bin/build-zip.sh` refuses to build when they differ. | `1.0.0`: the product is complete and in daily use. |
-| 2 | **Fontshare on by default?** | Guideline 8 allows "calling third party CDNs for … font inclusions", and the readme discloses it with a switch to turn it off. Guideline 7 asks for consent before contacting outside servers, and a reviewer may read the default as missing consent. | Keep it on (the brand's look). If the reviewer asks, switch the default to off in `Settings::defaults()` and reply. |
-| 3 | **`Contributors: unistudio`** in readme.txt | Must be the WordPress.org username(s) of the people who own the plugin there. | Put your real WordPress.org username(s). |
-| 4 | **Plugin name and slug `novawork`** | Guideline 17: no one else's trademark as the first term. Slugs are first come, first served. | Check https://wordpress.org/plugins/novawork/ is free, and do a quick trademark search for "NovaWork". |
-| 5 | **Directory banner and icon** | Shown at the top of the plugin page and in search. Not required, but plugins without them look unfinished. | Design them from the flag mark (sizes in section 4). |
+| # | Decision | Answer |
+|---|---|---|
+| 1 | Version of the first release | **1.0.0** (set in the header, `NOVAWORK_VERSION`, readme Stable tag and changelog, package.json; hooks say `@since 1.0.0`). |
+| 2 | Fontshare on by default | **On.** Guideline 8 allows fonts from a CDN; the readme discloses it and the setting turns it off. If the reviewer asks for consent first, switch the default to off in `Settings::defaults()` and reply. |
+| 3 | `Contributors` in readme.txt | **Both brothers.** Waiting for the exact WordPress.org usernames. |
+| 4 | Name and slug | A search for "novawork" finds one other plugin, **"NovaWorks Low Stock Report for WooCommerce"** (by jordennabbe): a different name ("NovaWorks"), a different slug and a different kind of product. Still check that https://wordpress.org/plugins/novawork/ shows "not found" before submitting. If the reviewer finds the names too close, a fuller display name such as "NovaWork – Team Workspace" separates them without changing the slug. |
+| 5 | Directory banner and icon | To design (not needed to submit; sizes in section 4). |
 
 ## 2. Before submitting
 
 - [ ] Merge the phase branches into `main` on GitHub. The readme sends people to the public repository for the source, and `main` holds only the starter files today.
-- [ ] Open https://www.fontshare.com/terms in a browser and check it is Fontshare's terms page; if it moved, change the link in `readme.txt` (External services) and `src/Services/Privacy.php`. (The Gravatar and Automattic links were checked.)
+- [x] Fontshare link: Fontshare has no terms page; the readme and the privacy text link its license for Satoshi and Supreme, https://www.fontshare.com/licenses/itf-ffl (checked by the owner). The Gravatar and Automattic links were checked too.
 - [ ] Retake the screenshots on your Mac, where Fontshare loads, so they show Satoshi and Supreme: `bash bin/seed-dev.sh` on an empty dev workspace, drag one of Alex's four Now tasks to Next (otherwise Focus shows the "4 things in Now" note), then `node bin/screenshots.mjs`.
 - [ ] Run every gate (see CLAUDE.md → Gates), then build the zip:
       `bash bin/build-zip.sh` → `build/novawork-<version>.zip`.

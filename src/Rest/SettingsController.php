@@ -97,7 +97,7 @@ final class SettingsController extends Controller {
 		/**
 		 * Fires after an administrator saves NovaWork's settings.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $after  Every setting after the save.
 		 * @param array<string, mixed> $before Every setting before it.

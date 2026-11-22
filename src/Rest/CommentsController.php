@@ -98,7 +98,7 @@ final class CommentsController extends Controller {
 		/**
 		 * Fires after a member comments on a task or decision.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $comment Comment row.
 		 */
@@ -132,7 +132,7 @@ final class CommentsController extends Controller {
 		/**
 		 * Fires after a member edits a comment.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $after  Comment row after the edit.
 		 * @param array<string, mixed> $before Comment row before it.
@@ -162,7 +162,7 @@ final class CommentsController extends Controller {
 		/**
 		 * Fires after a comment is deleted.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param array<string, mixed> $row Deleted comment row.
 		 */

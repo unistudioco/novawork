@@ -141,7 +141,7 @@ final class Invites {
 		/**
 		 * Fires after someone joins the workspace with an invite.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 *
 		 * @param WP_User              $user   The new member.
 		 * @param array<string, mixed> $invite The invite row.

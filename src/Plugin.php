@@ -87,7 +87,7 @@ final class Plugin {
 		 *
 		 * Add-ons hook here to extend NovaWork.
 		 *
-		 * @since 0.1.0
+		 * @since 1.0.0
 		 */
 		do_action( 'novawork_loaded' );
 	}
