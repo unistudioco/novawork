@@ -10,8 +10,9 @@ declare( strict_types = 1 );
 namespace NovaWork;
 
 /**
- * One option holds every setting. Phase 5 adds the wp-admin screen; until
- * then the defaults apply.
+ * One option holds every setting; NovaWork → Settings in wp-admin edits it
+ * (Rest\SettingsController). Every value is checked against SCHEMA when it
+ * is saved, so code reading a setting can trust its type and range.
  */
 final class Settings {
 
@@ -24,6 +25,8 @@ final class Settings {
 	 */
 	public static function defaults(): array {
 		return array(
+			'workspace_name' => '',
+			'location'       => 'path',
 			'app_slug'       => 'novawork',
 			'idle_minutes'   => 10,
 			'poll_seconds'   => 4,
@@ -44,6 +47,173 @@ final class Settings {
 			'edit_minutes'   => 15,
 			'activity_days'  => 30,
 		);
+	}
+
+	/**
+	 * How each setting is checked when saved: an int range, a list of
+	 * choices, a boolean, text, the app's address, or a list of file types.
+	 *
+	 * @var array<string, array<string, mixed>>
+	 */
+	public const SCHEMA = array(
+		'workspace_name' => array(
+			'type' => 'text',
+			'max'  => 60,
+		),
+		'location'       => array(
+			'type'    => 'choice',
+			'choices' => array( 'path', 'home' ),
+		),
+		'app_slug'       => array( 'type' => 'slug' ),
+		'idle_minutes'   => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 240,
+		),
+		'idle_grace'     => array(
+			'type' => 'int',
+			'min'  => 15,
+			'max'  => 600,
+		),
+		'poll_seconds'   => array(
+			'type' => 'int',
+			'min'  => 2,
+			'max'  => 60,
+		),
+		'week_start'     => array(
+			'type' => 'int',
+			'min'  => 0,
+			'max'  => 6,
+		),
+		'upload_max_mb'  => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 2048,
+		),
+		'upload_types'   => array( 'type' => 'types' ),
+		'load_fontshare' => array( 'type' => 'bool' ),
+		'delete_data'    => array( 'type' => 'bool' ),
+		'now_limit'      => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 20,
+		),
+		'due_soon_days'  => array(
+			'type' => 'int',
+			'min'  => 0,
+			'max'  => 30,
+		),
+		'log_days'       => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 365,
+		),
+		'read_note_days' => array(
+			'type' => 'int',
+			'min'  => 7,
+			'max'  => 3650,
+		),
+		'team_order'     => array(
+			'type'    => 'choice',
+			'choices' => self::TEAM_ORDERS,
+		),
+		'decide_rule'    => array(
+			'type'    => 'choice',
+			'choices' => array( 'named', 'anyone' ),
+		),
+		'decision_votes' => array( 'type' => 'bool' ),
+		'message_edits'  => array(
+			'type'    => 'choice',
+			'choices' => array( 'always', 'window', 'never' ),
+		),
+		'edit_minutes'   => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 1440,
+		),
+		'activity_days'  => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 3650,
+		),
+	);
+
+	/**
+	 * Addresses the app may not take: WordPress's own, and the login page's.
+	 */
+	public const RESERVED_SLUGS = array( 'wp-admin', 'wp-content', 'wp-includes', 'wp-json', 'wp-login', 'wp-login-php', 'xmlrpc', 'feed', 'login', 'logout', 'register', 'admin', 'dashboard', 'embed', 'page', 'comments', 'search', 'author', 'category', 'tag', 'type' );
+
+	/**
+	 * Check one sent value. Numbers outside their range are clamped; a value
+	 * that cannot be used returns a WP_Error saying why.
+	 *
+	 * @param string $key   Setting name.
+	 * @param mixed  $value Sent value.
+	 */
+	public static function clean( string $key, mixed $value ): mixed {
+		$rule = self::SCHEMA[ $key ] ?? null;
+		if ( null === $rule ) {
+			return new \WP_Error( 'novawork_unknown_setting', __( 'Unknown setting.', 'novawork' ) );
+		}
+		switch ( $rule['type'] ) {
+			case 'int':
+				if ( ! is_numeric( $value ) ) {
+					return new \WP_Error( 'novawork_bad_number', __( 'Enter a number.', 'novawork' ) );
+				}
+				return max( (int) $rule['min'], min( (int) $rule['max'], (int) $value ) );
+			case 'bool':
+				// An explicit value is always sent; "0", "false", "off" and "" mean off.
+				return is_string( $value ) ? ! in_array( strtolower( $value ), array( '', '0', 'false', 'off', 'no' ), true ) : (bool) $value;
+			case 'choice':
+				return in_array( $value, (array) $rule['choices'], true ) ? $value : new \WP_Error( 'novawork_bad_choice', __( 'Choose one of the options.', 'novawork' ) );
+			case 'text':
+				return mb_substr( sanitize_text_field( (string) $value ), 0, (int) $rule['max'] );
+			case 'types':
+				$list = is_array( $value ) ? $value : preg_split( '/[\s,]+/', (string) $value );
+				$out  = array();
+				foreach ( (array) $list as $type ) {
+					$type = strtolower( (string) preg_replace( '/[^a-z0-9]/i', '', (string) $type ) );
+					if ( '' !== $type && ! in_array( $type, $out, true ) && ! in_array( $type, array( 'php', 'phtml', 'phar', 'js', 'html', 'htm', 'svg', 'exe', 'sh' ), true ) ) {
+						$out[] = $type;
+					}
+				}
+				return $out ? $out : new \WP_Error( 'novawork_no_types', __( 'Allow at least one type of file.', 'novawork' ) );
+			case 'slug':
+				$slug = sanitize_title( (string) $value );
+				if ( '' === $slug ) {
+					return new \WP_Error( 'novawork_bad_slug', __( 'Enter an address, such as “work”.', 'novawork' ) );
+				}
+				if ( in_array( $slug, self::RESERVED_SLUGS, true ) ) {
+					return new \WP_Error( 'novawork_reserved_slug', __( 'WordPress already uses this address. Choose another.', 'novawork' ) );
+				}
+				$page = get_page_by_path( $slug, OBJECT, array( 'page', 'post' ) );
+				if ( $page ) {
+					return new \WP_Error( 'novawork_taken_slug', __( 'A page of this site already uses this address. Choose another.', 'novawork' ) );
+				}
+				return $slug;
+			default:
+				return new \WP_Error( 'novawork_unknown_setting', __( 'Unknown setting.', 'novawork' ) );
+		}
+	}
+
+	/**
+	 * The workspace's name: the setting, else the site's title (owner: the
+	 * plugin is NovaWork, the workspace is yours).
+	 */
+	public static function workspace_name(): string {
+		$name = trim( (string) self::get( 'workspace_name' ) );
+		if ( '' === $name ) {
+			$name = trim( wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) );
+		}
+		return '' === $name ? 'NovaWork' : $name;
+	}
+
+	/**
+	 * Where the workspace lives: "path" (site.com/{app_slug}) or "home" (the
+	 * site's home page).
+	 */
+	public static function location(): string {
+		return 'home' === self::get( 'location' ) ? 'home' : 'path';
 	}
 
 	/**

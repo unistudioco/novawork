@@ -15,6 +15,7 @@ export default defineConfig( {
 		rolldownOptions: {
 			input: {
 				app: 'assets/src/js/app.js',
+				admin: 'assets/src/js/admin.js',
 			},
 		},
 	},
