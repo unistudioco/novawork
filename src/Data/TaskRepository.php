@@ -88,6 +88,7 @@ final class TaskRepository extends Repository {
 		$ids       = array_map( static fn( $row ) => (int) $row['id'], $rows );
 		$assignees = $this->assignees_of( $ids );
 		$seconds   = ( new TimeEntryRepository() )->seconds_by_task( $ids );
+		$subtasks  = ( new SubtaskRepository() )->for_tasks( $ids );
 		$out       = array();
 		foreach ( $rows as $row ) {
 			$id    = (int) $row['id'];
@@ -100,6 +101,7 @@ final class TaskRepository extends Repository {
 				'due'       => Db::date_out( $row['due_date'] ),
 				'projectId' => (int) $row['project_id'],
 				'assignees' => $assignees[ $id ] ?? array(),
+				'subtasks'  => $subtasks[ $id ] ?? array(),
 				'order'     => (int) $row['sort_order'],
 				'doneAt'    => Db::to_ms( $row['done_at'] ),
 				'trackedMs' => ( $seconds[ $id ] ?? 0 ) * 1000,
@@ -223,13 +225,14 @@ final class TaskRepository extends Repository {
 	}
 
 	/**
-	 * Delete a task with its assignees and comments.
+	 * Delete a task with its assignees, subtasks and comments.
 	 *
 	 * @param int $id Task id.
 	 */
 	public function delete( int $id ): void {
 		global $wpdb;
 		$wpdb->delete( Db::table( 'task_assignees' ), array( 'task_id' => $id ), array( '%d' ) );
+		( new SubtaskRepository() )->delete_for_task( $id );
 		( new CommentRepository() )->delete_for( 'task', $id );
 		parent::delete( $id );
 	}
@@ -248,12 +251,13 @@ final class TaskRepository extends Repository {
 	}
 
 	/**
-	 * Remove a member from every task they were assigned to.
+	 * Remove a member from every task and subtask they were assigned to.
 	 *
 	 * @param int $user_id User id.
 	 */
 	public function unassign_everywhere( int $user_id ): void {
 		global $wpdb;
+		( new SubtaskRepository() )->unassign_everywhere( $user_id );
 		$ids = $wpdb->get_col( $wpdb->prepare( 'SELECT task_id FROM %i WHERE user_id = %d', Db::table( 'task_assignees' ), $user_id ) );
 		$wpdb->delete( Db::table( 'task_assignees' ), array( 'user_id' => $user_id ), array( '%d' ) );
 		foreach ( self::ids( (array) $ids ) as $id ) {

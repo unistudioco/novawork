@@ -54,6 +54,8 @@ export const task = ( id ) => S.tasks[ id ] || null;
 export const decisions = () => Object.values( S.decisions ).sort( byOrder );
 export const assignees = ( t ) => ( Array.isArray( t.assignees ) ? t.assignees : [] );
 export const has = ( t, id ) => assignees( t ).includes( Number( id ) );
+/** A task's subtasks in checklist order (owner request, 2026-11-22). */
+export const subtasksOf = ( t ) => ( t && Array.isArray( t.subtasks ) ? t.subtasks.slice().sort( byOrder ) : [] );
 export const commentsOf = ( kind, id ) =>
 	Object.values( S.comments )
 		.filter( ( c ) => c.objectType === kind && c.objectId === Number( id ) )
@@ -137,6 +139,17 @@ export function presAvatar( uid, lg ) {
 export function projChip( id ) {
 	const p = project( id );
 	return p ? `<span class="nw-chip"><span class="nw-dot" style="--nw-c:${ col( p.color ) }"></span>${ esc( p.name ) }</span>` : '';
+}
+
+/** "2/5" with a checklist icon on a card; nothing when a task has no subtasks. */
+export function subChip( t ) {
+	const list = subtasksOf( t );
+	if ( ! list.length ) {
+		return '';
+	}
+	const done = list.filter( ( x ) => x.done ).length;
+	const label = esc( sprintf( /* translators: 1: subtasks done, 2: all subtasks. */ __( '%1$d of %2$d subtasks done', 'novawork' ), done, list.length ) );
+	return `<span class="nw-subn${ done === list.length ? ' nw-all' : '' }" role="img" title="${ label }" aria-label="${ label }">${ ic( 'list-checks' ) }<span aria-hidden="true">${ done }/${ list.length }</span></span>`;
 }
 
 export function dueHTML( s, st ) {

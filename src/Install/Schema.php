@@ -23,7 +23,7 @@ use NovaWork\Data\Db;
  */
 final class Schema {
 
-	public const VERSION = 7;
+	public const VERSION = 8;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -77,6 +77,20 @@ task_id bigint(20) unsigned NOT NULL,
 user_id bigint(20) unsigned NOT NULL,
 PRIMARY KEY  (task_id,user_id),
 KEY user_id (user_id)
+) $c;",
+			"CREATE TABLE {$t( 'subtasks' )} (
+id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+task_id bigint(20) unsigned NOT NULL DEFAULT 0,
+title varchar(255) NOT NULL DEFAULT '',
+done_at datetime DEFAULT NULL,
+assignee_id bigint(20) unsigned NOT NULL DEFAULT 0,
+sort_order bigint(20) NOT NULL DEFAULT 0,
+created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+created_at datetime NOT NULL,
+updated_at datetime NOT NULL,
+PRIMARY KEY  (id),
+KEY task_order (task_id,sort_order),
+KEY assignee_id (assignee_id)
 ) $c;",
 			"CREATE TABLE {$t( 'comments' )} (
 id bigint(20) unsigned NOT NULL AUTO_INCREMENT,

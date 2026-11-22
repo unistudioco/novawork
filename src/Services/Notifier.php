@@ -66,6 +66,35 @@ final class Notifier {
 	}
 
 	/**
+	 * Someone was given a subtask (owner request, 2026-11-22). The
+	 * notification is an "assign" about the parent task, so it opens the
+	 * task; it names the subtask too.
+	 *
+	 * @param array<string, mixed> $subtask Subtask row.
+	 * @param int                  $user_id Who was given it.
+	 * @param int                  $actor   Who gave it.
+	 */
+	public static function subtask_assigned( array $subtask, int $user_id, int $actor ): void {
+		$task = ( new TaskRepository() )->find( (int) $subtask['task_id'] );
+		if ( ! $task || $user_id === $actor ) {
+			return;
+		}
+		self::send(
+			$user_id,
+			array(
+				'type'        => 'assign',
+				'actor_id'    => $actor,
+				'object_type' => 'task',
+				'object_id'   => (int) $task['id'],
+				'data'        => array(
+					'title'   => (string) $task['title'],
+					'subtask' => (string) $subtask['title'],
+				),
+			)
+		);
+	}
+
+	/**
 	 * The team is asked to vote on a decision (once per decision).
 	 *
 	 * @param array<string, mixed> $decision Decision row.

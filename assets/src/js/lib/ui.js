@@ -204,10 +204,19 @@ const positions = () => new Map( live.map( ( t ) => [ t.el, t.el.getBoundingClie
  *                         settle when the toast goes away without a click.
  */
 export function toast( message, icon, action ) {
-	if ( ! stack || ! stack.isConnected ) {
+	if ( ! stack ) {
 		stack = document.createElement( 'div' );
 		stack.className = 'nw-toasts';
-		document.body.appendChild( stack );
+	}
+	// A modal dialog makes the rest of the page inert, so a toast's Undo
+	// would be out of reach under it: while one is open, the toasts live
+	// inside it, and go back to the page when it closes (so "Saved" stays).
+	const host = document.querySelector( 'dialog[open]' ) || document.body;
+	if ( stack.parentElement !== host ) {
+		host.appendChild( stack );
+		if ( host !== document.body ) {
+			host.addEventListener( 'close', () => stack.parentElement === host && document.body.appendChild( stack ), { once: true } );
+		}
 	}
 	const el = document.createElement( 'div' );
 	el.className = 'nw-toast';

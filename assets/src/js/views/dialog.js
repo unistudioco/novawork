@@ -66,8 +66,17 @@ export function mountDialog() {
 			dlg.close();
 		}
 	} );
+	// A backdrop click must start on the backdrop too. A click fires on the
+	// element holding both the press and the release, so selecting text in a
+	// field and letting go over the backdrop lands on the dialog itself.
+	let downOnBackdrop = false;
+	dlg.addEventListener( 'pointerdown', ( e ) => {
+		downOnBackdrop = e.target === dlg;
+	} );
 	dlg.addEventListener( 'click', ( e ) => {
-		if ( e.target === dlg ) {
+		const fromBackdrop = downOnBackdrop;
+		downOnBackdrop = false;
+		if ( e.target === dlg && fromBackdrop ) {
 			closeSel( openSelectBox() );
 			dlg.close();
 		}
@@ -117,14 +126,6 @@ export function mountDialog() {
 					dlg.close();
 				}
 			} );
-		}
-	} );
-	form.addEventListener( 'keydown', ( e ) => {
-		if ( e.target.id === 'nw-cmt-in' && e.key === 'Enter' ) {
-			e.preventDefault();
-			if ( handlers.comment ) {
-				handlers.comment();
-			}
 		}
 	} );
 }

@@ -11,6 +11,8 @@ import { post, patch } from '../lib/api.js';
 import { deleteWithUndo } from './undo.js';
 import { richText } from './rich.js';
 import { attachComposer } from './composer.js';
+import { multiline, fit } from '../lib/multiline.js';
+import { subtasksField, wireSubtasks, saveDraft } from './subtasks.js';
 import { wireThread, quoteHTML, actsHTML, kindOf } from './thread.js';
 import Alpine from 'alpinejs';
 import { safeEffect } from '../lib/effect.js';
@@ -61,7 +63,7 @@ function commentBox( kind, id ) {
 		list.length ? list.map( ( c ) => msgHTML( c ) ).join( '' ) : `<span style="color:var(--nw-faint);font-size:13px">${ esc( __( 'No comments yet.', 'novawork' ) ) }</span>`
 	}</div>` +
 		`<div class="nw-replying" id="nw-cmt-reply" hidden></div>` +
-		`<div class="nw-cmt-in"><label for="nw-cmt-in" class="nw-vh">${ esc( __( 'Comment', 'novawork' ) ) }</label><input class="nw-input" id="nw-cmt-in" maxlength="2000" placeholder="${ esc( __( 'Write a comment', 'novawork' ) ) }"><button class="nw-btn" type="button" data-cmt="1" aria-label="${ esc( __( 'Send comment', 'novawork' ) ) }">${ ic( 'paper-plane-right', 15 ) }</button></div></div>`;
+		`<div class="nw-cmt-in"><label for="nw-cmt-in" class="nw-vh">${ esc( __( 'Comment', 'novawork' ) ) }</label><textarea class="nw-input nw-grow" id="nw-cmt-in" rows="1" maxlength="2000" enterkeyhint="send" placeholder="${ esc( __( 'Write a comment', 'novawork' ) ) }"></textarea><button class="nw-btn" type="button" data-cmt="1" aria-label="${ esc( __( 'Send comment', 'novawork' ) ) }">${ ic( 'paper-plane-right', 15 ) }</button></div></div>`;
 }
 
 /**
@@ -117,7 +119,7 @@ function commentsFor( kind, id ) {
 			draw();
 		}
 	} );
-	onComment( async () => {
+	const send = async () => {
 		const text = input.value.trim();
 		if ( ! text || composer.isOpen() ) {
 			return;
@@ -131,8 +133,11 @@ function commentsFor( kind, id ) {
 		composer.reset();
 		thread.clearReply();
 		input.value = '';
+		fit( input );
 		input.focus();
-	} );
+	};
+	onComment( send );
+	multiline( input, send );
 }
 
 /* ---------- options ---------- */
@@ -193,6 +198,7 @@ export function openTask( id, defaults ) {
 				.map( ( p ) => `<label><input type="checkbox" name="assignees" value="${ p.id }"${ has( t, p.id ) ? ' checked' : '' }><span>${ avatar( p.id ) }${ esc( p.name ) }</span></label>` )
 				.join( '' ) }</div></div>` +
 			`<div class="nw-field"><label for="nw-f-notes">${ L( __( 'Notes', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-f-notes" name="notes" maxlength="4000" placeholder="${ L( __( 'Links, context, what done looks like', 'novawork' ) ) }">${ esc( t.notes || '' ) }</textarea></div>` +
+			subtasksField( id ? t : null ) +
 			( id
 				? `<div class="nw-field"><span class="nw-flabel">${ L( __( 'Time tracked', 'novawork' ) ) }</span><div style="display:flex;align-items:center;gap:10px"><b class="nw-tnum" style="font:700 15px var(--nw-font-head)">${ esc( dur( spent ) ) }</b><span style="color:var(--nw-faint);font-size:12.5px">${ L( __( 'across all sessions', 'novawork' ) ) }</span></div></div><div class="nw-dlg-sep"></div>` +
 				  commentBox( 'task', id )
@@ -218,11 +224,15 @@ export function openTask( id, defaults ) {
 					await stopTracking( true );
 				}
 			}
-			const saved = await write( () => ( id ? patch( 'tasks/' + id, data ) : post( 'tasks', data ) ), id ? __( 'Saved', 'novawork' ) : __( 'Task added', 'novawork' ) );
+			let saved = await write( () => ( id ? patch( 'tasks/' + id, data ) : post( 'tasks', data ) ), id ? __( 'Saved', 'novawork' ) : __( 'Task added', 'novawork' ) );
+			if ( saved && ! id ) {
+				saved = await saveDraft( saved );
+			}
 			keepTask( saved );
 			return !! saved;
 		}
 	);
+	wireSubtasks( id || null );
 	if ( id ) {
 		commentsFor( 'task', id );
 		onDelete( () => {

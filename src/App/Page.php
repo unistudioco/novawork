@@ -55,8 +55,23 @@ final class Page {
 			'version'   => NOVAWORK_VERSION,
 			// Where an administrator invites people (the "Invite your team" row).
 			'inviteUrl' => current_user_can( Capabilities::MANAGE ) ? esc_url_raw( admin_url( 'admin.php?page=novawork-settings#nw-members' ) ) : '',
+			// Desktop alerts: the worker that shows them (Android shows alerts only
+			// through one) and the icon they carry.
+			'alerts'    => array(
+				'worker' => esc_url_raw( NOVAWORK_URL . 'assets/alerts-worker.js' ),
+				'icon'   => esc_url_raw( self::alert_icon() ),
+				'name'   => \NovaWork\Settings::workspace_name(),
+			),
 			'sync'      => $response->is_error() ? null : $response->get_data(),
 		);
+	}
+
+	/**
+	 * The picture on a desktop alert: the workspace icon, else the site icon.
+	 */
+	private static function alert_icon(): string {
+		$icon = Branding::image( 'brand_icon', 'thumbnail' );
+		return '' !== $icon ? $icon : (string) get_site_icon_url( 192 );
 	}
 
 	/**

@@ -35,6 +35,7 @@ final class Plugin {
 		Rest\SyncController::class,
 		Rest\ProjectsController::class,
 		Rest\TasksController::class,
+		Rest\SubtasksController::class,
 		Rest\DecisionsController::class,
 		Rest\CommentsController::class,
 		Rest\ChatController::class,

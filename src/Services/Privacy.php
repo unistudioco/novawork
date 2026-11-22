@@ -21,6 +21,7 @@ use NovaWork\Data\MessageRepository;
 use NovaWork\Data\NotificationRepository;
 use NovaWork\Data\ProjectRepository;
 use NovaWork\Data\Repository;
+use NovaWork\Data\SubtaskRepository;
 use NovaWork\Data\TaskRepository;
 use NovaWork\Data\TimeEntryRepository;
 use NovaWork\Members;
@@ -298,6 +299,7 @@ final class Privacy {
 		// Shared work stays with the team, no longer naming them.
 		( new TaskRepository() )->unassign_everywhere( $id );
 		$retained = self::unlink( new TaskRepository(), 'tasks', array( 'created_by' ), $id )
+			+ self::unlink( new SubtaskRepository(), 'subtasks', array( 'created_by' ), $id )
 			+ self::unlink( new ProjectRepository(), 'projects', array( 'created_by' ), $id )
 			+ self::unlink( new DecisionRepository(), 'decisions', array( 'created_by', 'owner_id', 'decided_by' ), $id );
 		self::unlink( new NotificationRepository(), 'notifications', array( 'actor_id' ), $id );
