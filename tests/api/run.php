@@ -776,6 +776,35 @@ try {
 	$t->ok( is_readable( dirname( __DIR__, 2 ) . '/uninstall.php' ) && str_contains( (string) file_get_contents( dirname( __DIR__, 2 ) . '/uninstall.php' ), 'WP_UNINSTALL_PLUGIN' ), 'uninstall.php exists and only runs from WordPress' );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Translations for the JS bundles' );
+	$sources = \NovaWork\App\Translations::sources( 'app' );
+	$t->ok( in_array( 'assets/src/js/views/board.js', $sources, true ) && in_array( 'assets/src/js/lib/format.js', $sources, true ), 'the build lists the app bundle’s sources, shared chunk included' );
+	$t->ok( in_array( 'assets/src/js/settings.js', \NovaWork\App\Translations::sources( 'settings' ), true ), 'and the settings bundle’s' );
+	$lang_dir = WP_LANG_DIR . '/plugins';
+	wp_mkdir_p( $lang_dir );
+	$jed      = static fn( string $source, array $msgs ): string => (string) wp_json_encode(
+		array(
+			'source'      => $source,
+			'domain'      => 'messages',
+			'locale_data' => array( 'messages' => array( '' => array( 'domain' => 'messages', 'lang' => 'xx_XX' ) ) + $msgs ),
+		)
+	);
+	$lang_files = array(
+		$lang_dir . '/novawork-xx_XX-' . md5( 'assets/src/js/views/board.js' ) . '.json' => $jed( 'assets/src/js/views/board.js', array( 'Board' => array( 'Xboard' ) ) ),
+		$lang_dir . '/novawork-xx_XX-' . md5( 'assets/src/js/lib/format.js' ) . '.json'  => $jed( 'assets/src/js/lib/format.js', array( 'Just now' => array( 'Xnow' ) ) ),
+	);
+	foreach ( $lang_files as $path => $json ) {
+		file_put_contents( $path, $json ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Test fixture.
+	}
+	$merged = json_decode( (string) \NovaWork\App\Translations::merge( $sources, 'xx_XX' ), true );
+	$msgs   = $merged['locale_data']['messages'] ?? array();
+	$t->ok( array( 'Xboard' ) === ( $msgs['Board'] ?? null ) && array( 'Xnow' ) === ( $msgs['Just now'] ?? null ) && isset( $msgs['']['lang'] ), 'one source file’s JSON per module, merged into one for the bundle' );
+	$t->ok( false === \NovaWork\App\Translations::merge( $sources, 'yy_YY' ), 'nothing to merge leaves WordPress’s own lookup alone' );
+	foreach ( array_keys( $lang_files ) as $path ) {
+		wp_delete_file( $path );
+	}
+
+	// ------------------------------------------------------------------
 	$t->section( 'Removing a member' );
 	$t->call( $alex, 'PATCH', '/tasks/' . $due['id'], array( 'assignees' => array( $sam, $alex ) ) );
 	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $due['id'] ) );

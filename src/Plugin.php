@@ -69,6 +69,7 @@ final class Plugin {
 		Services\Activity::register();
 		Services\Privacy::register();
 		App\Route::register();
+		App\Translations::register();
 		Admin\Menu::register();
 		Admin\SettingsPage::register();
 		Access\Profile::register();

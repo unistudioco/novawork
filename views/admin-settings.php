@@ -1,7 +1,7 @@
 <?php
 /**
  * NovaWork → Settings (wp-admin). Labels are printed here; values, saving
- * and errors are handled by assets/src/js/admin.js (Alpine).
+ * and errors are handled by assets/src/js/settings.js (Alpine).
  *
  * @package NovaWork
  */

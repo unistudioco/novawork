@@ -71,10 +71,10 @@ final class Assets {
 		$dev = self::dev_server();
 		if ( '' !== $dev ) {
 			wp_register_script( 'novawork-vite', $dev . '/@vite/client', array(), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
-			wp_register_script( self::ADMIN_SCRIPT, $dev . '/js/admin.js', array( 'wp-i18n', 'novawork-vite' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
+			wp_register_script( self::ADMIN_SCRIPT, $dev . '/js/settings.js', array( 'wp-i18n', 'novawork-vite' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
 			wp_register_style( self::ADMIN_STYLE, false, array(), NOVAWORK_VERSION );
 		} else {
-			$entry = self::manifest()['js/admin.js'] ?? array();
+			$entry = self::manifest()['js/settings.js'] ?? array();
 			$base  = NOVAWORK_URL . 'assets/dist/';
 			wp_register_script( self::ADMIN_SCRIPT, $base . ( $entry['file'] ?? 'missing.js' ), array( 'wp-i18n' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
 			$css = (array) ( $entry['css'] ?? array() );
