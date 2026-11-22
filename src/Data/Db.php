@@ -25,6 +25,7 @@ final class Db {
 		'projects',
 		'tasks',
 		'task_assignees',
+		'subtasks',
 		'comments',
 		'decisions',
 		'decision_votes',

@@ -342,3 +342,60 @@ a.nw-login-go { text-decoration: none; }
 .nw-list.nw-team a.nw-invite { color: inherit; text-decoration: none; border-radius: 10px; }
 .nw-list.nw-team a.nw-invite:hover b { color: var(--nw-accent-ink); }
 .nw-invite-ic { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px dashed var(--nw-line-strong); color: var(--nw-muted); }
+
+/* Message fields grow with their text (owner request, 2026-11-22): chat,
+   comments and editing in place are one-line textareas (Shift+Enter adds a
+   line) that grow to about seven lines, then scroll. 6 + 20 + 6 = the 32px
+   of a one-line .nw-input. The buttons beside them stay on the last line. */
+textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-height: 152px; padding: 6px 10px; line-height: 20px; resize: none; overflow-y: auto; }
+.nw-composer .nw-line, .nw-cmt-in { align-items: flex-end; }
+
+/* Board card without a project (owner request, 2026-11-22): the title sits
+   in the top row beside the timer button instead of under an empty row. */
+.nw-ctop.nw-ctop-t { align-items: flex-start; }
+.nw-ctop.nw-ctop-t .nw-t { flex: 1; min-width: 0; padding-top: 2px; }
+.nw-ctop.nw-ctop-t .nw-tbtn { flex: none; }
+
+/* Desktop alerts (owner request, 2026-11-22): the bell's last row turns them
+   on or off for this device. */
+.nw-nalerts { display: flex; align-items: center; gap: 10px; margin-top: 4px; padding: 10px 6px 6px 10px; border-top: 1px solid var(--nw-line); color: var(--nw-muted); font-size: 12.5px; line-height: 1.4; }
+.nw-nalerts > .nw-ic { flex: none; }
+.nw-nalerts > span { flex: 1; min-width: 0; }
+.nw-nalerts > .nw-btn { flex: none; }
+.nw-nalerts.nw-alerts-on > .nw-ic { color: var(--nw-accent); }
+
+/* Subtasks (owner request, 2026-11-22): a checklist in the task dialog and
+   "2/5" on cards. The tick is Focus's square check; done turns it green
+   (--nw-done) and strikes the title through, as on Done cards. */
+.nw-subs-count { color: var(--nw-faint); font-variant-numeric: tabular-nums; }
+.nw-subs-bar { --nw-c: var(--nw-done); height: 4px; }
+.nw-subs-bar[hidden] { display: none; }
+.nw-subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.nw-subs:empty { display: none; }
+.nw-sub { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; min-height: 36px; padding: 3px 4px 3px 6px; border-radius: 9px; cursor: grab; }
+.nw-sub:hover, .nw-sub:focus-within { background: var(--nw-field); }
+.nw-sub-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--nw-line-strong); background: var(--nw-surface); display: grid; place-items: center; padding: 0; color: var(--nw-done); cursor: pointer; --nw-is: 12px; }
+.nw-sub-check .nw-ic { opacity: 0; }
+.nw-sub-check:hover { border-color: var(--nw-done); }
+.nw-sub-check:hover .nw-ic { opacity: .6; }
+.nw-sub.nw-done .nw-sub-check { background: var(--nw-done); border-color: var(--nw-done); color: var(--nw-surface); }
+.nw-sub.nw-done .nw-sub-check .nw-ic { opacity: 1; }
+.nw-sub-t { min-width: 0; font-size: 13.5px; line-height: 1.4; overflow-wrap: anywhere; cursor: text; border-radius: 5px; }
+.nw-sub-t:focus-visible { outline: 2px solid var(--nw-accent); outline-offset: 2px; }
+.nw-sub.nw-done .nw-sub-t { color: var(--nw-faint); text-decoration: line-through; text-decoration-color: var(--nw-line-strong); }
+.nw-sub .nw-sub-edit { height: 28px; }
+/* The assignee is an avatar-only dropdown: shown when someone is set, on
+   hover otherwise (the "Unassigned" mark would be noise on every row). */
+.nw-sub .nw-sel { width: auto; }
+.nw-sub .nw-sel-btn { width: auto; height: 28px; padding: 0 3px; gap: 0; background: transparent; }
+.nw-sub .nw-sel-btn .nw-lbl, .nw-sub .nw-sel-btn .nw-caret, .nw-sub .nw-sel-btn .nw-you { display: none; }
+@media (hover: hover) { .nw-sub:not(.nw-has-who):not(:hover):not(:focus-within) .nw-sel:not(.nw-open) { visibility: hidden; } }
+.nw-sub-x { opacity: 0; color: var(--nw-faint); }
+.nw-sub:hover .nw-sub-x, .nw-sub:focus-within .nw-sub-x { opacity: 1; }
+@media (hover: none) { .nw-sub-x, .nw-sub .nw-sel { opacity: 1; visibility: visible; } .nw-sub { cursor: default; } }
+.nw-sub-add { display: flex; align-items: center; gap: 10px; padding-left: 7px; color: var(--nw-faint); }
+.nw-sub-add[hidden] { display: none; }
+.nw-sub-add .nw-input { background: transparent; padding-left: 2px; }
+.nw-sub-add .nw-input:hover, .nw-sub-add .nw-input:focus { background: var(--nw-field); padding-left: 10px; }
+.nw-subn { display: inline-flex; align-items: center; gap: 4px; font: 500 12px/1 var(--nw-font-head); color: var(--nw-faint); font-variant-numeric: tabular-nums; --nw-is: 14px; }
+.nw-subn.nw-all { color: var(--nw-done); }

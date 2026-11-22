@@ -11,7 +11,7 @@
  * as you scroll. Nobody ever sees anyone else's notifications.
  */
 import { safeEffect } from '../lib/effect.js';
-import { ic } from '../lib/icons.js';
+import { ic, icf } from '../lib/icons.js';
 import { __, sprintf, _n } from '../lib/i18n.js';
 import { esc, ago } from '../lib/format.js';
 import { get, post } from '../lib/api.js';
@@ -19,6 +19,7 @@ import { placeInd } from '../lib/ui.js';
 import { serverNow } from '../store.js';
 import { store, person, cpair, parse, todayISO, days } from './model.js';
 import { refTitle } from './rich.js';
+import { mountAlerts, alertState, turnOn, turnOff } from './alerts.js';
 
 const $ = ( id ) => document.getElementById( id );
 
@@ -94,6 +95,9 @@ function noteText( n ) {
 	const quote = said( d );
 	switch ( n.type ) {
 		case 'assign':
+			if ( d.subtask ) {
+				return [ 'assign', sprintf( /* translators: 1: a person, 2: subtask, 3: its task. */ esc( __( '%1$s gave you %2$s on %3$s', 'novawork' ) ), by, b( d.subtask ), b( titleOf( 'task', n.objectId, d.title ) ) ) ];
+			}
 			return [ 'assign', sprintf( /* translators: 1: a person, 2: task. */ esc( __( '%1$s assigned you %2$s', 'novawork' ) ), by, b( titleOf( 'task', n.objectId, d.title ) ) ) ];
 		case 'comment':
 			return [ 'comment', sprintf( /* translators: 1: a person, 2: task or decision. */ esc( __( '%1$s commented on %2$s', 'novawork' ) ), by, b( titleOf( n.objectType, n.objectId, d.title ) ) ) + quote ];
@@ -166,6 +170,22 @@ function activityText( a ) {
 	}
 }
 
+/** The bell's last row: desktop alerts on this device (owner request, 2026-11-22). */
+function alertsRow() {
+	const state = alertState();
+	if ( state === 'unavailable' ) {
+		return '';
+	}
+	const [ text, act, label ] = {
+		off: [ __( 'Get desktop alerts on this device while the workspace is open in the background.', 'novawork' ), 'alerts-on', __( 'Turn on', 'novawork' ) ],
+		on: [ __( 'Desktop alerts are on for this device.', 'novawork' ), 'alerts-off', __( 'Turn off', 'novawork' ) ],
+		blocked: [ __( 'Alerts are blocked for this site. Allow notifications in your browser’s site settings to turn them on.', 'novawork' ), '', '' ],
+	}[ state ];
+	return `<div class="nw-nalerts nw-alerts-${ state }">${ state === 'on' ? icf( 'bell-ringing', 16 ) : ic( 'bell-ringing', 16 ) }<span>${ esc( text ) }</span>${
+		act ? `<button class="nw-btn nw-sm nw-ghost" type="button" data-n="${ act }">${ esc( label ) }</button>` : ''
+	}</div>`;
+}
+
 function itemHTML( id, kind, html, at, unread, now ) {
 	const [ icon, color ] = KIND[ kind ] || [ 'bell', 'slate' ];
 	return `<button class="nw-nitem${ unread ? ' nw-unread' : '' }" type="button" data-nid="${ esc( String( id ) ) }"><span class="nw-nic" style="${ cpair( color ) }">${ ic( icon ) }</span><span class="nw-ntext">${ html }<time>${ esc(
@@ -235,7 +255,8 @@ function paint() {
 		`<div class="nw-sgrab" data-grab aria-hidden="true"></div><div class="nw-nhead"><h3>${ esc( __( 'Notifications', 'novawork' ) ) }</h3>${
 			unread ? `<button class="nw-btn nw-sm nw-ghost" type="button" data-n="all">${ esc( __( 'Mark all as read', 'novawork' ) ) }</button>` : ''
 		}</div><div class="nw-ntabs">${ seg }</div>` +
-		`<div class="nw-nlist" role="tabpanel">${ rows.length ? sections( rows ) : empty }</div>`;
+		`<div class="nw-nlist" role="tabpanel">${ rows.length ? sections( rows ) : empty }</div>` +
+		alertsRow();
 	const nav = body.querySelector( '.nw-notes-tabs' );
 	placeInd( nav, true );
 	const next = body.querySelector( '.nw-nlist' );
@@ -299,6 +320,11 @@ function onClick( e ) {
 		markRead( ( tab === 'mine' ? mine() : chatNotes() ).map( ( n ) => n.id ) );
 		return;
 	}
+	const al = e.target.closest( '[data-n="alerts-on"], [data-n="alerts-off"]' );
+	if ( al ) {
+		( al.dataset.n === 'alerts-on' ? turnOn() : Promise.resolve( turnOff() ) ).then( paint );
+		return;
+	}
 	const t = e.target.closest( '[data-ntab]' );
 	if ( t ) {
 		tab = t.dataset.ntab;
@@ -324,6 +350,16 @@ function onClick( e ) {
 	if ( ! n ) {
 		return;
 	}
+	openNote( n );
+}
+
+/**
+ * Open what a notification is about and mark it read: a row in the bell,
+ * or a click on its desktop alert.
+ *
+ * @param {Object} n Notification.
+ */
+function openNote( n ) {
 	markRead( [ n.id ] );
 	openTarget( n.objectType, n.objectId );
 }
@@ -335,6 +371,7 @@ export function mountNotes() {
 		return;
 	}
 	body.addEventListener( 'click', onClick );
+	mountAlerts( { text: noteText, open: openNote } );
 	window.addEventListener( 'nw:notes-state', ( e ) => {
 		open = !! ( e.detail && e.detail.open );
 		if ( open ) {

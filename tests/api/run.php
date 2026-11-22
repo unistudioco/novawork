@@ -212,6 +212,58 @@ try {
 	$t->ok( 'Write the brief' === $keep['title'] && 'high' === $keep['priority'] && $p1['id'] === $keep['projectId'], 'PATCH without a field leaves it alone' );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Subtasks (owner request, 2026-11-22)' );
+	list( , $cur ) = $t->call( $alex, 'GET', '/sync' );
+	$sub_cursor    = $cur['cursor'];
+	list( $s, $st ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks', array( 'title' => 'Outline' ) );
+	$t->ok( 201 === $s && 1 === count( $st['subtasks'] ) && 'Outline' === $st['subtasks'][0]['title'] && false === $st['subtasks'][0]['done'] && 0 === $st['subtasks'][0]['assigneeId'], 'add a subtask; the answer is the whole task', $st );
+	$s1 = $st['subtasks'][0]['id'];
+	list( , $st ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks', array( 'title' => 'First draft', 'assigneeId' => $sam ) );
+	list( , $st ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks', array( 'title' => 'Send for review' ) );
+	$t->ok( array( 'Outline', 'First draft', 'Send for review' ) === array_column( $st['subtasks'], 'title' ), 'new subtasks go to the end of the checklist' );
+	$s2 = $st['subtasks'][1]['id'];
+	$s3 = $st['subtasks'][2]['id'];
+	$sub_note = array_values( array_filter( ( new NovaWork\Data\NotificationRepository() )->recent_for( $sam, 50 ), fn( $n ) => 'assign' === $n['type'] && (int) $n['object_id'] === $t1['id'] && str_contains( (string) $n['data'], 'First draft' ) ) );
+	$t->ok( 1 === count( $sub_note ), 'sam is told about the subtask, on its task' );
+	list( , $inc ) = $t->call( $sam, 'GET', '/sync', array( 'since' => $sub_cursor ) );
+	$synced        = array_values( array_filter( $inc['data']['tasks'] ?? array(), fn( $x ) => $x['id'] === $t1['id'] ) );
+	$t->ok( $synced && 3 === count( $synced[0]['subtasks'] ), 'a subtask change reaches other members with its task', $inc['data'] ?? null );
+
+	list( $s ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks', array( 'title' => '  ' ) );
+	$t->ok( 400 === $s, 'blank subtask → 400', $s );
+	list( $s ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks', array( 'title' => 'x', 'assigneeId' => (int) $outsider ) );
+	$t->ok( 400 === $s, 'assigning a non-member → 400', $s );
+	list( $s ) = $t->call( $alex, 'POST', '/tasks/999999/subtasks', array( 'title' => 'x' ) );
+	$t->ok( 404 === $s, 'unknown task → 404', $s );
+	list( $s ) = $t->call( $alex, 'PATCH', '/tasks/' . $t3['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
+	$t->ok( 404 === $s, 'a subtask is only reached through its own task → 404', $s );
+	list( $s ) = $t->call( (int) $outsider, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
+	$t->ok( 403 === $s, 'non-member cannot tick a subtask → 403', $s );
+
+	list( , $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
+	$first_done   = $st['subtasks'][0]['doneAt'];
+	$t->ok( true === $st['subtasks'][0]['done'] && is_int( $first_done ), 'any member can tick a subtask' );
+	list( , $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true, 'title' => 'Outline the brief' ) );
+	$t->ok( $first_done === $st['subtasks'][0]['doneAt'] && 'Outline the brief' === $st['subtasks'][0]['title'], 'ticking again keeps when it was done; rename' );
+	list( , $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => false ) );
+	$t->ok( false === $st['subtasks'][0]['done'] && null === $st['subtasks'][0]['doneAt'], 'untick' );
+	list( $s ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'title' => '' ) );
+	$t->ok( 400 === $s, 'renaming to nothing → 400', $s );
+
+	list( , $st ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks/' . $s3 . '/move', array( 'beforeId' => $s1 ) );
+	$t->ok( array( $s3, $s1, $s2 ) === array_column( $st['subtasks'], 'id' ), 'drag a subtask to the top' );
+	list( , $st ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks/' . $s3 . '/move', array( 'beforeId' => null ) );
+	$t->ok( array( $s1, $s2, $s3 ) === array_column( $st['subtasks'], 'id' ), 'and back to the end' );
+	list( , $st ) = $t->call( $alex, 'DELETE', '/tasks/' . $t1['id'] . '/subtasks/' . $s3 );
+	$t->ok( array( $s1, $s2 ) === array_column( $st['subtasks'], 'id' ), 'remove a subtask' );
+
+	list( , $tmp_task ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'With a checklist' ) );
+	$t->call( $alex, 'POST', '/tasks/' . $tmp_task['id'] . '/subtasks', array( 'title' => 'Step' ) );
+	$t->call( $alex, 'DELETE', '/tasks/' . $tmp_task['id'] );
+	$left = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE task_id = %d', Db::table( 'subtasks' ), $tmp_task['id'] ) );
+	$t->ok( 0 === $left, 'deleting a task removes its subtasks' );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Sync: incremental and scoped' );
 	list( , $inc ) = $t->call( $sam, 'GET', '/sync', array( 'since' => $cursor ) );
 	$t->ok( false === $inc['full'], 'a recent cursor gets only changes' );
@@ -854,6 +906,8 @@ try {
 	wp_delete_user( $sam, $alex );
 	$after = $repo->present( (array) $repo->find( $due['id'] ) );
 	$t->ok( array( $alex ) === $after['assignees'], 'a deleted user is unassigned; the task stays' );
+	$sub_after = ( new NovaWork\Data\SubtaskRepository() )->find( $s2 );
+	$t->ok( $sub_after && 0 === (int) $sub_after['assignee_id'], 'their subtasks stay, with no one assigned' );
 	$t->ok( null === $entries->running_for( $sam ), "their running timer is stopped" );
 	list( , $snap ) = $t->call( $alex, 'GET', '/sync' );
 	$t->ok( true === $snap['full'] && ! in_array( $sam, array_column( $snap['members'], 'id' ), true ), 'they are no longer listed as a member' );

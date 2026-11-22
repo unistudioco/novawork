@@ -132,7 +132,7 @@ wp_print_styles( Assets::styles() );
 		<div class="nw-line">
 			<button class="nw-iconbtn" type="button" id="nw-attach" aria-label="<?php esc_attr_e( 'Attach files', 'novawork' ); ?>"></button>
 			<input type="file" id="nw-file-in" multiple hidden>
-			<label for="nw-chat-in" class="nw-vh"><?php esc_html_e( 'Message', 'novawork' ); ?></label><input class="nw-input" id="nw-chat-in" autocomplete="off" maxlength="2000" placeholder="<?php esc_attr_e( 'Message the team', 'novawork' ); ?>" aria-autocomplete="list" aria-controls="nw-mention-list">
+			<label for="nw-chat-in" class="nw-vh"><?php esc_html_e( 'Message', 'novawork' ); ?></label><textarea class="nw-input nw-grow" id="nw-chat-in" rows="1" maxlength="2000" enterkeyhint="send" placeholder="<?php esc_attr_e( 'Message the team', 'novawork' ); ?>" aria-autocomplete="list" aria-controls="nw-mention-list"></textarea>
 			<button class="nw-btn nw-primary" type="submit" aria-label="<?php esc_attr_e( 'Send', 'novawork' ); ?>" id="nw-chat-send"></button>
 		</div>
 	</form>

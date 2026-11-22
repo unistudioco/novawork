@@ -8,7 +8,7 @@ import { esc } from '../lib/format.js';
 import { post } from '../lib/api.js';
 import { write, keepTask } from './actions.js';
 import { openTask } from './editors.js';
-import { nowLimit, store, people, projects, tasks, task, assignees, has, myRun, byOrder, STATUSES, projChip, tbtn, dueHTML, prio, avatars, commentsOf } from './model.js';
+import { nowLimit, store, people, projects, tasks, task, assignees, has, myRun, byOrder, STATUSES, projChip, tbtn, dueHTML, prio, avatars, commentsOf, subChip } from './model.js';
 
 const pref = ( k, v ) => {
 	try {
@@ -79,9 +79,13 @@ export function viewBoard() {
 				list
 					.map( ( t ) => {
 						const comments = commentsOf( 'task', t.id ).length;
-						return `<article class="nw-card${ t.status === 'done' ? ' nw-done' : '' }${ run && run.taskId === t.id ? ' nw-run' : '' }" data-drag data-id="${ t.id }" tabindex="0"><div class="nw-ctop">${ projChip( t.projectId ) }${
-							t.status !== 'done' ? tbtn( t ) : ''
-						}</div><div class="nw-t">${ esc( t.title ) }</div><div class="nw-cfoot">${ dueHTML( t.due, t.status ) }<span class="nw-sp"></span>${
+						const chip = projChip( t.projectId );
+						const timer = t.status !== 'done' ? tbtn( t ) : '';
+						const title = `<div class="nw-t">${ esc( t.title ) }</div>`;
+						// Without a project the title takes the top row beside the timer,
+						// instead of leaving an empty band above it.
+						const top = chip ? `<div class="nw-ctop">${ chip }${ timer }</div>${ title }` : `<div class="nw-ctop nw-ctop-t">${ title }${ timer }</div>`;
+						return `<article class="nw-card${ t.status === 'done' ? ' nw-done' : '' }${ run && run.taskId === t.id ? ' nw-run' : '' }" data-drag data-id="${ t.id }" tabindex="0">${ top }<div class="nw-cfoot">${ dueHTML( t.due, t.status ) }${ subChip( t ) }<span class="nw-sp"></span>${
 							comments ? `<span class="nw-cnt">${ ic( 'chat-circle' ) }${ comments }</span>` : ''
 						}${ prio( t.priority ) }${ avatars( t ) }</div></article>`;
 					} )
