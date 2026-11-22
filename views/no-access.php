@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 wp_print_inline_script_tag( 'try{var t=localStorage.getItem("nw.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}' );
 wp_print_styles( Assets::styles() );
 ?>
+<?php \NovaWork\App\Branding::head(); ?>
 </head>
 <body class="nw-body">
 <main class="nw-wrap nw-gate">

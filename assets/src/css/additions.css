@@ -308,3 +308,20 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
 .nw-login-back { justify-self: center; font: 500 13px/1 var(--nw-font-head); color: var(--nw-muted); text-decoration: none; padding: 4px; }
 .nw-login-back:hover { color: var(--nw-fg); }
 a.nw-login-go { text-decoration: none; }
+
+/* Branding (owner, 2026-11-22): the workspace's icon or full logo. */
+.nw-mark.nw-mark-img { background: none; padding: 0; }
+.nw-mark.nw-mark-img img { display: block; width: 24px; height: 24px; border-radius: 6px; object-fit: cover; }
+.nw-brand-logo { display: block; height: 30px; width: auto; max-width: 220px; object-fit: contain; }
+.nw-login-logo { display: flex; justify-content: center; }
+.nw-login-logo .nw-brand-logo { height: 44px; max-width: 280px; }
+.nw-login-mark img { display: block; width: 48px; height: 48px; border-radius: 14px; object-fit: cover; }
+.nw-login-mark:has(img) { background: none; }
+.nw-only-dark { display: none; }
+:root[data-theme="dark"] .nw-only-dark { display: block; }
+:root[data-theme="dark"] .nw-only-light { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nw-only-dark { display: block; }
+  :root:not([data-theme="light"]) .nw-only-light { display: none; }
+}
+@media (max-width: 719px) { .nw-brand-logo { height: 26px; max-width: 160px; } }

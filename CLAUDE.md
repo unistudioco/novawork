@@ -288,6 +288,19 @@ one); the app document must have it.
   admin-ajax, cron and wp-login.php keep working; search engines are told
   not to index.
 
+## Owner decisions, 2026-11-22: branding
+
+- Settings → Branding: a square **icon** (beside the workspace name, and the
+  browser tab icon) and an optional wide **full logo** that replaces icon +
+  name in the header and on the sign-in pages, with an optional dark-mode
+  version. Uploaded through WordPress's media library (`wp.media`).
+- With no icon uploaded, the NovaWork flag stays (owner's choice).
+- **Accent colour:** preset swatches plus a custom colour (hex or RGB).
+  `Branding` derives every accent token (soft, ink, line, on-soft, text on
+  accent) for light and dark, keeping text readable (contrast ≥ 4.5); the
+  default blue prints nothing, so the prototype's tokens stay exact.
+- No live preview. wp-admin keeps NovaWork's own flag and blue.
+
 ## Owner decision, 2026-11-21: toasts with an action
 
 Deleting (a task, project, decision, comment…) still arms on the first click

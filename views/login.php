@@ -30,15 +30,25 @@ if ( in_array( Assets::FONTS, Assets::styles(), true ) ) {
 }
 wp_print_styles( Assets::styles() );
 ?>
+<?php \NovaWork\App\Branding::head(); ?>
 </head>
 <body class="nw-body">
 <main class="nw-wrap nw-gate nw-login">
 	<form class="nw-login-card" method="post" action="" novalidate>
 		<div class="nw-login-head">
-			<span class="nw-login-mark" aria-hidden="true">
-				<svg class="nw-ic" style="--nw-is:24px" viewBox="0 0 256 256" fill="currentColor"><path d="M131.79,69.65l-43.63,96A4,4,0,0,1,84.52,168H28.23a8.2,8.2,0,0,1-6.58-3.13,8,8,0,0,1,.43-10.25L57.19,116,22.08,77.38a8,8,0,0,1-.43-10.26A8.22,8.22,0,0,1,28.23,64h99.92A4,4,0,0,1,131.79,69.65ZM237.56,42.24A8.3,8.3,0,0,0,231.77,40H168a8,8,0,0,0-7.28,4.69l-42.57,93.65a4,4,0,0,0,3.64,5.66h57.79l-34.86,76.69a8,8,0,1,0,14.56,6.62l80-176A8,8,0,0,0,237.56,42.24Z"/></svg>
-			</span>
-			<h1><?php echo esc_html( (string) $view['name'] ); ?></h1>
+			<?php if ( '' !== \NovaWork\App\Branding::image( 'brand_logo' ) ) : ?>
+				<h1 class="nw-login-logo"><?php echo \NovaWork\App\Branding::mark_html( 24 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></h1>
+			<?php else : ?>
+				<span class="nw-login-mark" aria-hidden="true">
+					<?php $novawork_icon = \NovaWork\App\Branding::image( 'brand_icon', 'thumbnail' ); ?>
+					<?php if ( '' !== $novawork_icon ) : ?>
+						<img src="<?php echo esc_url( $novawork_icon ); ?>" alt="" width="48" height="48">
+					<?php else : ?>
+						<?php echo \NovaWork\App\Branding::flag( 24 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?>
+					<?php endif; ?>
+				</span>
+				<h1><?php echo esc_html( (string) $view['name'] ); ?></h1>
+			<?php endif; ?>
 			<p>
 			<?php
 			if ( 'join' === $view['mode'] ) {

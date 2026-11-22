@@ -122,6 +122,13 @@ final class SettingsController extends Controller {
 				'serverMaxMb'   => (int) floor( wp_max_upload_size() / MB_IN_BYTES ),
 				'workspaceName' => Settings::workspace_name(),
 			),
+			// Previews of the uploaded branding images.
+			'media'    => array(
+				'brand_icon'      => \NovaWork\App\Branding::image( 'brand_icon', 'thumbnail' ),
+				'brand_logo'      => \NovaWork\App\Branding::image( 'brand_logo', 'medium' ),
+				'brand_logo_dark' => \NovaWork\App\Branding::image( 'brand_logo_dark', 'medium' ),
+			),
+			'presets'  => \NovaWork\App\Branding::PRESETS,
 		);
 	}
 }
