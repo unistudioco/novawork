@@ -618,6 +618,54 @@ try {
 	$t->ok( array( 'task_added' ) === $feed( 'task', $gone['id'] ), 'the team feed keeps its row (with the title)' );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Settings (wp-admin screen)' );
+	list( $s ) = $t->call( $alex, 'GET', '/settings' );
+	$t->ok( 403 === $s, 'a member who is not an administrator cannot read the settings', $s );
+	list( $s ) = $t->call( $alex, 'POST', '/settings', array( 'values' => array( 'poll_seconds' => 9 ) ) );
+	$t->ok( 403 === $s, '… or change them', $s );
+	list( $s, $st ) = $t->call( $admin, 'GET', '/settings' );
+	$t->ok( 200 === $s && 'path' === $st['values']['location'] && isset( $st['site']['appUrl'], $st['defaults']['idle_minutes'] ), 'an administrator gets values, defaults and site facts', $st['site'] ?? $st );
+	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'location' => 'moon', 'app_slug' => 'wp-admin', 'upload_types' => 'php, svg', 'idle_minutes' => 'soon', 'poll_seconds' => 9 ) ) );
+	$errs = $bad['data']['errors'] ?? array();
+	$t->ok( 400 === $s && isset( $errs['location'], $errs['app_slug'], $errs['upload_types'], $errs['idle_minutes'] ), 'wrong values come back by field', $errs );
+	$t->ok( 4 === NovaWork\Settings::int( 'poll_seconds' ), 'and nothing is saved when any value is wrong', NovaWork\Settings::int( 'poll_seconds' ) );
+	$page_id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Team space', 'post_name' => 'team-space' ) );
+	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'app_slug' => 'team-space' ) ) );
+	$t->ok( 400 === $s && isset( $bad['data']['errors']['app_slug'] ), "an address a page already uses is refused", $bad );
+	list( $s, $ok ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'workspace_name' => '  Acme <b>HQ</b> ', 'app_slug' => 'Our Work', 'poll_seconds' => 999, 'upload_types' => '.PDF, png, png, exe', 'decision_votes' => false, 'load_fontshare' => '0' ) ) );
+	$v = $ok['values'] ?? array();
+	$t->ok( 200 === $s && 'Acme HQ' === $v['workspace_name'] && 'our-work' === $v['app_slug'] && 60 === $v['poll_seconds'] && array( 'pdf', 'png' ) === $v['upload_types'] && false === $v['decision_votes'] && false === $v['load_fontshare'], 'values are cleaned: text, address, clamped numbers, file types, switches off', $v );
+	$t->ok( 'Acme HQ' === NovaWork\Settings::workspace_name() && str_ends_with( untrailingslashit( NovaWork\App\Route::url() ), 'our-work' ) || ! get_option( 'permalink_structure' ), 'the workspace has its name and new address', NovaWork\App\Route::url() );
+	$t->ok( array( 'novawork' ) === array_slice( NovaWork\App\Route::old_slugs(), 0, 1 ) && get_option( NovaWork\App\Route::FLUSH_OPTION ), 'the old address is kept (it forwards) and rewrite rules will refresh', NovaWork\App\Route::old_slugs() );
+	list( , $sync ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( 60 === $sync['settings']['pollSeconds'] && false === $sync['settings']['decisionVotes'], 'members get the new values with sync' );
+	list( , $ok ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'location' => 'home' ) ) );
+	$t->ok( trailingslashit( home_url( '/' ) ) === $ok['site']['appUrl'], 'home page mode: the workspace is the home page', $ok['site']['appUrl'] ?? $ok );
+	list( , $ok ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'workspace_name' => '' ) ) );
+	$t->ok( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) === NovaWork\Settings::workspace_name() || 'NovaWork' === NovaWork\Settings::workspace_name(), 'an empty name means the site title' );
+	wp_delete_post( $page_id, true );
+
+	// The "NovaWork member" checkbox on a profile (owner decision).
+	$editor = wp_insert_user( array( 'user_login' => 'nw_editor_' . wp_generate_password( 6, false ), 'user_pass' => wp_generate_password(), 'role' => 'editor', 'display_name' => 'Ed Itor' ) );
+	wp_set_current_user( $admin );
+	$_POST = array( '_novawork_member_nonce' => wp_create_nonce( 'novawork_member' ), 'novawork_member' => '1' );
+	NovaWork\Access\Profile::save( (int) $editor );
+	clean_user_cache( (int) $editor );
+	$t->ok( user_can( (int) $editor, NovaWork\Access\Capabilities::ACCESS ) && in_array( 'editor', get_userdata( (int) $editor )->roles, true ), 'ticking it makes an editor a member and keeps the role' );
+	$t->ok( in_array( (int) $editor, NovaWork\Members::ids(), true ), 'they are listed as a member' );
+	$_POST = array( '_novawork_member_nonce' => wp_create_nonce( 'novawork_member' ) );
+	NovaWork\Access\Profile::save( (int) $editor );
+	clean_user_cache( (int) $editor );
+	$t->ok( ! user_can( (int) $editor, NovaWork\Access\Capabilities::ACCESS ), 'unticking it (nothing sent) removes access' );
+	wp_set_current_user( $alex );
+	$_POST = array( '_novawork_member_nonce' => wp_create_nonce( 'novawork_member' ), 'novawork_member' => '1' );
+	NovaWork\Access\Profile::save( (int) $editor );
+	clean_user_cache( (int) $editor );
+	$t->ok( ! user_can( (int) $editor, NovaWork\Access\Capabilities::ACCESS ), 'only an administrator can tick it' );
+	$_POST = array();
+	wp_delete_user( (int) $editor );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Removing a member' );
 	$t->call( $alex, 'PATCH', '/tasks/' . $due['id'], array( 'assignees' => array( $sam, $alex ) ) );
 	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $due['id'] ) );

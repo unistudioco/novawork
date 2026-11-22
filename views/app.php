@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title><?php echo esc_html( sprintf( /* translators: %s: site name. */ __( 'NovaWork · %s', 'novawork' ), get_bloginfo( 'name' ) ) ); ?></title>
+<title><?php echo esc_html( \NovaWork\Settings::workspace_name() ); ?></title>
 <?php
 // Apply the saved appearance before anything paints, so dark mode never flashes light.
 wp_print_inline_script_tag( 'try{var t=localStorage.getItem("nw.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}' );
@@ -34,7 +34,7 @@ wp_print_styles( Assets::styles() );
 <header class="nw-hdr" id="nw-hdr" :class="{ 'nw-stuck': stuck, 'nw-compact': compact }">
 	<div class="nw-hdr-in">
 		<div class="nw-row1">
-			<a class="nw-logo" href="#focus" aria-label="<?php esc_attr_e( 'NovaWork, Focus', 'novawork' ); ?>"><span class="nw-mark" x-html="icf('flag-banner-fold', 24)"></span>NovaWork</a>
+			<a class="nw-logo" href="#focus" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the workspace's name. */ __( '%s, Focus', 'novawork' ), \NovaWork\Settings::workspace_name() ) ); ?>"><span class="nw-mark" x-html="icf('flag-banner-fold', 24)"></span><?php echo esc_html( \NovaWork\Settings::workspace_name() ); ?></a>
 			<div class="nw-qs" id="nw-qs" role="search" x-ref="qs" :class="{ 'nw-open': qs.open, 'nw-closing': qs.closing, 'nw-has-q': qs.q.trim() !== '' }">
 				<div class="nw-qs-row"><label class="nw-qs-field"><span x-html="ic('magnifying-glass')"></span><input id="nw-qs-in" x-ref="qsIn" type="search" autocomplete="off" placeholder="<?php esc_attr_e( 'Quick search…', 'novawork' ); ?>" aria-label="<?php esc_attr_e( 'Search tasks, projects, decisions and messages', 'novawork' ); ?>" aria-controls="nw-qs-res" x-model="qs.q" @input="qsRun()" @focus="qsFocus()" @keydown="qsKey($event)"><kbd>/</kbd></label><button type="button" id="nw-qs-cancel" class="nw-btn nw-ghost" @click="qsCancel()"><?php esc_html_e( 'Cancel', 'novawork' ); ?></button></div>
 				<div class="nw-qs-res" id="nw-qs-res" x-ref="qsRes" x-show="qs.showRes" x-html="qs.html" @click="qsClick($event)"></div>

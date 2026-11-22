@@ -26,6 +26,12 @@ final class Assets {
 	public const FONTS  = 'novawork-fonts';
 
 	/**
+	 * The settings screen's bundle (wp-admin → NovaWork → Settings).
+	 */
+	public const ADMIN_SCRIPT = 'novawork-admin';
+	public const ADMIN_STYLE  = 'novawork-admin';
+
+	/**
 	 * Satoshi and Supreme from Fontshare's own CDN. The ITF Free Font Licence
 	 * forbids redistributing the files, so they are never bundled. Disclosed
 	 * in readme.txt under "External services"; off in Settings means nothing
@@ -58,6 +64,37 @@ final class Assets {
 	}
 
 	/**
+	 * Register the settings screen's bundle (from the dev server when
+	 * NOVAWORK_DEV_SERVER is set).
+	 */
+	public static function register_admin(): void {
+		$dev = self::dev_server();
+		if ( '' !== $dev ) {
+			wp_register_script( 'novawork-vite', $dev . '/@vite/client', array(), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
+			wp_register_script( self::ADMIN_SCRIPT, $dev . '/js/admin.js', array( 'wp-i18n', 'novawork-vite' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
+			wp_register_style( self::ADMIN_STYLE, false, array(), NOVAWORK_VERSION );
+		} else {
+			$entry = self::manifest()['js/admin.js'] ?? array();
+			$base  = NOVAWORK_URL . 'assets/dist/';
+			wp_register_script( self::ADMIN_SCRIPT, $base . ( $entry['file'] ?? 'missing.js' ), array( 'wp-i18n' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
+			$css = (array) ( $entry['css'] ?? array() );
+			wp_register_style( self::ADMIN_STYLE, $css ? $base . $css[0] : false, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
+		}
+		wp_register_style( self::FONTS, self::FONTS_URL, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Fontshare versions its own files.
+		wp_set_script_translations( self::ADMIN_SCRIPT, 'novawork', NOVAWORK_PATH . 'languages' );
+		add_filter( 'script_loader_tag', array( self::class, 'as_module' ), 10, 2 );
+	}
+
+	/**
+	 * Styles for the settings screen (fonts only when the setting is on).
+	 *
+	 * @return list<string>
+	 */
+	public static function admin_styles(): array {
+		return Settings::get( 'load_fontshare' ) ? array( self::FONTS, self::ADMIN_STYLE ) : array( self::ADMIN_STYLE );
+	}
+
+	/**
 	 * Styles to print in the head.
 	 *
 	 * @return list<string>
@@ -77,7 +114,7 @@ final class Assets {
 	 * @param string $handle Handle.
 	 */
 	public static function as_module( string $tag, string $handle ): string {
-		if ( self::SCRIPT !== $handle && 'novawork-vite' !== $handle ) {
+		if ( ! in_array( $handle, array( self::SCRIPT, self::ADMIN_SCRIPT, 'novawork-vite' ), true ) ) {
 			return $tag;
 		}
 		return str_replace( '<script ', '<script type="module" ', $tag );

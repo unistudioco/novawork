@@ -42,6 +42,7 @@ final class Plugin {
 		Rest\NotificationsController::class,
 		Rest\SearchController::class,
 		Rest\ActivityController::class,
+		Rest\SettingsController::class,
 	);
 
 	/**
@@ -67,6 +68,8 @@ final class Plugin {
 		Services\Activity::register();
 		App\Route::register();
 		Admin\Menu::register();
+		Admin\SettingsPage::register();
+		Access\Profile::register();
 
 		add_action( 'rest_api_init', array( self::class, 'register_routes' ) );
 		add_action( 'deleted_user', array( Members::class, 'deleted' ) );

@@ -49,6 +49,20 @@ abstract class Controller {
 	}
 
 	/**
+	 * Permission callback for administrators' routes (NovaWork's settings).
+	 */
+	public function can_manage(): bool|WP_Error {
+		$member = $this->can_access();
+		if ( true !== $member ) {
+			return $member;
+		}
+		if ( ! current_user_can( Capabilities::MANAGE ) ) {
+			return new WP_Error( 'novawork_forbidden', __( 'Only an administrator can change NovaWork’s settings.', 'novawork' ), array( 'status' => 403 ) );
+		}
+		return true;
+	}
+
+	/**
 	 * The member making the request.
 	 */
 	protected static function me(): int {
@@ -71,6 +85,27 @@ abstract class Controller {
 				'methods'             => $methods,
 				'callback'            => $handler,
 				'permission_callback' => array( $this, 'can_access' ),
+				'args'                => $args,
+			)
+		);
+	}
+
+	/**
+	 * Register one route for administrators only.
+	 *
+	 * @param string                              $route   Route pattern.
+	 * @param string                              $methods HTTP methods.
+	 * @param callable                            $handler Callback.
+	 * @param array<string, array<string, mixed>> $args    Argument schema.
+	 */
+	protected function admin_route( string $route, string $methods, callable $handler, array $args = array() ): void {
+		register_rest_route(
+			self::NAMESPACE,
+			$route,
+			array(
+				'methods'             => $methods,
+				'callback'            => $handler,
+				'permission_callback' => array( $this, 'can_manage' ),
 				'args'                => $args,
 			)
 		);

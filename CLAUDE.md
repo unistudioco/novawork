@@ -216,6 +216,28 @@ one); the app document must have it.
    wp-login.php; logout returns here. A signed-in non-member sees the
    no-access page.
 
+## Phase 5, part 1: settings screen (built 2026-11-22)
+
+- wp-admin → NovaWork → Settings (`Admin\SettingsPage`, cap `novawork_manage`),
+  view `views/admin-settings.php`, bundle `js/admin.js` + `css/admin.css`
+  (its own Vite entry; tokens + copies of the app's components scoped under
+  `.nw-admin`, toasts under the body class `nw-admin-screen`; never import
+  app.css there, it styles body/dialog). The cards stay light (wp-admin is
+  light). Fontshare loads there only when its setting is on.
+- `GET|POST novawork/v1/settings` (`Rest\SettingsController`, admin-only via
+  `admin_route()`/`can_manage()`). Every value is checked by
+  `Settings::clean()` against `Settings::SCHEMA` (int ranges clamped, choices,
+  bools, text, file types never scripts, the address: not reserved, not a
+  page's). One bad value saves nothing; errors come back by field.
+- Owner marks built: `workspace_name` (`Settings::workspace_name()`: the
+  setting, else the site title) in the app header, tab title and no-access
+  page; `location` path|home (`Route`: home mode serves the bare home page
+  only, posts and ?p= links still reach WordPress); a changed address
+  forwards (`novawork_old_slugs`, newest five, 301); the "NovaWork member"
+  checkbox on profiles (`Access\Profile`: grants the user cap, keeps the
+  role; locked when the role already grants access; admins only).
+- Dev admin login: `NOVAWORK_ADMIN` in .dev.env.
+
 ## Owner decision, 2026-11-21: toasts with an action
 
 Deleting (a task, project, decision, comment…) still arms on the first click
