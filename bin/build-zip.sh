@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Build the WordPress.org release zip: build/novawork-<version>.zip
+#
+# The zip holds one folder, novawork/, with exactly what ships:
+# - everything in the repository except what .distignore lists (the single
+#   list of what never ships; bin/plugin-check.sh checks this same zip),
+# - the built assets (assets/dist) next to their source,
+# - a production-only Composer autoloader (vendor/ is rebuilt with --no-dev,
+#   never copied from a dev checkout).
+#
+# It refuses to build when the version is not the same everywhere, when a
+# file that must ship is missing, or when something that must never ship
+# slipped in.
+#
+# Usage: bin/build-zip.sh [--no-build]   (--no-build skips npm run build)
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+fail() {
+	echo "build-zip: $*" >&2
+	exit 1
+}
+
+# One version everywhere: the plugin header, the constant, readme's stable
+# tag and package.json.
+header=$(sed -n 's/^ \* Version:[[:space:]]*//p' novawork.php | tr -d '[:space:]')
+constant=$(sed -n "s/^define( 'NOVAWORK_VERSION', '\([^']*\)' );/\1/p" novawork.php)
+stable=$(sed -n 's/^Stable tag:[[:space:]]*//p' readme.txt | tr -d '[:space:]')
+package=$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' package.json | head -1)
+[[ -n "$header" ]] || fail "no Version in the novawork.php header"
+for pair in "NOVAWORK_VERSION:$constant" "readme.txt Stable tag:$stable" "package.json:$package"; do
+	[[ "${pair##*:}" == "$header" ]] || fail "${pair%:*} is ${pair##*:}, the plugin header says $header"
+done
+VERSION="$header"
+
+if [[ "${1:-}" != "--no-build" ]]; then
+	npm run build --silent
+fi
+[[ -f assets/dist/manifest.json ]] || fail "assets/dist/manifest.json is missing: run npm run build"
+
+OUT="$ROOT/build/release"
+COPY="$OUT/novawork"
+ZIP="$ROOT/build/novawork-$VERSION.zip"
+rm -rf "$OUT" "$ZIP"
+mkdir -p "$COPY"
+
+# vendor/ is rebuilt below with production packages only.
+rsync -a --exclude-from=.distignore --exclude=/vendor ./ "$COPY/"
+cp composer.lock "$COPY/"
+composer install --no-dev --optimize-autoloader --no-interaction --quiet --working-dir="$COPY"
+rm -f "$COPY/composer.lock"
+# Finder can write .DS_Store into a folder it shows, even during the copy.
+find "$COPY" -name .DS_Store -delete
+
+# What must ship.
+for f in novawork.php uninstall.php readme.txt LICENSE vendor/autoload.php assets/dist/manifest.json assets/dist/i18n.json assets/alerts-worker.js languages/novawork.pot package.json vite.config.js assets/src/js/app.js; do
+	[[ -e "$COPY/$f" ]] || fail "$f is missing from the release"
+done
+# What must never ship.
+for f in .git node_modules tests bin build test-results playwright-report CLAUDE.md HANDOFF.md .dev.env .distignore composer.lock vendor/bin vendor/phpstan vendor/squizlabs; do
+	[[ ! -e "$COPY/$f" ]] || fail "$f must not be in the release"
+done
+
+(cd "$OUT" && zip -rqX "$ZIP" novawork)
+
+files=$(find "$COPY" -type f | wc -l | tr -d ' ')
+size=$(du -h "$ZIP" | cut -f1)
+echo "Built ${ZIP#"$ROOT"/} (version $VERSION, $files files, $size)."

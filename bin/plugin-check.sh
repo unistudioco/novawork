@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Run the official Plugin Check against exactly what ships.
+# Run the official Plugin Check against exactly what ships: the release zip.
 #
-# Builds the assets, assembles a release copy from .distignore (with
-# production-only Composer dependencies), and checks that copy, so dev files
-# such as phpcs.xml.dist never show up as false errors and nothing that ships
-# is skipped. Plugin Check exits 0 even when it reports errors, so this script
+# Builds the zip with bin/build-zip.sh (assets, .distignore, production-only
+# Composer autoloader), unpacks it and checks that copy, so dev files such as
+# phpcs.xml.dist never show up as false errors and nothing that ships is
+# skipped. Plugin Check exits 0 even when it reports errors, so this script
 # reads the results and fails on any ERROR row.
 #
 # Usage: bin/plugin-check.sh [--no-build]
@@ -24,20 +24,14 @@ if [[ -n "${NOVAWORK_MYSQL_SOCKET:-}" ]]; then
 	WP=(php -d "mysqli.default_socket=${NOVAWORK_MYSQL_SOCKET}" -d memory_limit=1G "$(command -v wp)")
 fi
 
-if [[ "${1:-}" != "--no-build" ]]; then
-	npm run build --silent
-fi
+bash "$ROOT/bin/build-zip.sh" "$@"
+ZIP=$(ls -t "$ROOT"/build/novawork-*.zip | head -1)
 
 OUT="$ROOT/build/check"
 COPY="$OUT/novawork"
 rm -rf "$OUT"
-mkdir -p "$COPY"
-rsync -a --exclude-from=.distignore ./ "$COPY/"
-cp composer.lock "$COPY/" 2>/dev/null || true
-composer install --no-dev --optimize-autoloader --no-interaction --quiet --working-dir="$COPY"
-rm -f "$COPY/composer.lock"
-# Finder can write .DS_Store into a folder it shows, even after the copy.
-find "$COPY" -name .DS_Store -delete
+mkdir -p "$OUT"
+unzip -q "$ZIP" -d "$OUT"
 
 REPORT="$OUT/report.csv"
 "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin check "$COPY" --slug=novawork \
