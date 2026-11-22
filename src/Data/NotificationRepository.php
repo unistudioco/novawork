@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * One row per recipient. The client writes the sentence from the type, the
  * object and the small data snapshot, so it stays translatable and current.

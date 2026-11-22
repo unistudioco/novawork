@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * One option holds every setting; NovaWork → Settings in wp-admin edits it
  * (Rest\SettingsController). Every value is checked against SCHEMA when it

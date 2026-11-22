@@ -17,6 +17,8 @@ use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Every route lives under novawork/v1 and needs a logged-in member. WordPress
  * REST cookie auth requires the wp_rest nonce (X-WP-Nonce header); without it

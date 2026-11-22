@@ -13,6 +13,8 @@ use NovaWork\Access\Capabilities;
 use NovaWork\Install\Installer;
 use NovaWork\Services\Cron;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Boots NovaWork once and registers its parts.
  *

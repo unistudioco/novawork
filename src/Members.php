@@ -12,6 +12,8 @@ namespace NovaWork;
 use NovaWork\Access\Capabilities;
 use NovaWork\Data\Db;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Members are WordPress users with the access capability.
  */

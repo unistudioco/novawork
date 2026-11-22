@@ -16,6 +16,8 @@ use NovaWork\Data\TaskRepository;
 use NovaWork\Data\TimeEntryRepository;
 use NovaWork\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decision (2026-11-22): a fresh workspace starts with three sample
  * items that show where to start: a project, a task in it (in Now) and an

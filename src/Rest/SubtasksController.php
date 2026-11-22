@@ -19,6 +19,8 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * POST /tasks/{id}/subtasks, PATCH|DELETE /tasks/{id}/subtasks/{sid},
  * POST /tasks/{id}/subtasks/{sid}/move. Every answer is the whole task, as

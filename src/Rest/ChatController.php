@@ -22,6 +22,8 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * GET|POST /messages, PATCH|DELETE /messages/{id}, POST /attachments,
  * GET /attachments/{id}/file, DELETE /attachments/{id}, POST /chat/read.

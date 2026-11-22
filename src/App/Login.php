@@ -12,6 +12,8 @@ namespace NovaWork\App;
 use NovaWork\Settings;
 use WP_Error;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner mark: members sign in on a page in NovaWork's own look, with the
  * workspace's name, instead of wp-login.php.

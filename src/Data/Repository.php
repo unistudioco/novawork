@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Reads and writes one table, and records every write in the change log so
  * clients pick it up on their next poll.

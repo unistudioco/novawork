@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * How far each member has read the team chat. Sync reports the unread count
  * on every poll, so this table is not in the change log.

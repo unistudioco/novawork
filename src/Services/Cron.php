@@ -14,6 +14,8 @@ use NovaWork\Data\ChangeLog;
 use NovaWork\Data\NotificationRepository;
 use NovaWork\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * One hourly event. WP-Cron only runs when someone visits the site, so due
  * dates are also checked on polls (see Notifier::check_due()).

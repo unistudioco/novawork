@@ -15,6 +15,8 @@ use NovaWork\Data\NotificationRepository;
 use NovaWork\Data\ProjectRepository;
 use NovaWork\Data\TaskRepository;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner requests: "@Name" mentions a member; "/Title" links a task, decision
  * or project. The app sends what it inserted; the server keeps only what is

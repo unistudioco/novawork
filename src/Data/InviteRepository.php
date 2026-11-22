@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decision: no open sign-up; an administrator invites people. Each
  * invite is single-use and expires (setting invite_days). Only a hash of the

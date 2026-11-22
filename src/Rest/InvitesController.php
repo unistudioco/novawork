@@ -16,6 +16,8 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * GET|POST /invites, DELETE /invites/{id}, administrators only. A new
  * invite's link is returned once; only its hash is kept.

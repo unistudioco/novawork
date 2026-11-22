@@ -13,6 +13,8 @@ use NovaWork\Services\Samples;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * DELETE /samples removes the first run's sample items; administrators only.
  */

@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Owner decision (2026-11-22): subtasks are a checklist inside a task, not
  * tasks of their own. Each has a title, a done mark and at most one
