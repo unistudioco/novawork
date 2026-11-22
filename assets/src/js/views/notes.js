@@ -50,6 +50,7 @@ const KIND = {
 	decision_made: [ 'scales', 'emerald' ],
 	vote_opened: [ 'scales', 'indigo' ],
 	commented: [ 'chat-circle', 'teal' ],
+	member_joined: [ 'user-plus', 'emerald' ],
 };
 
 const b = ( s ) => `<b>${ esc( s ) }</b>`;
@@ -158,6 +159,8 @@ function activityText( a ) {
 			return f( /* translators: 1: a person, 2: decision. */ __( '%1$s asked the team to vote on %2$s', 'novawork' ) );
 		case 'commented':
 			return f( /* translators: 1: a person, 2: task or decision. */ __( '%1$s commented on %2$s', 'novawork' ) );
+		case 'member_joined':
+			return sprintf( /* translators: %s: a person. */ esc( __( '%s joined the workspace', 'novawork' ) ), b( d.title || who( a.actor, a.agent ) ) );
 		default:
 			return by;
 	}
@@ -312,7 +315,7 @@ function onClick( e ) {
 	const nid = item.dataset.nid;
 	if ( nid.startsWith( 'a' ) ) {
 		const a = ( S.activity || {} )[ Number( nid.slice( 1 ) ) ];
-		if ( a ) {
+		if ( a && a.objectType !== 'member' ) {
 			openTarget( a.objectType, a.objectId );
 		}
 		return;

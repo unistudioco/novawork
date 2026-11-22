@@ -46,7 +46,8 @@ final class Page {
 			'nonce'     => wp_create_nonce( 'wp_rest' ),
 			'me'        => get_current_user_id(),
 			'appUrl'    => esc_url_raw( Route::url() ),
-			'logoutUrl' => esc_url_raw( wp_logout_url( Route::url() ) ),
+			// wp_logout_url() is escaped for HTML; the app needs the plain address.
+			'logoutUrl' => esc_url_raw( wp_specialchars_decode( wp_logout_url( Route::login_url( true ) ) ) ),
 			'locale'    => str_replace( '_', '-', determine_locale() ),
 			'version'   => NOVAWORK_VERSION,
 			'sync'      => $response->is_error() ? null : $response->get_data(),

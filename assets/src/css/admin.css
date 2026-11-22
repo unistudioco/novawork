@@ -144,3 +144,21 @@
   @keyframes nw-toast-in { from { opacity: 0; transform: translateY(16px) scale(.98); } }
   @keyframes nw-toast-out { to { opacity: 0; } }
 }
+
+/* Invites (owner, 2026-11-22). */
+.nw-admin {
+  .nw-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--nw-muted); cursor: pointer; }
+  .nw-check input { margin: 0; }
+  .nw-invlink { display: grid; gap: 8px; margin: 0 0 14px; padding: 12px 14px; border-radius: 12px; background: var(--nw-accent-soft); }
+  .nw-invlink p { font-size: 12.5px; color: var(--nw-accent-on-soft, var(--nw-fg)); }
+  .nw-invlink .nw-affix { background: var(--nw-surface); align-items: center; padding-right: 4px; }
+  .nw-invlink .nw-affix .nw-btn { height: 28px; }
+  .nw-invites { list-style: none; margin: 0 0 14px; padding: 0; border: 1px solid var(--nw-line); border-radius: 12px; }
+  .nw-invites li { display: flex; align-items: center; gap: 12px; margin: 0; padding: 8px 8px 8px 14px; font-size: 13px; }
+  .nw-invites li + li { border-top: 1px solid var(--nw-line); }
+  .nw-inv-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--nw-fg); }
+  .nw-inv-state { color: var(--nw-muted); white-space: nowrap; }
+  .nw-inv-used .nw-inv-state { color: var(--nw-done-on-soft, var(--nw-muted)); }
+  .nw-inv-expired { opacity: .6; }
+  .nw-invites .nw-btn { height: 28px; }
+}

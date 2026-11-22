@@ -27,6 +27,8 @@ final class Settings {
 		return array(
 			'workspace_name' => '',
 			'location'       => 'path',
+			'workspace_only' => false,
+			'invite_days'    => 7,
 			'app_slug'       => 'novawork',
 			'idle_minutes'   => 10,
 			'poll_seconds'   => 4,
@@ -59,6 +61,12 @@ final class Settings {
 		'workspace_name' => array(
 			'type' => 'text',
 			'max'  => 60,
+		),
+		'workspace_only' => array( 'type' => 'bool' ),
+		'invite_days'    => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 90,
 		),
 		'location'       => array(
 			'type'    => 'choice',

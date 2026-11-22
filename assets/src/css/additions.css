@@ -279,3 +279,32 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
    (carried over from the prototype). */
 .nw-hdr.nw-compact .nw-qs.nw-open .nw-qs-res { max-height: none; }
 @media (max-width: 719px) { .nw-qs.nw-open .nw-qs-res { max-height: none; } }
+
+/* Members' sign-in page (owner mark): the workspace's name, NovaWork's look. */
+.nw-login .nw-login-card { width: min(400px, 100%); display: grid; gap: 14px; padding: 30px 28px 26px; border: 1px solid var(--nw-line); border-radius: 20px; background: var(--nw-surface); box-shadow: var(--nw-shadow); }
+.nw-login-head { display: grid; justify-items: center; gap: 6px; text-align: center; margin-bottom: 6px; }
+.nw-login-mark { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--nw-accent-soft); color: var(--nw-accent-ink); margin-bottom: 4px; }
+.nw-login-head h1 { font: 700 21px/1.2 var(--nw-font-head); letter-spacing: -.02em; color: var(--nw-fg); overflow-wrap: anywhere; }
+.nw-login-head p { margin: 0; color: var(--nw-muted); font-size: 13.5px; }
+.nw-login .nw-field { display: grid; gap: 6px; }
+.nw-login .nw-field label { font: 600 12.5px/1 var(--nw-font-head); color: var(--nw-muted); }
+.nw-login .nw-input { height: 40px; font-size: 14px; }
+.nw-login .nw-input:focus { box-shadow: inset 0 0 0 1px var(--nw-accent), 0 0 0 3px var(--nw-accent-soft); }
+.nw-login-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.nw-login-row a, .nw-login-eye { font: 500 12.5px/1 var(--nw-font-head); color: var(--nw-accent-ink); text-decoration: none; }
+.nw-login-eye { color: var(--nw-muted); }
+.nw-login-eye:hover { color: var(--nw-fg); }
+.nw-login-row a:hover { text-decoration: underline; }
+.nw-login-pass { position: relative; }
+.nw-login-pass .nw-input { padding-right: 58px; }
+.nw-login-eye { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); height: 28px; padding: 0 8px; border: 0; border-radius: 7px; background: transparent; cursor: pointer; }
+.nw-login-eye:hover { background: var(--nw-surface); }
+.nw-login-keep { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--nw-muted); cursor: pointer; }
+.nw-login-keep input { width: 16px; height: 16px; margin: 0; accent-color: var(--nw-accent); }
+.nw-login-go { height: 40px; font-size: 14px; border-radius: 10px; margin-top: 4px; }
+.nw-login-msg { margin: 0; padding: 9px 12px; border-radius: 10px; background: var(--nw-field); color: var(--nw-fg); font-size: 13px; }
+.nw-login-msg.nw-bad { background: var(--nw-danger-soft); color: var(--nw-danger-on-soft); }
+.nw-login-msg.nw-good { background: var(--nw-done-soft); color: var(--nw-done-on-soft); }
+.nw-login-back { justify-self: center; font: 500 13px/1 var(--nw-font-head); color: var(--nw-muted); text-decoration: none; padding: 4px; }
+.nw-login-back:hover { color: var(--nw-fg); }
+a.nw-login-go { text-decoration: none; }

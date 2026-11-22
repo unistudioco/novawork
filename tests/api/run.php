@@ -645,6 +645,54 @@ try {
 	$t->ok( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) === NovaWork\Settings::workspace_name() || 'NovaWork' === NovaWork\Settings::workspace_name(), 'an empty name means the site title' );
 	wp_delete_post( $page_id, true );
 
+	// Reset emails (owner, 2026-11-22): a member's links to the NovaWork page.
+	$mail = array( 'to' => 'x@example.com', 'subject' => 'Reset', 'message' => "Hi\r\n\r\n" . network_site_url( 'wp-login.php?action=rp&key=K3Y&login=alex', 'login' ) . "&wp_lang=en_US\r\n", 'headers' => '' );
+	$out  = NovaWork\App\Login::reset_email( $mail, 'K3Y', 'alex', get_userdata( $alex ) );
+	$t->ok( ! str_contains( $out['message'], 'wp-login.php' ) && str_contains( $out['message'], 'action=rp' ) && str_contains( $out['message'], 'key=K3Y' ) && str_contains( $out['message'], NovaWork\App\Route::login_url() ), "a member's reset email links to the workspace's page", $out['message'] );
+	$sub  = wp_insert_user( array( 'user_login' => 'nw_sub_' . wp_generate_password( 6, false ), 'user_pass' => wp_generate_password(), 'role' => 'subscriber' ) );
+	$out  = NovaWork\App\Login::reset_email( $mail, 'K3Y', 'someone', get_userdata( (int) $sub ) );
+	$t->ok( $mail['message'] === $out['message'], "anyone else's keeps WordPress's link" );
+	wp_delete_user( (int) $sub );
+
+	// Invites (owner, 2026-11-22): no open sign-up; single-use links.
+	list( $s ) = $t->call( $alex, 'POST', '/invites', array() );
+	$t->ok( 403 === $s, 'only an administrator can invite', $s );
+	list( $s, $inv ) = $t->call( $admin, 'POST', '/invites', array() );
+	$t->ok( 201 === $s && str_contains( $inv['link'], 'action=join' ) && 'open' === $inv['invite']['status'], 'an administrator creates a link invite', $inv );
+	parse_str( (string) wp_parse_url( $inv['link'], PHP_URL_QUERY ), $q );
+	$token = (string) ( $q['invite'] ?? '' );
+	$t->ok( 0 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE token_hash = %s', $wpdb->prefix . 'novawork_invites', $token ) ), 'the table never holds the token itself, only its hash' );
+	$t->ok( null !== ( new NovaWork\Data\InviteRepository() )->find_open( $token ), 'the token opens the invite' );
+	list( $s ) = $t->call( $admin, 'POST', '/invites', array( 'email' => get_userdata( $sam )->user_email ) );
+	$t->ok( 400 === $s, 'inviting someone who is already a member is refused', $s );
+	$joined = NovaWork\Services\Invites::join_new( ( new NovaWork\Data\InviteRepository() )->find_open( $token ), 'Jo Newcomer', 'jo-' . wp_generate_password( 6, false ) . '@example.com', 'a-good-pass-123' );
+	$t->ok( $joined instanceof WP_User && in_array( NovaWork\Access\Capabilities::ROLE, $joined->roles, true ) && 'Jo Newcomer' === $joined->display_name, 'a new person joins with the Member role', is_wp_error( $joined ) ? $joined->get_error_message() : $joined->roles );
+	$t->ok( null === ( new NovaWork\Data\InviteRepository() )->find_open( $token ), 'the invite works once' );
+	$t->ok( 1 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE verb = %s AND actor_id = %d', $wpdb->prefix . 'novawork_activity', 'member_joined', $joined->ID ) ), 'the team feed says they joined' );
+	list( , $inv2 ) = $t->call( $admin, 'POST', '/invites', array( 'email' => 'someone@example.com' ) );
+	parse_str( (string) wp_parse_url( $inv2['link'], PHP_URL_QUERY ), $q2 );
+	$mismatch = NovaWork\Services\Invites::join_new( ( new NovaWork\Data\InviteRepository() )->find_open( (string) $q2['invite'] ), 'Other', 'other@example.com', 'pw-pw-pw-1' );
+	$t->ok( $mismatch instanceof WP_User && 'someone@example.com' === $mismatch->user_email, 'an invite for an email address always uses that address', is_wp_error( $mismatch ) ? $mismatch->get_error_message() : $mismatch->user_email );
+	list( , $inv3 ) = $t->call( $admin, 'POST', '/invites', array() );
+	parse_str( (string) wp_parse_url( $inv3['link'], PHP_URL_QUERY ), $q3 );
+	$editor2 = wp_insert_user( array( 'user_login' => 'nw_ed2_' . wp_generate_password( 6, false ), 'user_pass' => wp_generate_password(), 'role' => 'editor' ) );
+	NovaWork\Services\Invites::accept( ( new NovaWork\Data\InviteRepository() )->find_open( (string) $q3['invite'] ), get_userdata( (int) $editor2 ) );
+	clean_user_cache( (int) $editor2 );
+	$t->ok( user_can( (int) $editor2, NovaWork\Access\Capabilities::ACCESS ) && in_array( 'editor', get_userdata( (int) $editor2 )->roles, true ), 'someone with an account joins and keeps their role' );
+	list( , $inv4 ) = $t->call( $admin, 'POST', '/invites', array() );
+	parse_str( (string) wp_parse_url( $inv4['link'], PHP_URL_QUERY ), $q4 );
+	$wpdb->update( $wpdb->prefix . 'novawork_invites', array( 'expires_at' => gmdate( 'Y-m-d H:i:s', time() - 60 ) ), array( 'id' => $inv4['invite']['id'] ) );
+	$t->ok( null === ( new NovaWork\Data\InviteRepository() )->find_open( (string) $q4['invite'] ), 'an expired invite no longer opens' );
+	list( , $inv5 ) = $t->call( $admin, 'POST', '/invites', array() );
+	list( $s ) = $t->call( $admin, 'DELETE', '/invites/' . $inv5['invite']['id'] );
+	parse_str( (string) wp_parse_url( $inv5['link'], PHP_URL_QUERY ), $q5 );
+	$t->ok( 200 === $s && null === ( new NovaWork\Data\InviteRepository() )->find_open( (string) $q5['invite'] ), 'a revoked invite no longer opens' );
+	list( , $list ) = $t->call( $admin, 'GET', '/invites' );
+	$t->ok( is_array( $list ) && ! array_filter( $list, fn( $r ) => isset( $r['token_hash'] ) || isset( $r['link'] ) ), 'the list never shows tokens or links' );
+	wp_delete_user( (int) $editor2 );
+	wp_delete_user( $joined->ID );
+	wp_delete_user( $mismatch->ID );
+
 	// The "NovaWork member" checkbox on a profile (owner decision).
 	$editor = wp_insert_user( array( 'user_login' => 'nw_editor_' . wp_generate_password( 6, false ), 'user_pass' => wp_generate_password(), 'role' => 'editor', 'display_name' => 'Ed Itor' ) );
 	wp_set_current_user( $admin );

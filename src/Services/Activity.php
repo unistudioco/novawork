@@ -24,7 +24,7 @@ final class Activity {
 	/**
 	 * Verbs the app knows how to show.
 	 */
-	public const VERBS = array( 'task_added', 'task_done', 'project_added', 'project_done', 'decision_opened', 'decision_made', 'vote_opened', 'commented' );
+	public const VERBS = array( 'task_added', 'task_done', 'project_added', 'project_done', 'decision_opened', 'decision_made', 'vote_opened', 'commented', 'member_joined' );
 
 	/**
 	 * The same event on the same object within this many seconds is one row
