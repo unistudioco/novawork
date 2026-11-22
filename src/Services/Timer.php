@@ -12,12 +12,21 @@ namespace NovaWork\Services;
 use NovaWork\Data\Db;
 use NovaWork\Data\TaskRepository;
 use NovaWork\Data\TimeEntryRepository;
+use NovaWork\Members;
+use NovaWork\Settings;
 use WP_Error;
 
 /**
- * The timer lives on the server: starting stores the start time, so a reload,
- * a second device or a closed laptop never loses or double-counts time. Each
- * member has at most one running timer (enforced by a UNIQUE index).
+ * The timer lives on the server: starting stores the start time, so a reload
+ * or a second device never loses or double-counts time. Each member has at
+ * most one running timer (enforced by a UNIQUE index).
+ *
+ * Owner decision (2026-11-22): a running timer needs a sign of life. The app
+ * polls /sync every few seconds (about once a minute in a background tab), and
+ * each poll is a heartbeat. When a member's app has been silent for longer
+ * than away_after() (a folded laptop, sleep, a closed tab, no network, a flat
+ * battery), their timer stops at the last heartbeat, so time away is never
+ * counted. See stop_if_away() and sweep_away().
  */
 final class Timer {
 
@@ -25,6 +34,67 @@ final class Timer {
 	 * Sessions shorter than this are discarded, as in the prototype.
 	 */
 	public const MIN_SECONDS = 60;
+
+	/**
+	 * Transient that limits the sweep of everyone's timers to once a minute.
+	 */
+	private const SWEEP_THROTTLE = 'novawork_away_sweep';
+
+	/**
+	 * Seconds without a heartbeat after which a running timer stops: the
+	 * inactivity setting (idle_minutes), never under three minutes, because a
+	 * background tab may poll only once a minute.
+	 */
+	public static function away_after(): int {
+		return max( 3 * MINUTE_IN_SECONDS, Settings::int( 'idle_minutes' ) * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Stop a member's timer if their app has been silent too long, at the
+	 * last sign of life: their last poll, or the start when that is later.
+	 *
+	 * Call it before recording the member's current poll, or the poll itself
+	 * would count as the sign of life.
+	 *
+	 * @param int $user_id Member.
+	 * @return array{endedAt: int, awayMs: int, taskId: int}|null What was
+	 *         stopped, or null when nothing ran or the member is still here.
+	 */
+	public static function stop_if_away( int $user_id ): ?array {
+		$running = ( new TimeEntryRepository() )->running_for( $user_id );
+		if ( ! $running ) {
+			return null;
+		}
+		$start = (int) strtotime( (string) $running['started_at'] . ' UTC' );
+		$seen  = (int) get_user_meta( $user_id, Members::SEEN_META, true );
+		$alive = max( $start, $seen );
+		$now   = time();
+		if ( $now - $alive <= self::away_after() ) {
+			return null;
+		}
+		self::stop( $user_id, $alive * 1000 );
+		return array(
+			'endedAt' => $alive * 1000,
+			'awayMs'  => ( $now - $alive ) * 1000,
+			'taskId'  => (int) $running['task_id'],
+		);
+	}
+
+	/**
+	 * Stop every timer whose member has gone quiet, so the team and the Time
+	 * view stop counting it. Runs on polls (at most once a minute) and hourly.
+	 *
+	 * @param bool $force Skip the once-a-minute limit.
+	 */
+	public static function sweep_away( bool $force = false ): void {
+		if ( ! $force && get_transient( self::SWEEP_THROTTLE ) ) {
+			return;
+		}
+		set_transient( self::SWEEP_THROTTLE, 1, MINUTE_IN_SECONDS );
+		foreach ( ( new TimeEntryRepository() )->running() as $row ) {
+			self::stop_if_away( (int) $row['user_id'] );
+		}
+	}
 
 	/**
 	 * Start tracking a task, stopping whatever was running.

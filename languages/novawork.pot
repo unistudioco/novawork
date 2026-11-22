@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-22T18:59:26+00:00\n"
+"POT-Creation-Date: 2026-11-22T19:56:48+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -584,11 +584,11 @@ msgstr ""
 msgid "Friday"
 msgstr ""
 
-#: src/Services/Timer.php:43
+#: src/Services/Timer.php:113
 msgid "That task no longer exists."
 msgstr ""
 
-#: src/Services/Timer.php:65
+#: src/Services/Timer.php:135
 msgid "The timer didn’t start. Try again."
 msgstr ""
 
@@ -2192,13 +2192,29 @@ msgstr ""
 msgid "Three things at a time. Everything else waits in Next."
 msgstr ""
 
+#. translators: 1: task, 2: clock time, 3: time away, e.g. "2h 10m".
+#: assets/src/js/views/idle.js:52
+#, js-format
+msgid "Your timer on %1$s stopped at %2$s, when this device went quiet. The %3$s after that weren’t counted."
+msgstr ""
+
+#. translators: 1: clock time, 2: time away, e.g. "2h 10m".
+#: assets/src/js/views/idle.js:53
+#, js-format
+msgid "Your timer stopped at %1$s, when this device went quiet. The %2$s after that weren’t counted."
+msgstr ""
+
+#: assets/src/js/views/idle.js:54
+msgid "OK"
+msgstr ""
+
 #. translators: %s: time away, e.g. "12m".
-#: assets/src/js/views/idle.js:80
+#: assets/src/js/views/idle.js:135
 #, js-format
 msgid "Timer paused. The %s you were away wasn’t counted."
 msgstr ""
 
-#: assets/src/js/views/idle.js:90
+#: assets/src/js/views/idle.js:145
 msgid "Still tracking"
 msgstr ""
 

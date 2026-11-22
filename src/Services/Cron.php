@@ -50,6 +50,7 @@ final class Cron {
 	 */
 	public static function run(): void {
 		Notifier::check_due( true );
+		Timer::sweep_away( true );
 		( new AttachmentRepository() )->sweep_unclaimed( DAY_IN_SECONDS );
 		// Retention is a setting: log_days (older clients get a full snapshot)
 		// and read_note_days.

@@ -44,6 +44,9 @@ export function createStore( boot ) {
 		activity: {},
 		cursor: null,
 		canManage: false,
+		// Set when the server stopped your timer because your app went quiet
+		// (laptop folded, tab closed…): { endedAt, awayMs, taskId }.
+		timerAway: null,
 		now: Date.now(),
 		view: 'focus',
 
@@ -89,6 +92,9 @@ export function createStore( boot ) {
 			}
 			if ( typeof payload.canManage === 'boolean' && payload.canManage !== this.canManage ) {
 				this.canManage = payload.canManage;
+			}
+			if ( payload.timerAway ) {
+				this.timerAway = payload.timerAway;
 			}
 			if ( payload.cursor !== this.cursor ) {
 				this.cursor = payload.cursor;
