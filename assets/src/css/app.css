@@ -313,15 +313,15 @@ li.nw-drop-line, div.nw-drop-line { list-style: none; height: 2px; border-radius
 .nw-proj header .nw-dot { margin-top: 7px; }
 .nw-proj header .nw-sqbtn { margin: -4px -6px 0 auto; flex: none; }
 .nw-proj h3 { font-size: 16px; line-height: 1.3; font-weight: 700; letter-spacing: -.015em; flex: 1; min-width: 0; text-wrap: balance; overflow-wrap: break-word; }
-.nw-proj p { margin: 0; color: var(--nw-muted); font-size: 13.5px; }
+.nw-proj p { flex: 1; margin: 0; color: var(--nw-muted); font-size: 13.5px; }
 .nw-pbar { height: 6px; border-radius: 3px; background: var(--nw-sunken); overflow: hidden; }
 .nw-pbar i { display: block; height: 100%; background: var(--nw-c); border-radius: 3px; }
-.nw-stats { display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; font: 500 12px/1 var(--nw-font-head); color: var(--nw-faint); font-variant-numeric: tabular-nums; }
+.nw-stats { display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; font: 500 12px/1 var(--nw-font-head); color: var(--nw-faint); font-variant-numeric: tabular-nums; margin-bottom: 4px; }
 .nw-stats b { color: var(--nw-fg); font-weight: 600; }
 .nw-stats .nw-dl { color: var(--nw-danger); display: inline-flex; gap: 5px; align-items: center; --nw-is: 14px; }
 .nw-next-up { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--nw-muted); border-top: 1px solid var(--nw-line); margin: auto -18px 0; padding: 14px 18px 0; min-width: 0; }
 .nw-next-up > span { flex: none; white-space: nowrap; }
-.nw-next-up b { font-weight: 500; color: var(--nw-fg); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.nw-next-up b { min-height: 26px; font-weight: 500; color: var(--nw-fg); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .nw-badge { display: inline-flex; align-items: center; font: 700 9.5px/1 var(--nw-font-head); text-transform: uppercase; letter-spacing: .07em; padding: 3px 6px; border-radius: 5px; background: var(--nw-field); color: var(--nw-muted); }
 .nw-badge.nw-paused { background: var(--nw-warn-soft); color: var(--nw-warn-on-soft); }
 .nw-badge.nw-done { background: var(--nw-done-soft); color: var(--nw-done-on-soft); }
@@ -452,7 +452,7 @@ kbd { font: 600 11px/1 var(--nw-font-head); padding: 2px 5px; border-radius: 5px
 .nw-nitem:hover { background: var(--nw-field); }
 .nw-nitem.nw-unread { color: var(--nw-fg); }
 .nw-nitem b { font-weight: 600; color: var(--nw-fg); }
-.nw-nic { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--nw-ci, var(--nw-c)) var(--nw-inv), color-mix(in srgb, var(--nw-c) 20%, var(--nw-surface))); color: color-mix(in srgb, var(--nw-ci, var(--nw-c)) var(--nw-av-ink), color-mix(in srgb, var(--nw-c) 40%, #fff)); --nw-is: 16px; }
+.nw-nic { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--nw-ci, var(--nw-c)) var(--nw-inv), color-mix(in srgb, var(--nw-c) 20%, var(--nw-surface))); color: color-mix(in srgb, var(--nw-ci, var(--nw-c)) var(--nw-av-ink), color-mix(in srgb, var(--nw-c) 40%, #fff)); --nw-is: 14px; }
 .nw-ntext { min-width: 0; overflow-wrap: anywhere; }
 .nw-ntext time { display: block; margin-top: 3px; font: 500 11.5px/1 var(--nw-font-head); color: var(--nw-faint); }
 .nw-ndot { width: 8px; height: 8px; border-radius: 50%; background: var(--nw-accent); margin-top: 6px; }
