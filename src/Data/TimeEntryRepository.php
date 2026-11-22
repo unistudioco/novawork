@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * A running timer is an entry with no end. Its running_user column holds the
  * member's id while it runs and NULL afterwards; a UNIQUE index on that column

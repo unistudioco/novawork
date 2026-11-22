@@ -11,6 +11,8 @@ namespace NovaWork\App;
 
 use NovaWork\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Registers the Vite build with WordPress's script and style APIs, so the
  * app document prints them with wp_print_scripts() / wp_print_styles(), and

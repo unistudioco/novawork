@@ -17,6 +17,8 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * GET /search?q= across tasks, projects, decisions and chat, grouped and
  * capped the way the quick-search panel shows them.

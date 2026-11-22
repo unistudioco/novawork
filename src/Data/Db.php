@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Table names and time conversion.
  *

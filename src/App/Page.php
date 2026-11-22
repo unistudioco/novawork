@@ -12,6 +12,8 @@ namespace NovaWork\App;
 use NovaWork\Access\Capabilities;
 use WP_REST_Request;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Prints NovaWork's own HTML document. Nothing from the theme or other
  * plugins' front-end assets loads here: only NovaWork's styles, its script

@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Every write appends one row here. Clients poll with the last id they saw
  * and get back what changed since, so the log id is the sync cursor.

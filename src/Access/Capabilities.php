@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Access;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * A member is any WordPress user with the access capability: users given the
  * "NovaWork Member" role, plus administrators. Members are added and removed

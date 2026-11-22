@@ -18,6 +18,8 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * POST /projects, PATCH|DELETE /projects/{id}, POST /projects/{id}/move.
  * Reads come through /sync.

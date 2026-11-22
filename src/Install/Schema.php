@@ -11,6 +11,8 @@ namespace NovaWork\Install;
 
 use NovaWork\Data\Db;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * The tables, created and upgraded with dbDelta.
  *

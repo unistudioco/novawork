@@ -11,6 +11,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Data;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * A comment is written by a member (user_id) or by an agent (agent key, for
  * add-ons such as an AI teammate); exactly one of the two is set.
