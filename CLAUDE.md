@@ -76,8 +76,10 @@ one); the app document must have it.
   on their colour (deep tone + white text in light, bright tone + ink in dark).
   The colour is user meta, auto-assigned from the 8 accents. Respect the site's
   "Show Avatars" setting; Gravatar is disclosed as an external service.
-- **Timer lives on the server** (start time stored): reloads, a second device or
-  a closed laptop never lose or double-count time. One timer per user.
+- **Timer lives on the server** (start time stored): reloads or a second
+  device never lose or double-count time. One timer per user. **A running
+  timer needs a sign of life** (owner, 2026-11-22): see "Timer and time away"
+  below; a folded laptop or a closed tab stops it where the app went quiet.
 - **Attachments are private:** a NovaWork folder under uploads, random names,
   `index.php` + deny rules, served only through an authenticated, capability-
   checked endpoint (works on nginx). Never in the Media Library.
@@ -587,6 +589,35 @@ Delete" below.
   task keeps a draft saved right after it), "2/5" chip on Board cards and
   Focus slots (`subChip()`). Hooks: `novawork_subtask_created|updated|deleted`.
 
+## Timer and time away (owner decision, 2026-11-22)
+
+Reported: with the timer running, folding the laptop and coming back later
+left it tracking. The idle rule lived only in the page, and a sleeping
+machine runs no code; on waking, "Still working?" counted the whole time
+away (all of it on "Yes"), and a closed tab or a flat battery left the timer
+running for good. Now:
+
+- **Heartbeat on the server:** every /sync poll is a sign of life
+  (`Members::SEEN_META`, written at most every 15 s). `Timer::away_after()`
+  is the `idle_minutes` setting, never under 3 minutes (a background tab
+  polls only about once a minute). `Timer::stop_if_away()` stops a timer
+  whose app has been silent longer than that, ending at the last sign of
+  life (the last poll, or the start when later). It runs on the member's own
+  poll **before** `Members::touch()` (so the first poll after a folded laptop
+  stops it), for everyone on any member's poll (`sweep_away()`, at most once
+  a minute) and in the hourly cron. The poll that stopped your timer answers
+  with `timerAway` {endedAt, awayMs, taskId}.
+- **In the page** (views/idle.js): the one-second ticker notices it slept
+  (a gap of 2+ minutes); when the gap reaches the away limit it stops the
+  timer at the last moment it was awake, without asking. Either way one
+  toast says "Your timer on … stopped at 14:32, when this device went quiet.
+  The 2h 10m after that weren't counted." (said once even if page and server
+  both notice).
+- Shorter gaps and plain inactivity keep the old rule ("Still working?").
+- Trade-off: tracking needs the workspace open in a browser that keeps the
+  tab running. A browser that freezes or discards background tabs (Chrome's
+  Memory Saver, phones) makes the app go quiet, and the timer stops there.
+
 ## Owner requests queued for later phases
 
 - (Built.) Chat @mentions: see "Chat" below.
@@ -651,9 +682,11 @@ npm run dev                # Vite dev server on :5175
 
 ## Working agreements
 
-- **Never `git commit` unless the owner's latest message literally says
-  "commit".** "Go", "go ahead" or a phase summary is not a commit. Include the
-  owner's own uncommitted edits in their own commit; never discard them.
+- **Commit and push when work is done and its gates pass** (owner, 2026-11-22,
+  replaces "only when the owner says commit"): the owner pulls the branch to
+  test, so finished work goes to the phase branch on GitHub without waiting
+  for a review. Never commit work whose gates fail. Include the owner's own
+  uncommitted edits in their own commit; never discard them.
 - Commit trailer: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
   PR bodies end with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - One phase at a time, each on its own branch (`phase-N-name`). At the end of a
