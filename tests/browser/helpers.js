@@ -25,8 +25,21 @@ export const serverData = ( page ) =>
 
 /** Drag with real pointer moves (Playwright's dragTo scrolls mid-drag and picks the wrong card). */
 export async function pointerDrag( page, from, to ) {
-	const a = await from.boundingBox();
-	const b = await to.boundingBox();
+	// The board redraws when a sync poll lands, replacing its cards: an element
+	// found a moment ago can be detached when measured (boundingBox() → null).
+	// Measure again until it is on screen.
+	const measure = async ( loc ) => {
+		for ( let i = 0; i < 30; i++ ) {
+			const box = await loc.boundingBox();
+			if ( box ) {
+				return box;
+			}
+			await page.waitForTimeout( 100 );
+		}
+		throw new Error( 'Drag: ' + loc + ' is not on screen' );
+	};
+	const a = await measure( from );
+	const b = await measure( to );
 	await page.mouse.move( a.x + a.width / 2, a.y + 20 );
 	await page.mouse.down();
 	await page.mouse.move( b.x + b.width / 2, b.y + 60, { steps: 12 } );
