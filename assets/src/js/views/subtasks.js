@@ -31,10 +31,10 @@ let current = null;
  */
 export function subtasksField( t ) {
 	const list = t ? subtasksOf( t ) : [];
-	return `<div class="nw-field nw-subs-field"><span class="nw-flabel" id="nw-subs-label">${ esc( __( 'Subtasks', 'novawork' ) ) }<span class="nw-subs-count"></span></span>` +
-		`<div class="nw-pbar nw-subs-bar"${ list.length ? '' : ' hidden' }><i></i></div>` +
-		`<ul class="nw-subs" id="nw-subs" aria-labelledby="nw-subs-label"></ul>` +
-		`<div class="nw-sub-add">${ ic( 'plus', 15 ) }<label for="nw-sub-in" class="nw-vh">${ esc( __( 'Add a subtask', 'novawork' ) ) }</label><input class="nw-input" id="nw-sub-in" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="${ esc(
+	return `<div class="nw-field nw-subtasks-field"><span class="nw-flabel" id="nw-subtasks-label">${ esc( __( 'Subtasks', 'novawork' ) ) }<span class="nw-subtasks-count"></span></span>` +
+		`<div class="nw-pbar nw-subtasks-bar"${ list.length ? '' : ' hidden' }><i></i></div>` +
+		`<ul class="nw-subtasks" id="nw-subtasks" aria-labelledby="nw-subtasks-label"></ul>` +
+		`<div class="nw-subtask-add">${ ic( 'plus', 15 ) }<label for="nw-subtask-in" class="nw-vh">${ esc( __( 'Add a subtask', 'novawork' ) ) }</label><input class="nw-input" id="nw-subtask-in" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="${ esc(
 			__( 'Add a subtask', 'novawork' )
 		) }"></div></div>`;
 }
@@ -48,15 +48,15 @@ function rowHTML( s ) {
 		people()
 			.map( ( p ) => `<option data-person value="${ p.id }"${ p.id === s.assigneeId ? ' selected' : '' }${ p.id === store().me ? ' data-you' : '' }>${ esc( p.name ) }</option>` )
 			.join( '' );
-	return `<li class="nw-sub${ s.done ? ' nw-done' : '' }${ s.assigneeId ? ' nw-has-who' : '' }" data-sid="${ s.id }" draggable="true">` +
-		`<button class="nw-sub-check" type="button" data-sub="tick" aria-pressed="${ s.done }" aria-label="${ label }">${ ic( 'check', 13 ) }</button>` +
-		`<span class="nw-sub-t" data-sub="edit" tabindex="0" role="button" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Rename %s', 'novawork' ), s.title ) ) }">${ esc( s.title ) }</span>` +
-		`<select class="nw-sub-who" data-nw-sel data-right="1" data-sub="who" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Who does %s', 'novawork' ), s.title ) ) }">${ who }</select>` +
-		`<button class="nw-iconbtn nw-xs nw-sub-x" type="button" data-sub="remove" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Remove %s', 'novawork' ), s.title ) ) }">${ ic( 'x', 14 ) }</button></li>`;
+	return `<li class="nw-subtask${ s.done ? ' nw-done' : '' }${ s.assigneeId ? ' nw-has-who' : '' }" data-sid="${ s.id }" draggable="true">` +
+		`<button class="nw-subtask-check" type="button" data-sub="tick" aria-pressed="${ s.done }" aria-label="${ label }">${ ic( 'check', 13 ) }</button>` +
+		`<span class="nw-subtask-t" data-sub="edit" tabindex="0" role="button" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Rename %s', 'novawork' ), s.title ) ) }">${ esc( s.title ) }</span>` +
+		`<select class="nw-subtask-who" data-nw-sel data-right="1" data-sub="who" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Who does %s', 'novawork' ), s.title ) ) }">${ who }</select>` +
+		`<button class="nw-iconbtn nw-xs nw-subtask-x" type="button" data-sub="remove" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Remove %s', 'novawork' ), s.title ) ) }">${ ic( 'x', 14 ) }</button></li>`;
 }
 
 function draw() {
-	const ul = document.getElementById( 'nw-subs' );
+	const ul = document.getElementById( 'nw-subtasks' );
 	if ( ! ul || ! current || current.editing ) {
 		return;
 	}
@@ -64,12 +64,12 @@ function draw() {
 	const done = list.filter( ( s ) => s.done ).length;
 	ul.innerHTML = list.map( rowHTML ).join( '' );
 	enhance( ul );
-	const field = ul.closest( '.nw-subs-field' );
-	field.querySelector( '.nw-subs-count' ).textContent = list.length ? ' · ' + done + '/' + list.length : '';
-	const bar = field.querySelector( '.nw-subs-bar' );
+	const field = ul.closest( '.nw-subtasks-field' );
+	field.querySelector( '.nw-subtasks-count' ).textContent = list.length ? ' · ' + done + '/' + list.length : '';
+	const bar = field.querySelector( '.nw-subtasks-bar' );
 	bar.hidden = ! list.length;
 	bar.firstChild.style.width = list.length ? Math.round( ( done / list.length ) * 100 ) + '%' : '0';
-	field.querySelector( '.nw-sub-add' ).hidden = list.length >= MAX;
+	field.querySelector( '.nw-subtask-add' ).hidden = list.length >= MAX;
 }
 
 /* ---------- changes ---------- */
@@ -192,14 +192,14 @@ function move( sid, beforeId ) {
 function startRename( row ) {
 	const sid = Number( row.dataset.sid );
 	const s = find( items(), sid );
-	const span = row.querySelector( '.nw-sub-t' );
+	const span = row.querySelector( '.nw-subtask-t' );
 	if ( ! s || ! span ) {
 		return;
 	}
 	current.editing = true;
 	row.draggable = false;
 	const input = document.createElement( 'input' );
-	input.className = 'nw-input nw-sub-edit';
+	input.className = 'nw-input nw-subtask-edit';
 	input.maxLength = 200;
 	input.value = s.title;
 	input.setAttribute( 'aria-label', __( 'Subtask', 'novawork' ) );
@@ -238,10 +238,10 @@ function wireDrag( ul ) {
 	let dragId = null;
 	const line = document.createElement( 'li' );
 	line.className = 'nw-drop-line';
-	const rows = () => [ ...ul.querySelectorAll( '.nw-sub' ) ].filter( ( r ) => Number( r.dataset.sid ) !== dragId );
+	const rows = () => [ ...ul.querySelectorAll( '.nw-subtask' ) ].filter( ( r ) => Number( r.dataset.sid ) !== dragId );
 	const after = ( y ) => rows().find( ( r ) => y < r.getBoundingClientRect().top + r.offsetHeight / 2 ) || null;
 	ul.addEventListener( 'dragstart', ( e ) => {
-		const row = e.target.closest && e.target.closest( '.nw-sub' );
+		const row = e.target.closest && e.target.closest( '.nw-subtask' );
 		if ( ! row ) {
 			return;
 		}
@@ -284,15 +284,15 @@ function wireDrag( ul ) {
  */
 export function wireSubtasks( id ) {
 	current = { id, draft: [], temp: 0, editing: false };
-	const ul = document.getElementById( 'nw-subs' );
-	const input = document.getElementById( 'nw-sub-in' );
+	const ul = document.getElementById( 'nw-subtasks' );
+	const input = document.getElementById( 'nw-subtask-in' );
 	if ( ! ul || ! input ) {
 		return;
 	}
 	draw();
 	ul.addEventListener( 'click', ( e ) => {
 		const el = e.target.closest( '[data-sub]' );
-		const row = e.target.closest( '.nw-sub' );
+		const row = e.target.closest( '.nw-subtask' );
 		if ( ! el || ! row ) {
 			return;
 		}
@@ -308,12 +308,12 @@ export function wireSubtasks( id ) {
 	ul.addEventListener( 'keydown', ( e ) => {
 		if ( ( e.key === 'Enter' || e.key === ' ' ) && e.target.dataset.sub === 'edit' ) {
 			e.preventDefault();
-			startRename( e.target.closest( '.nw-sub' ) );
+			startRename( e.target.closest( '.nw-subtask' ) );
 		}
 	} );
 	ul.addEventListener( 'change', ( e ) => {
 		if ( e.target.dataset.sub === 'who' ) {
-			assign( Number( e.target.closest( '.nw-sub' ).dataset.sid ), Number( e.target.value ) );
+			assign( Number( e.target.closest( '.nw-subtask' ).dataset.sid ), Number( e.target.value ) );
 		}
 	} );
 	input.addEventListener( 'keydown', ( e ) => {

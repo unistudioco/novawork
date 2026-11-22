@@ -29,26 +29,26 @@ test( 'a new task saves its checklist; tick, rename, assign, remove and Undo on 
 	await page.keyboard.press( 'n' );
 	await page.fill( '#nw-f-title', T );
 	for ( const s of [ 'Outline', 'Draft', 'Review' ] ) {
-		await page.fill( '#nw-sub-in', s );
+		await page.fill( '#nw-subtask-in', s );
 		await page.keyboard.press( 'Enter' );
 	}
 	await expect( page.locator( '#nw-dlg[open]' ) ).toHaveCount( 1 );
-	await expect( page.locator( '#nw-subs .nw-sub' ) ).toHaveCount( 3 );
+	await expect( page.locator( '#nw-subtasks .nw-subtask' ) ).toHaveCount( 3 );
 	await page.click( '#nw-dlg button[value="save"]' );
 	await expect.poll( async () => ( await subs( page, T ) ).map( ( s ) => s.title ) ).toEqual( [ 'Outline', 'Draft', 'Review' ] );
 
 	// The card shows progress.
 	const card = page.locator( 'article', { hasText: T } );
-	await expect( card.locator( '.nw-subn' ) ).toContainText( '0/3' );
+	await expect( card.locator( '.nw-subtask-n' ) ).toContainText( '0/3' );
 
 	// Saved task: tick, rename, assign.
 	await card.click();
-	const row = ( name ) => page.locator( '#nw-subs .nw-sub', { hasText: name } );
+	const row = ( name ) => page.locator( '#nw-subtasks .nw-subtask', { hasText: name } );
 	await row( 'Outline' ).locator( '[data-sub="tick"]' ).click();
 	await expect.poll( async () => ( await subs( page, T ) ).find( ( s ) => s.title === 'Outline' )?.done ).toBe( true );
-	await expect( page.locator( '.nw-subs-count' ) ).toHaveText( ' · 1/3' );
+	await expect( page.locator( '.nw-subtasks-count' ) ).toHaveText( ' · 1/3' );
 
-	await row( 'Draft' ).locator( '.nw-sub-t' ).click();
+	await row( 'Draft' ).locator( '.nw-subtask-t' ).click();
 	await page.keyboard.press( 'ControlOrMeta+a' );
 	await page.keyboard.type( 'First draft' );
 	await page.keyboard.press( 'Enter' );
@@ -57,11 +57,11 @@ test( 'a new task saves its checklist; tick, rename, assign, remove and Undo on 
 
 	await row( 'Review' ).hover();
 	await row( 'Review' ).locator( '.nw-sel-btn' ).click();
-	await page.locator( '#nw-subs .nw-sel-menu li[aria-selected="false"]' ).nth( 1 ).click();
+	await page.locator( '#nw-subtasks .nw-sel-menu li[aria-selected="false"]' ).nth( 1 ).click();
 	await expect.poll( async () => ( await subs( page, T ) ).find( ( s ) => s.title === 'Review' )?.assigneeId ).toBeGreaterThan( 0 );
 
 	// Escape while renaming cancels the rename, not the dialog.
-	await row( 'Review' ).locator( '.nw-sub-t' ).click();
+	await row( 'Review' ).locator( '.nw-subtask-t' ).click();
 	await page.keyboard.type( 'nope' );
 	await page.keyboard.press( 'Escape' );
 	await expect( page.locator( '#nw-dlg[open]' ) ).toHaveCount( 1 );
@@ -75,6 +75,6 @@ test( 'a new task saves its checklist; tick, rename, assign, remove and Undo on 
 	await expect.poll( async () => ( await subs( page, T ) ).map( ( s ) => s.title + ( s.done ? ' ✓' : '' ) ) ).toEqual( [ 'Outline ✓', 'First draft', 'Review' ] );
 
 	await page.keyboard.press( 'Escape' );
-	await expect( card.locator( '.nw-subn' ) ).toContainText( '1/3' );
+	await expect( card.locator( '.nw-subtask-n' ) ).toContainText( '1/3' );
 	expect( errors ).toEqual( [] );
 } );

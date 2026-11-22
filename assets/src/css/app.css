@@ -321,7 +321,7 @@ li.nw-drop-line, div.nw-drop-line { list-style: none; height: 2px; border-radius
 .nw-stats .nw-dl { color: var(--nw-danger); display: inline-flex; gap: 5px; align-items: center; --nw-is: 14px; }
 .nw-next-up { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--nw-muted); border-top: 1px solid var(--nw-line); margin: auto -18px 0; padding: 14px 18px 0; min-width: 0; }
 .nw-next-up > span { flex: none; white-space: nowrap; }
-.nw-next-up b { min-height: 26px; font-weight: 500; color: var(--nw-fg); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.nw-next-up b { line-height: 26px; font-weight: 500; color: var(--nw-fg); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .nw-badge { display: inline-flex; align-items: center; font: 700 9.5px/1 var(--nw-font-head); text-transform: uppercase; letter-spacing: .07em; padding: 3px 6px; border-radius: 5px; background: var(--nw-field); color: var(--nw-muted); }
 .nw-badge.nw-paused { background: var(--nw-warn-soft); color: var(--nw-warn-on-soft); }
 .nw-badge.nw-done { background: var(--nw-done-soft); color: var(--nw-done-on-soft); }

@@ -367,35 +367,35 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
 /* Subtasks (owner request, 2026-11-22): a checklist in the task dialog and
    "2/5" on cards. The tick is Focus's square check; done turns it green
    (--nw-done) and strikes the title through, as on Done cards. */
-.nw-subs-count { color: var(--nw-faint); font-variant-numeric: tabular-nums; }
-.nw-subs-bar { --nw-c: var(--nw-done); height: 4px; }
-.nw-subs-bar[hidden] { display: none; }
-.nw-subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
-.nw-subs:empty { display: none; }
-.nw-sub { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; min-height: 36px; padding: 3px 4px 3px 6px; border-radius: 9px; cursor: grab; }
-.nw-sub:hover, .nw-sub:focus-within { background: var(--nw-field); }
-.nw-sub-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--nw-line-strong); background: var(--nw-surface); display: grid; place-items: center; padding: 0; color: var(--nw-done); cursor: pointer; --nw-is: 12px; }
-.nw-sub-check .nw-ic { opacity: 0; }
-.nw-sub-check:hover { border-color: var(--nw-done); }
-.nw-sub-check:hover .nw-ic { opacity: .6; }
-.nw-sub.nw-done .nw-sub-check { background: var(--nw-done); border-color: var(--nw-done); color: var(--nw-surface); }
-.nw-sub.nw-done .nw-sub-check .nw-ic { opacity: 1; }
-.nw-sub-t { min-width: 0; font-size: 13.5px; line-height: 1.4; overflow-wrap: anywhere; cursor: text; border-radius: 5px; }
-.nw-sub-t:focus-visible { outline: 2px solid var(--nw-accent); outline-offset: 2px; }
-.nw-sub.nw-done .nw-sub-t { color: var(--nw-faint); text-decoration: line-through; text-decoration-color: var(--nw-line-strong); }
-.nw-sub .nw-sub-edit { height: 28px; }
+.nw-subtasks-count { color: var(--nw-faint); font-variant-numeric: tabular-nums; }
+.nw-subtasks-bar { --nw-c: var(--nw-done); height: 4px; }
+.nw-subtasks-bar[hidden] { display: none; }
+.nw-subtasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.nw-subtasks:empty { display: none; }
+.nw-subtask { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; min-height: 36px; padding: 3px 4px 3px 6px; border-radius: 9px; cursor: grab; }
+.nw-subtask:hover, .nw-subtask:focus-within { background: var(--nw-field); }
+.nw-subtask-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--nw-line-strong); background: var(--nw-surface); display: grid; place-items: center; padding: 0; color: var(--nw-done); cursor: pointer; --nw-is: 12px; }
+.nw-subtask-check .nw-ic { opacity: 0; }
+.nw-subtask-check:hover { border-color: var(--nw-done); }
+.nw-subtask-check:hover .nw-ic { opacity: .6; }
+.nw-subtask.nw-done .nw-subtask-check { background: var(--nw-done); border-color: var(--nw-done); color: var(--nw-surface); }
+.nw-subtask.nw-done .nw-subtask-check .nw-ic { opacity: 1; }
+.nw-subtask-t { min-width: 0; font-size: 13.5px; line-height: 1.4; overflow-wrap: anywhere; cursor: text; border-radius: 5px; }
+.nw-subtask-t:focus-visible { outline: 2px solid var(--nw-accent); outline-offset: 2px; }
+.nw-subtask.nw-done .nw-subtask-t { color: var(--nw-faint); text-decoration: line-through; text-decoration-color: var(--nw-line-strong); }
+.nw-subtask .nw-subtask-edit { height: 28px; }
 /* The assignee is an avatar-only dropdown: shown when someone is set, on
    hover otherwise (the "Unassigned" mark would be noise on every row). */
-.nw-sub .nw-sel { width: auto; }
-.nw-sub .nw-sel-btn { width: auto; height: 28px; padding: 0 3px; gap: 0; background: transparent; }
-.nw-sub .nw-sel-btn .nw-lbl, .nw-sub .nw-sel-btn .nw-caret, .nw-sub .nw-sel-btn .nw-you { display: none; }
-@media (hover: hover) { .nw-sub:not(.nw-has-who):not(:hover):not(:focus-within) .nw-sel:not(.nw-open) { visibility: hidden; } }
-.nw-sub-x { opacity: 0; color: var(--nw-faint); }
-.nw-sub:hover .nw-sub-x, .nw-sub:focus-within .nw-sub-x { opacity: 1; }
-@media (hover: none) { .nw-sub-x, .nw-sub .nw-sel { opacity: 1; visibility: visible; } .nw-sub { cursor: default; } }
-.nw-sub-add { display: flex; align-items: center; gap: 10px; padding-left: 7px; color: var(--nw-faint); }
-.nw-sub-add[hidden] { display: none; }
-.nw-sub-add .nw-input { background: transparent; padding-left: 2px; }
-.nw-sub-add .nw-input:hover, .nw-sub-add .nw-input:focus { background: var(--nw-field); padding-left: 10px; }
-.nw-subn { display: inline-flex; align-items: center; gap: 4px; font: 500 12px/1 var(--nw-font-head); color: var(--nw-faint); font-variant-numeric: tabular-nums; --nw-is: 14px; }
-.nw-subn.nw-all { color: var(--nw-done); }
+.nw-subtask .nw-sel { width: auto; }
+.nw-subtask .nw-sel-btn { width: auto; height: 28px; padding: 0 3px; gap: 0; background: transparent; }
+.nw-subtask .nw-sel-btn .nw-lbl, .nw-subtask .nw-sel-btn .nw-caret, .nw-subtask .nw-sel-btn .nw-you { display: none; }
+@media (hover: hover) { .nw-subtask:not(.nw-has-who):not(:hover):not(:focus-within) .nw-sel:not(.nw-open) { visibility: hidden; } }
+.nw-subtask-x { opacity: 0; color: var(--nw-faint); }
+.nw-subtask:hover .nw-subtask-x, .nw-subtask:focus-within .nw-subtask-x { opacity: 1; }
+@media (hover: none) { .nw-subtask-x, .nw-subtask .nw-sel { opacity: 1; visibility: visible; } .nw-subtask { cursor: default; } }
+.nw-subtask-add { display: flex; align-items: center; gap: 10px; padding-left: 7px; color: var(--nw-faint); }
+.nw-subtask-add[hidden] { display: none; }
+.nw-subtask-add .nw-input { background: transparent; padding-left: 2px; }
+.nw-subtask-add .nw-input:hover, .nw-subtask-add .nw-input:focus { background: var(--nw-field); padding-left: 10px; }
+.nw-subtask-n { display: inline-flex; align-items: center; gap: 4px; font: 500 12px/1 var(--nw-font-head); color: var(--nw-faint); font-variant-numeric: tabular-nums; --nw-is: 14px; }
+.nw-subtask-n.nw-all { color: var(--nw-done); }

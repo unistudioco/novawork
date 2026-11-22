@@ -657,9 +657,12 @@ running for good. Now:
 - Running timer: only the Focus card gets the gradient ring (`::before`, conic,
   `@property`); the real border stays 1.5px so nothing moves. Timer text has a
   min-width (4.2ch header, 3.6ch phone).
-- **CSS traps hit four times:** specific, namespaced class names (`.tick`,
-  `.bar`, `.focus` collided); scope container selectors to direct children
-  (`.assign label > span`); a sticky header is a stacking context.
+- **CSS traps hit five times:** specific, namespaced class names (`.tick`,
+  `.bar`, `.focus` collided, and on 2026-11-22 the subtask rows' `.nw-sub`
+  restyled the quick-search results' `.nw-sub`; subtasks now use
+  `.nw-subtask…`); grep a new class name before using it; scope container
+  selectors to direct children (`.assign label > span`); a sticky header is a
+  stacking context.
 - Scroll lock under every modal-like overlay, reference-counted
   (`html{overflow:hidden}` + `body{position:fixed;top:-scrollY}`). The docked
   desktop chat is the exception. `prefers-reduced-motion` turns movement off.

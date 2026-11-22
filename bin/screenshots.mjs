@@ -74,7 +74,7 @@ await p.waitForSelector( '.nw-card' );
 await shot( p, 2 );
 
 // 3. A task with its checklist: the first card that has subtasks.
-const withSubs = p.locator( '.nw-card:has(.nw-subn)' ).first();
+const withSubs = p.locator( '.nw-card:has(.nw-subtask-n)' ).first();
 await ( ( await withSubs.count() ) ? withSubs : p.locator( '.nw-card' ).first() ).click();
 await p.waitForSelector( '#nw-dlg[open]' );
 await shot( p, 3 );

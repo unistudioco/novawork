@@ -86,3 +86,22 @@ test( 'no empty rows: a Focus slot without meta, a Board card without a project'
 	await expect( slot.locator( '.nw-meta' ) ).toHaveCount( 0 );
 	await expect( page.locator( '.nw-meta:empty' ) ).toHaveCount( 0 );
 } );
+
+test( 'quick search rows stay compact (subtask styles never reach them)', async ( { page } ) => {
+	// Regression (owner, 2026-11-22): the subtask rows once shared the class
+	// .nw-sub with the search results' grey right-hand text and made every
+	// result tall, padded and grabbable.
+	await page.click( '.nw-qs input' );
+	await page.keyboard.type( 'e' );
+	const row = page.locator( '.nw-qs-item' ).first();
+	await row.waitFor();
+	const box = await row.boundingBox();
+	expect( box.height ).toBeLessThan( 44 );
+	const sub = await row.locator( '.nw-sub' ).evaluate( ( e ) => {
+		const cs = getComputedStyle( e );
+		return { display: cs.display, minHeight: cs.minHeight, cursor: cs.cursor };
+	} );
+	expect( sub.display ).not.toBe( 'grid' );
+	expect( sub.minHeight ).toBe( 'auto' );
+	expect( sub.cursor ).not.toBe( 'grab' );
+} );

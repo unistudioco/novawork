@@ -149,7 +149,7 @@ export function subChip( t ) {
 	}
 	const done = list.filter( ( x ) => x.done ).length;
 	const label = esc( sprintf( /* translators: 1: subtasks done, 2: all subtasks. */ __( '%1$d of %2$d subtasks done', 'novawork' ), done, list.length ) );
-	return `<span class="nw-subn${ done === list.length ? ' nw-all' : '' }" role="img" title="${ label }" aria-label="${ label }">${ ic( 'list-checks' ) }<span aria-hidden="true">${ done }/${ list.length }</span></span>`;
+	return `<span class="nw-subtask-n${ done === list.length ? ' nw-all' : '' }" role="img" title="${ label }" aria-label="${ label }">${ ic( 'list-checks' ) }<span aria-hidden="true">${ done }/${ list.length }</span></span>`;
 }
 
 export function dueHTML( s, st ) {
