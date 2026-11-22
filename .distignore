@@ -15,6 +15,7 @@
 /tests
 /CLAUDE.md
 /HANDOFF.md
+/.wordpress-org
 /README.md
 /phpcs.xml.dist
 /phpstan.neon.dist
