@@ -102,8 +102,10 @@ one); the app document must have it.
   poll interval, week start, upload size and types, Fontshare toggle, delete
   data on uninstall (off). A missing checkbox means "off".
 - v1 is 100% free, nothing locked. Out of scope (readme roadmap only):
-  multiple workspaces, Multisite network mode, email digests, desktop alerts,
-  integrations, native apps, AI features, client portal, paid add-ons.
+  multiple workspaces, Multisite network mode, email digests, push alerts
+  with the app closed (Web Push), integrations, native apps, AI features,
+  client portal, paid add-ons. (Desktop alerts while a tab is open are in:
+  owner decision 2026-11-22, below.)
 
 ## Data and API conventions (Phase 2)
 
@@ -542,6 +544,48 @@ Delete" below.
 - Setting `activity_days` (30): feed retention, pruned by cron.
 - The last tab is remembered per viewer (`nw.notesTab` in localStorage).
 - Browser tests clean their feed rows in `tests/browser/teardown.js`.
+
+## Owner fixes and features, 2026-11-22 (after using it as the team's workspace)
+
+- **Dialogs close only on a real backdrop click**: pointerdown and click
+  must both land on the `<dialog>` (dialog.js). Selecting text in a field
+  and letting go over the backdrop used to close it.
+- **No empty wrappers**: Focus slots print `.nw-meta` only when it has
+  content. A Board card without a project puts the title in the top row
+  beside the timer (`.nw-ctop.nw-ctop-t`) instead of an empty band.
+- **Message fields are growing textareas** (`lib/multiline.js`): chat,
+  comments and editing in place. Enter sends, Shift+Enter is a new line,
+  IME composition and an open @ / suggestion list are respected (attach
+  `multiline()` after `attachComposer()`). Up to ~7 lines, then scroll.
+- **Toasts live inside an open modal dialog** (`toast()` in lib/ui.js) and
+  go back to the page when it closes: a modal makes the page inert, so an
+  Undo under a dialog could not be clicked.
+- **Desktop alerts** (`views/alerts.js`, `assets/alerts-worker.js`): while
+  the workspace is open in a hidden or unfocused tab, a new notification for
+  you also shows as a browser alert with the bell's wording; a click focuses
+  the tab and opens the item (`openNote()`). Per device, from the bell's
+  last row (`nw.alerts` in localStorage); setting `desktop_alerts` (on) lets
+  an admin switch the feature off. Needs https (secure context). No outside
+  service: alerts come from the /sync poll (hidden tabs poll every 30 s, so
+  an alert can lag that much; nothing when no tab is open). The worker only
+  shows alerts and handles clicks (Android shows notifications only through
+  a worker); it has no fetch handler and caches nothing; its scope is the
+  plugin's assets folder. Several tabs alert once (`nw.alertedId` + tag).
+  iPhone: only once the workspace is added to the Home Screen (not built).
+- **Subtasks are a checklist inside a task** (owner's choice over child
+  tasks): table `subtasks` (schema v8), `SubtaskRepository` (not logged
+  itself; every write touches the parent task, so they travel as
+  `task.subtasks` [{id, title, done, doneAt, assigneeId, order}]),
+  `Rest\SubtasksController` (`POST /tasks/{id}/subtasks`, `PATCH|DELETE
+  /tasks/{id}/subtasks/{sid}`, `POST …/{sid}/move`; every answer is the
+  whole task). Up to 50 per task. Any member can change any checklist.
+  Giving someone a subtask sends an `assign` notification about the task
+  with `data.subtask`. Deleting a task removes its subtasks; a removed member
+  is unassigned; the eraser clears `created_by`. UI: `views/subtasks.js` in
+  the task dialog (tick, rename in place, avatar-only assignee dropdown, drag
+  to reorder on desktop, remove with Undo that re-adds it in place; a new
+  task keeps a draft saved right after it), "2/5" chip on Board cards and
+  Focus slots (`subChip()`). Hooks: `novawork_subtask_created|updated|deleted`.
 
 ## Owner requests queued for later phases
 
