@@ -32,6 +32,7 @@ final class Settings {
 			'brand_logo'      => 0,
 			'brand_logo_dark' => 0,
 			'accent'          => '#2065f5',
+			'accent_text'     => 'auto',
 			'invite_days'     => 7,
 			'app_slug'        => 'novawork',
 			'idle_minutes'    => 10,
@@ -71,6 +72,10 @@ final class Settings {
 		'brand_logo'      => array( 'type' => 'image' ),
 		'brand_logo_dark' => array( 'type' => 'image' ),
 		'accent'          => array( 'type' => 'color' ),
+		'accent_text'     => array(
+			'type'    => 'choice',
+			'choices' => array( 'auto', 'white', 'dark' ),
+		),
 		'invite_days'     => array(
 			'type' => 'int',
 			'min'  => 1,

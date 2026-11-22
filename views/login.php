@@ -73,7 +73,7 @@ wp_print_styles( Assets::styles() );
 		<?php elseif ( $view['wasReset'] ) : ?>
 			<p class="nw-login-msg nw-good" role="status"><?php esc_html_e( 'Your new password is set. Sign in with it.', 'novawork' ); ?></p>
 		<?php elseif ( $view['signedOut'] ) : ?>
-			<p class="nw-login-msg" role="status"><?php esc_html_e( 'You’ve signed out.', 'novawork' ); ?></p>
+			<p class="nw-login-msg nw-good" role="status"><?php esc_html_e( 'You’ve signed out.', 'novawork' ); ?></p>
 		<?php endif; ?>
 
 		<?php if ( 'join' === $view['mode'] ) : ?>

@@ -113,6 +113,13 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 				<input class="nw-input" type="text" spellcheck="false" maxlength="24" x-model="accentText" @change="readAccent()" @keydown.enter.prevent="readAccent()" aria-label="<?php esc_attr_e( 'Colour as hex or RGB', 'novawork' ); ?>" placeholder="#2065f5">
 			</div>
 		<?php $novawork_row_end( 'accent' ); ?>
+		<?php $novawork_row_start( 'accent_text', __( 'Text on accent', 'novawork' ), __( 'The colour of words and icons on accent buttons and badges. Auto uses white when it reads well, and dark on light colours.', 'novawork' ) ); ?>
+			<div class="nw-seg" role="radiogroup" aria-labelledby="nw-l-accent_text">
+				<button type="button" role="radio" :aria-checked="String(values.accent_text === 'auto')" :class="{ 'nw-on': values.accent_text === 'auto' }" @click="values.accent_text = 'auto'"><?php esc_html_e( 'Auto', 'novawork' ); ?></button>
+				<button type="button" role="radio" :aria-checked="String(values.accent_text === 'white')" :class="{ 'nw-on': values.accent_text === 'white' }" @click="values.accent_text = 'white'"><?php esc_html_e( 'White', 'novawork' ); ?></button>
+				<button type="button" role="radio" :aria-checked="String(values.accent_text === 'dark')" :class="{ 'nw-on': values.accent_text === 'dark' }" @click="values.accent_text = 'dark'"><?php esc_html_e( 'Dark', 'novawork' ); ?></button>
+			</div>
+		<?php $novawork_row_end( 'accent_text' ); ?>
 	</section>
 
 	<section class="nw-scard" aria-labelledby="nw-s-members">
