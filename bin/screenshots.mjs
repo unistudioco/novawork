@@ -104,10 +104,19 @@ if ( want( 1 ) ) {
 }
 
 if ( want( 2 ) ) {
-	// 2. The board.
-	await p.goto( APP + '#board' );
-	await p.waitForSelector( '.nw-card' );
-	await shot( p, 2 );
+	// 2. The board, a task's card carrying the running timer's gradient
+	// (the banner uses it too).
+	await p.goto( APP + '#focus' );
+	await p.waitForSelector( '.nw-focus' );
+	await runTimer( p );
+	try {
+		await p.goto( APP + '#board' );
+		await p.waitForSelector( '.nw-card.nw-run' );
+		await p.mouse.move( 2, 2 );
+		await shot( p, 2 );
+	} finally {
+		dropTimer();
+	}
 }
 
 if ( want( 3 ) ) {
