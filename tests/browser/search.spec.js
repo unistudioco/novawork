@@ -32,9 +32,19 @@ test( 'finds an old chat message the app has not loaded, and opens the chat on i
 	await page.keyboard.type( word );
 	const result = page.locator( '#nw-qs-res .nw-qs-item', { hasText: word } );
 	await expect( result ).toBeVisible(); // from the server
+	// A sync redraw can replace the message right after it flashed, so note
+	// the flash when it happens instead of looking for it afterwards.
+	await page.evaluate( ( mid ) => {
+		window.__flashed = false;
+		new MutationObserver( ( list ) => {
+			if ( list.some( ( r ) => r.target.matches && r.target.matches( `.nw-msg[data-mid="${ mid }"].nw-flash` ) ) ) {
+				window.__flashed = true;
+			}
+		} ).observe( document.body, { subtree: true, attributes: true, attributeFilter: [ 'class' ] } );
+	}, id );
 	await result.click();
 	await expect( page.locator( '#nw-chat' ) ).toBeVisible();
-	await expect( page.locator( `#nw-msgs .nw-msg[data-mid="${ id }"]` ) ).toHaveClass( /nw-flash/ );
+	await expect.poll( () => page.evaluate( () => window.__flashed ) ).toBe( true );
 	await ctx.close();
 } );
 

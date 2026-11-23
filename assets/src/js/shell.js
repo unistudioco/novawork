@@ -296,7 +296,8 @@ export default () => ( {
 	trackTitle() {
 		const run = this.myRun();
 		const task = this.taskOf( run );
-		return ( run ? sprintf( /* translators: %s: task title. */ __( 'Pause: %s', 'novawork' ), task ? task.title : '' ) : this.t.startTracking ) + '  (T)';
+		// The shortcut shows as a key chip in the tooltip (data-tip-key="T").
+		return run ? sprintf( /* translators: %s: task title. */ __( 'Pause: %s', 'novawork' ), task ? task.title : '' ) : this.t.startTracking;
 	},
 	toggleTracking() {
 		if ( this.myRun() ) {

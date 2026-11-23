@@ -13,6 +13,7 @@ import { startSync } from './sync.js';
 import shell from './shell.js';
 import { mountViews } from './views/index.js';
 import { setNonce } from './lib/api.js';
+import { mountTooltips } from './lib/tooltip.js';
 
 const boot = window.novawork || {};
 const store = createStore( boot );
@@ -32,3 +33,4 @@ Alpine.start();
 // Alpine reveals the page (x-cloak) in a microtask; draw the views on the
 // next frame, once things have a size (scroll positions, tab indicators).
 requestAnimationFrame( () => mountViews( sync ) );
+mountTooltips();

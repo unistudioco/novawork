@@ -43,7 +43,7 @@ wp_print_styles( Assets::styles() );
 			<div class="nw-right" id="nw-right" x-ref="right">
 				<button class="nw-iconbtn" id="nw-qs-btn" type="button" aria-label="<?php esc_attr_e( 'Search', 'novawork' ); ?>" x-html="ic('magnifying-glass', 20)" @click="qsOpenPhone()"></button>
 				<div class="nw-tracker" id="nw-tracker" :class="{ 'nw-run': !!myRun() }">
-					<button class="nw-tplay" type="button" x-html="myRun() ? icf('pause') : icf('play')" :aria-label="myRun() ? t.pauseTracking : t.startTracking" :title="trackTitle()" @click="toggleTracking()"></button>
+					<button class="nw-tplay" type="button" x-html="myRun() ? icf('pause') : icf('play')" :aria-label="myRun() ? t.pauseTracking : t.startTracking" :title="trackTitle()" data-tip-key="T" @click="toggleTracking()"></button>
 					<button class="nw-ttime" type="button" :title="myRun() ? t.timerRunningOpen : t.trackedTodayOpen" @click="go('time')"><span data-since x-show="myRun()" x-text="myRun() ? clock($store.nw.now - myRun().start) : ''"></span><span x-show="!myRun()" x-text="dur(tracked($store.nw.me, dayStart()))"></span></button>
 				</div>
 				<button class="nw-iconbtn nw-box" id="nw-chat-btn" type="button" aria-label="<?php esc_attr_e( 'Team chat', 'novawork' ); ?>" :aria-expanded="String(chatOpen)" @click="toggleChat()" :class="{ 'nw-on': chatOpen }" x-html="(chatOpen ? icf('chat-circle-dots', 17) : ic('chat-circle-dots', 17)) + ($store.nw.chat.unread ? '<i class=&quot;nw-dot-alert&quot;></i>' : '')"></button>
