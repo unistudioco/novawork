@@ -72,9 +72,20 @@ const settle = async ( page ) => {
 // start it in the app, move its start back, and delete that entry after
 // the screenshot so the demo's tracked time stays as it was.
 const RUNNING = `$e = new NovaWork\\Data\\TimeEntryRepository(); $u = get_user_by( 'login', '${ MEMBER[ 0 ] }' ); $r = $e->running_for( (int) $u->ID );`;
+const dropTimer = () => wpEval( `${ RUNNING } if ( $r ) { $e->delete( (int) $r['id'] ); }` );
 async function runTimer( page ) {
+	// A timer left running by an earlier run that broke: remove it first.
+	if ( await page.locator( '.nw-now-card.nw-run' ).count() ) {
+		dropTimer();
+		await page.reload();
+		await page.waitForSelector( '.nw-now-card:not(.nw-run) [data-act="track"]' );
+	}
+	// The page shows it running before the server has saved it: wait for the save.
+	const saved = page.waitForResponse( ( r ) => decodeURIComponent( r.url() ).includes( 'timer/start' ) && r.request().method() === 'POST' );
 	await page.locator( '.nw-now-card [data-act="track"]' ).click();
-	await page.waitForSelector( '.nw-now-card.nw-run' );
+	if ( ! ( await saved ).ok() ) {
+		throw new Error( 'The timer did not start.' );
+	}
 	wpEval( `${ RUNNING } $e->update( (int) $r['id'], array( 'started_at' => gmdate( 'Y-m-d H:i:s', time() - 84 * 60 ) ) );` );
 	// The next poll brings the earlier start.
 	await page.waitForFunction( () => Number( document.querySelector( '.nw-now-card [data-since]' )?.dataset.since ) < Date.now() - 3600e3, null, { timeout: 20000 } );
@@ -82,7 +93,6 @@ async function runTimer( page ) {
 	await page.mouse.move( 2, 2 );
 	await page.waitForFunction( () => ! document.querySelector( '.nw-tip.nw-tip-on' ) );
 }
-const dropTimer = () => wpEval( `${ RUNNING } if ( $r ) { $e->delete( (int) $r['id'] ); }` );
 
 const shot = async ( page, n ) => {
 	await settle( page );
@@ -96,8 +106,8 @@ if ( want( 1 ) ) {
 	// 1. Focus.
 	await p.goto( APP + '#focus' );
 	await p.waitForSelector( '.nw-focus' );
-	await runTimer( p );
 	try {
+		await runTimer( p );
 		await shot( p, 1 );
 	} finally {
 		dropTimer();
@@ -109,8 +119,8 @@ if ( want( 2 ) ) {
 	// (the banner uses it too).
 	await p.goto( APP + '#focus' );
 	await p.waitForSelector( '.nw-focus' );
-	await runTimer( p );
 	try {
+		await runTimer( p );
 		await p.goto( APP + '#board' );
 		await p.waitForSelector( '.nw-card.nw-run' );
 		await p.mouse.move( 2, 2 );
@@ -193,8 +203,8 @@ if ( want( 11 ) ) {
 	const phone = await signedIn( MEMBER, 'light', PHONE );
 	await phone.goto( APP + '#focus' );
 	await phone.waitForSelector( '.nw-focus' );
-	await runTimer( phone );
 	try {
+		await runTimer( phone );
 		await shot( phone, 11 );
 	} finally {
 		dropTimer();
