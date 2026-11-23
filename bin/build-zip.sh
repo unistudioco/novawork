@@ -55,7 +55,7 @@ rm -f "$COPY/composer.lock"
 find "$COPY" -name .DS_Store -delete
 
 # What must ship.
-for f in novawork.php uninstall.php readme.txt LICENSE vendor/autoload.php assets/dist/manifest.json assets/dist/i18n.json assets/alerts-worker.js languages/novawork.pot package.json vite.config.js assets/src/js/app.js; do
+for f in novawork.php uninstall.php readme.txt LICENSE vendor/autoload.php assets/dist/manifest.json assets/dist/i18n.json assets/alerts-worker.js assets/app-worker.js assets/app-icons/shape.png assets/app-icons/flag.png assets/app-icons/icon-512.png languages/novawork.pot package.json vite.config.js assets/src/js/app.js; do
 	[[ -e "$COPY/$f" ]] || fail "$f is missing from the release"
 done
 # What must never ship.

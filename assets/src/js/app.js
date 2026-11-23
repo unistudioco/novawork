@@ -14,8 +14,11 @@ import shell from './shell.js';
 import { mountViews } from './views/index.js';
 import { setNonce } from './lib/api.js';
 import { mountTooltips } from './lib/tooltip.js';
+import { mountWebApp } from './views/webapp.js';
 
 const boot = window.novawork || {};
+// First, so the browser's install offer is never missed.
+mountWebApp();
 const store = createStore( boot );
 
 Alpine.store( 'nw', store );

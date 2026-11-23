@@ -138,6 +138,15 @@ try {
 	$t->ok( 'votes' === $full['settings']['voteOrder'] && 'votes' === NovaWork\Settings::clean( 'vote_order', 'votes' ) && is_wp_error( NovaWork\Settings::clean( 'vote_order', 'random' ) ), 'vote options: most votes first by default; only votes|written accepted', $full['settings']['voteOrder'] ?? null );
 	$t->ok( 8 === $full['settings']['doneShown'] && 100 === NovaWork\Settings::clean( 'done_shown', 500 ), 'sync sends how many Done tasks the board shows (8; capped at 100)', $full['settings']['doneShown'] ?? null );
 	$t->ok( is_string( $full['nonce'] ) && is_int( $full['cursor'] ), 'nonce and cursor come back' );
+
+	// Installable app (1.1.0).
+	$manifest = NovaWork\App\WebApp::manifest();
+	$t->ok( true === NovaWork\Settings::get( 'installable' ) && 'standalone' === $manifest['display'] && NovaWork\Settings::workspace_name() === $manifest['name'], 'installable by default: the manifest names the workspace and opens it standalone', $manifest );
+	$t->ok( 0 === strpos( $manifest['start_url'], $manifest['scope'] ) && 0 === strpos( NovaWork\App\Route::login_url(), $manifest['scope'] ), 'the scope covers the workspace and its sign-in page', $manifest['scope'] );
+	$png = NovaWork\App\WebApp::icon( 'any-192' );
+	$size = is_string( $png ) ? getimagesizefromstring( $png ) : false;
+	$t->ok( is_array( $size ) && 192 === $size[0] && 192 === $size[1] && 'image/png' === $size['mime'], 'icons are made at their size as PNG', $size );
+	$t->ok( false !== strpos( NovaWork\App\WebApp::worker(), 'const NOVAWORK = ' ), 'the app worker carries its pages and offline page' );
 	foreach ( array( 'projects', 'tasks', 'decisions', 'comments', 'messages', 'timeEntries', 'notifications' ) as $k ) {
 		$t->ok( isset( $full['data'][ $k ] ) && is_array( $full['data'][ $k ] ), "snapshot has $k" );
 	}

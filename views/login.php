@@ -31,6 +31,7 @@ if ( in_array( Assets::FONTS, Assets::styles(), true ) ) {
 wp_print_styles( Assets::styles() );
 ?>
 <?php \NovaWork\App\Branding::head(); ?>
+<?php \NovaWork\App\WebApp::head(); ?>
 </head>
 <body class="nw-body">
 <main class="nw-wrap nw-gate nw-login">

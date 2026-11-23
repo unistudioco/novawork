@@ -206,6 +206,9 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_start( 'show_tour', __( 'Welcome tour', 'novawork' ), __( 'Show each member a short tour of the workspace the first time they open it. Anyone can take it again from their menu.', 'novawork' ) ); ?>
 			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-show_tour" :aria-checked="String(!!values.show_tour)" @click="values.show_tour = !values.show_tour"><span></span></button>
 		<?php $novawork_row_end( 'show_tour' ); ?>
+		<?php $novawork_row_start( 'installable', __( 'Installable app', 'novawork' ), __( 'Members can install the workspace as an app on their phone or computer, with its own icon and window. The icon is the workspace icon from Branding.', 'novawork' ) ); ?>
+			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-installable" :aria-checked="String(!!values.installable)" @click="values.installable = !values.installable"><span></span></button>
+		<?php $novawork_row_end( 'installable' ); ?>
 	</section>
 
 	<section class="nw-scard" aria-labelledby="nw-s-time">

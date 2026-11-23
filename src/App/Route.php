@@ -128,6 +128,11 @@ final class Route {
 	 */
 	public static function maybe_render(): void {
 		$var = (string) get_query_var( self::QUERY_VAR );
+		if ( 'manifest' === $var || 'app-worker' === $var || 0 === strpos( $var, 'icon-' ) ) {
+			// The installable app's files (1.1.0), for anyone: browsers fetch them without cookies.
+			WebApp::serve( $var );
+			exit;
+		}
 		if ( 'go-login' === $var ) {
 			// Keep what the link carries (an invite, a reset key, a note).
 			$keep = array();

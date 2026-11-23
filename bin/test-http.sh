@@ -62,6 +62,19 @@ echo "  · the private folder URL itself answers $DIRECT (index.php: empty page;
 ok "$(curl "${A[@]}" -X DELETE -o /dev/null -w '%{http_code}' "$API/attachments/$ID")" 200 "the uploader discards it"
 ok "$(curl -s -b "$TMP/a.jar" -o /dev/null -w '%{http_code}' "$API/attachments/$ID/file?_wpnonce=$NA")" 404 "and it is gone"
 
+echo "Installable app (no cookies, as browsers fetch the manifest)"
+MAN="$(curl -s "$NOVAWORK_URL/?novawork=manifest")"
+ok "$(echo "$MAN" | json "d['display']")" standalone "the manifest opens the workspace in its own window"
+ok "$(echo "$MAN" | json "len(d['icons'])")" 3 "with its icons"
+ICON="$(echo "$MAN" | json "d['icons'][1]['src']")"
+HDR="$(curl -s -D - -o "$TMP/icon.png" "$ICON" | tr -d '\r')"
+ok "$(echo "$HDR" | grep -i '^content-type:' | awk '{print $2}')" "image/png" "an icon is a PNG"
+ok "$(echo "$HDR" | grep -ic '^cache-control: public, max-age=31536000')" 1 "cached for good while its address is current"
+ok "$(head -c 8 "$TMP/icon.png" | od -An -c | tr -d ' ')" '211PNG\r\n032\n' "real PNG bytes"
+ok "$(curl -s "$NOVAWORK_URL/?novawork=app-worker" | grep -c 'const NOVAWORK = ')" 1 "the app worker comes with its settings"
+ok "$(curl -s -o /dev/null -w '%{http_code}' "$NOVAWORK_URL/?novawork=icon-nope")" 404 "an unknown icon is a 404"
+ok "$(curl -s -b "$TMP/a.jar" "$NOVAWORK_URL/novawork/" | grep -c 'rel="manifest"')" 1 "the workspace links its manifest"
+
 if [[ -n "${NOVAWORK_WP_PATH:-}" && -n "${TASK:-}" ]]; then
 	php ${NOVAWORK_MYSQL_SOCKET:+-d mysqli.default_socket="$NOVAWORK_MYSQL_SOCKET"} "$(command -v wp)" --path="$NOVAWORK_WP_PATH" eval \
 		"global \$wpdb; \$r = new NovaWork\\Data\\ActivityRepository(); foreach ( \$wpdb->get_col( \$wpdb->prepare( 'SELECT id FROM %i WHERE object_type = %s AND object_id = %d', \$r->table_name(), 'task', (int) '$TASK' ) ) as \$id ) { \$r->delete( (int) \$id ); }" >/dev/null 2>&1

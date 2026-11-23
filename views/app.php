@@ -29,6 +29,7 @@ if ( in_array( Assets::FONTS, Assets::styles(), true ) ) {
 wp_print_styles( Assets::styles() );
 ?>
 <?php \NovaWork\App\Branding::head(); ?>
+<?php \NovaWork\App\WebApp::head(); ?>
 </head>
 <body class="nw-body" x-data="nwApp" x-cloak>
 
@@ -89,6 +90,7 @@ wp_print_styles( Assets::styles() );
 					<div class="nw-sep"></div>
 					<div class="nw-pmenu">
 						<button class="nw-pmenu-item" type="button" @click="startTour()"><span x-html="ic('compass', 18)"></span><?php esc_html_e( 'Take the tour', 'novawork' ); ?></button>
+						<template x-if="installWay"><button class="nw-pmenu-item" type="button" @click="install()"><span x-html="ic('download-simple', 18)"></span><span x-text="installWay === 'ios' ? t.addHome : ( installWay === 'mac' ? t.addDock : t.installApp )"></span></button></template>
 						<template x-if="settingsUrl"><a class="nw-pmenu-item" :href="settingsUrl"><span x-html="ic('gear-six', 18)"></span><?php esc_html_e( 'Workspace settings', 'novawork' ); ?></a></template>
 					</div>
 				</div>

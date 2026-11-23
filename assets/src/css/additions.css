@@ -451,9 +451,9 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
    everyone, "Workspace settings" for administrators. */
 .nw-pmenu { display: grid; gap: 2px; margin: 0 -6px; }
 .nw-pmenu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--nw-fg); font: 500 13.5px/1.2 var(--nw-font-head); text-align: left; text-decoration: none; cursor: pointer; }
-.nw-pmenu-item > span { display: grid; place-items: center; color: var(--nw-muted); }
+.nw-pmenu-item > span:first-child { display: grid; place-items: center; color: var(--nw-muted); }
 .nw-pmenu-item:hover, .nw-pmenu-item:focus-visible { background: var(--nw-field); outline: none; }
-.nw-pmenu-item:hover > span { color: var(--nw-fg); }
+.nw-pmenu-item:hover > span:first-child { color: var(--nw-fg); }
 
 /* The welcome tour (owner, 2026-11-23): a spotlight that glides from one
    part of the workspace to the next, the page dimmed around it, and a card

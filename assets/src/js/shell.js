@@ -15,6 +15,7 @@ import { orderTeam } from './lib/team.js';
 import { get, del } from './lib/api.js';
 import { plainText } from './views/rich.js';
 import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
+import { installWay, installApp, themeColor } from './views/webapp.js';
 import { isPhone, PHONE, placeInd, lockBgScroll, unlockBgScroll, sheetOut, swipeToClose, toast } from './lib/ui.js';
 
 const COLORS = [ 'blue', 'indigo', 'grape', 'violet', 'pink', 'rose', 'salmon', 'red', 'peach', 'amber', 'gold', 'sand', 'lime', 'mint', 'emerald', 'aqua', 'teal', 'sky', 'slate' ];
@@ -53,6 +54,9 @@ export default () => ( {
 		{ key: 'system', icon: 'monitor', label: __( 'Auto', 'novawork' ) },
 	],
 	t: {
+		installApp: __( 'Install app', 'novawork' ),
+		addHome: __( 'Add to Home Screen', 'novawork' ),
+		addDock: __( 'Add to Dock', 'novawork' ),
 		startTracking: __( 'Start tracking', 'novawork' ),
 		pauseTracking: __( 'Pause tracking', 'novawork' ),
 		timerRunningOpen: __( 'Timer running. Open Time', 'novawork' ),
@@ -70,6 +74,8 @@ export default () => ( {
 	logoutUrl: ( window.novawork || {} ).logoutUrl || '',
 	// Administrators only: wp-admin → NovaWork → Settings (owner, 2026-11-23).
 	settingsUrl: ( window.novawork || {} ).settingsUrl || '',
+	// How this browser installs the workspace as an app ('' = it can't, or it is the app): views/webapp.js.
+	installWay: installWay(),
 	notesClosing: false,
 	theme: store( 'nw.theme' ) || 'system',
 	pop: { open: false },
@@ -97,6 +103,10 @@ export default () => ( {
 		new ResizeObserver( () => {
 			this.compact = ! this.phone && inner.clientWidth - 40 < 1060;
 		} ).observe( inner );
+
+		window.addEventListener( 'nw:install', ( e ) => {
+			this.installWay = e.detail.way;
+		} );
 
 		this.route();
 		window.addEventListener( 'hashchange', () => {
@@ -330,6 +340,11 @@ export default () => ( {
 		this.closePop( true );
 		window.dispatchEvent( new CustomEvent( 'nw:tour' ) );
 	},
+	/** "Install app" in the menu (views/webapp.js). */
+	install() {
+		this.closePop( true );
+		installApp();
+	},
 	closePop( instant ) {
 		if ( ! this.pop.open || this.pop.closing ) {
 			return;
@@ -426,6 +441,7 @@ export default () => ( {
 	setTheme( key ) {
 		this.theme = key;
 		store( 'nw.theme', key );
+		themeColor( key );
 		if ( key === 'system' ) {
 			delete document.documentElement.dataset.theme;
 		} else {

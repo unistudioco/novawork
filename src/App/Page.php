@@ -68,6 +68,8 @@ final class Page {
 				'icon'   => esc_url_raw( self::alert_icon() ),
 				'name'   => \NovaWork\Settings::workspace_name(),
 			),
+			// The installable app's worker (1.1.0); '' while the setting is off.
+			'webapp'      => WebApp::boot(),
 			'sync'        => $response->is_error() ? null : $response->get_data(),
 		);
 	}
