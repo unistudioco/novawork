@@ -1,13 +1,18 @@
 /**
- * Write the WordPress Playground blueprint for the plugin directory's Live
- * Preview: .wordpress-org/blueprints/blueprint.json (it goes to the SVN
- * assets folder as assets/blueprints/blueprint.json).
+ * Write the WordPress Playground blueprints, both from the same demo
+ * (tests/seed/dev-data.php): the visitor is signed in as "Alex" (the
+ * administrator, so the settings screen works too), with a teammate, Sam,
+ * five projects, tasks, decisions, chat and tracked time. No demo mode
+ * inside the plugin (owner decision 2026-11-22).
  *
- * The demo is the same generic studio the dev site uses (tests/seed/
- * dev-data.php), so there is one set of demo content: the visitor is signed
- * in as "Alex" (the administrator, so the settings screen works too), with a
- * teammate, Sam, five projects, tasks, decisions, chat and tracked time.
- * No demo mode inside the plugin (owner decision 2026-11-22).
+ * - .wordpress-org/blueprints/blueprint.json: the plugin directory's Live
+ *   Preview (SVN assets/blueprints/). Installs NovaWork from WordPress.org.
+ * - demo/blueprint.json: the "Try the live demo" link for the website
+ *   (owner, 2026-11-23). Installs the newest GitHub Release's novawork.zip,
+ *   so it works before WordPress.org approval and the link never changes:
+ *   https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json
+ *   Playground runs in each visitor's browser: everyone gets a private copy,
+ *   nothing they do reaches anyone else, and a reload starts fresh.
  *
  *   node bin/blueprint.mjs
  */
@@ -29,7 +34,9 @@ if ( /WP_CLI/.test( seed ) ) {
 
 const php = ( code ) => '<?php\nrequire_once \'/wordpress/wp-load.php\';\n' + code.trim() + '\n';
 
-const blueprint = {
+const RELEASE_ZIP = 'https://github.com/unistudioco/novawork/releases/latest/download/novawork.zip';
+
+const blueprint = ( plugin ) => ( {
 	$schema: 'https://playground.wordpress.net/blueprint-schema.json',
 	meta: {
 		title: 'NovaWork demo workspace',
@@ -43,7 +50,7 @@ const blueprint = {
 	steps: [
 		// Pretty links before the plugin is activated, so its address is ready.
 		{ step: 'setSiteOptions', options: { blogname: 'Studio', permalink_structure: '/%postname%/' } },
-		{ step: 'installPlugin', pluginData: { resource: 'wordpress.org/plugins', slug: 'novawork' }, options: { activate: true } },
+		{ step: 'installPlugin', pluginData: plugin, options: { activate: true } },
 		{
 			step: 'runPHP',
 			code: php( `
@@ -59,8 +66,12 @@ update_option( 'novawork_samples', 'made', false );
 		{ step: 'runPHP', code: php( "require '/tmp/novawork-demo.php';\nflush_rewrite_rules();" ) },
 		{ step: 'login', username: 'admin' },
 	],
-};
+} );
 
-mkdirSync( '.wordpress-org/blueprints', { recursive: true } );
-writeFileSync( '.wordpress-org/blueprints/blueprint.json', JSON.stringify( blueprint, null, '\t' ) + '\n' );
-console.log( 'Wrote .wordpress-org/blueprints/blueprint.json' );
+const write = ( path, data ) => {
+	mkdirSync( path.replace( /\/[^/]+$/, '' ), { recursive: true } );
+	writeFileSync( path, JSON.stringify( data, null, '\t' ) + '\n' );
+	console.log( 'Wrote ' + path );
+};
+write( '.wordpress-org/blueprints/blueprint.json', blueprint( { resource: 'wordpress.org/plugins', slug: 'novawork' } ) );
+write( 'demo/blueprint.json', blueprint( { resource: 'url', url: RELEASE_ZIP } ) );

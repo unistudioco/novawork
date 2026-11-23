@@ -12,6 +12,21 @@ The owner submits. Never submit, tag or commit to SVN on the owner's behalf.
 | 4 | Name and slug | **NovaWork, kept** (owner, after a trademark search on 2026-11-22). USPTO: no "NOVAWORK" marks. TMview: one registered "novaWORK" (NOVAWORK GmbH, Germany) in class 35, business services, not software; a French "NovaWork" in 9/41/42 has ended; the live software-class marks are "NOVAWORKS" (Novaworks LLC via WIPO in 9/41/42, NovaWorks Research in Australia in 9/42, Argentina in 42), a different word held by unrelated companies. The directory has "NovaWorks Low Stock Report for WooCommerce" (different name, slug and product). Before submitting, check that https://wordpress.org/plugins/novawork/ shows "not found". If a reviewer finds a name too close, a fuller display name such as "NovaWork – Team Workspace" separates it without changing the slug. |
 | 5 | Directory banner and icon | To design (not needed to submit; sizes in section 4). |
 
+## Live demo ("Try it")
+
+The website's demo button opens NovaWork in WordPress Playground, in the visitor's own browser: everyone gets a private copy, signed in as "Alex" with the demo team, and nothing they do reaches anyone else or any server. A reload starts fresh.
+
+- Link: https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json
+- `demo/blueprint.json` installs the newest GitHub Release's `novawork.zip` (`releases/latest/download/novawork.zip`), so the link never changes. Playground downloads it through its own CORS proxy.
+- **Every release:** build the zip, copy it to the fixed name `novawork.zip`, and publish a GitHub Release with it attached:
+  ```
+  bash bin/build-zip.sh
+  cp build/novawork-X.Y.Z.zip build/novawork.zip
+  gh release create vX.Y.Z build/novawork.zip --repo unistudioco/novawork --title "NovaWork X.Y.Z" --notes "What changed"
+  ```
+- After changing the demo data (`tests/seed/dev-data.php`), run `node bin/blueprint.mjs` and commit both blueprints.
+- After approval, the plugin directory's Live Preview uses `.wordpress-org/blueprints/blueprint.json`, which installs from WordPress.org instead.
+
 ## 2. Before submitting
 
 - [ ] Merge the phase branches into `main` on GitHub. The readme sends people to the public repository for the source, and `main` holds only the starter files today.
