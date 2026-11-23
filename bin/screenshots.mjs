@@ -187,9 +187,9 @@ if ( want( 10 ) ) {
 }
 
 if ( want( 11 ) ) {
-	// 11. On a phone, in dark mode, the timer running (the banner uses it
-	// too: bin/wporg-assets.mjs).
-	const phone = await signedIn( MEMBER, 'dark', PHONE );
+	// 11. On a phone, the timer running (the banner uses it too:
+	// bin/wporg-assets.mjs).
+	const phone = await signedIn( MEMBER, 'light', PHONE );
 	await phone.goto( APP + '#focus' );
 	await phone.waitForSelector( '.nw-focus' );
 	await runTimer( phone );
