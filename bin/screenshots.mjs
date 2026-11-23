@@ -20,7 +20,8 @@ if ( existsSync( '.dev.env' ) ) {
 	for ( const line of readFileSync( '.dev.env', 'utf8' ).split( '\n' ) ) {
 		const m = line.match( /^\s*(NOVAWORK_[A-Z_]+)="?([^"]*)"?\s*$/ );
 		if ( m && ! process.env[ m[ 1 ] ] ) {
-			process.env[ m[ 1 ] ] = m[ 2 ];
+			// Shell-style values: $HOME as the shell would expand it (as playwright.config.js does).
+			process.env[ m[ 1 ] ] = m[ 2 ].replace( /\$HOME/g, process.env.HOME || '' );
 		}
 	}
 }
