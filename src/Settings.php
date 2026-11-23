@@ -45,6 +45,7 @@ final class Settings {
 			'load_fontshare'  => true,
 			'delete_data'     => false,
 			'now_limit'       => 3,
+			'done_shown'      => 8,
 			'due_soon_days'   => 3,
 			'idle_grace'      => 60,
 			'log_days'        => 30,
@@ -121,6 +122,11 @@ final class Settings {
 			'type' => 'int',
 			'min'  => 1,
 			'max'  => 20,
+		),
+		'done_shown'      => array(
+			'type' => 'int',
+			'min'  => 1,
+			'max'  => 100,
 		),
 		'due_soon_days'   => array(
 			'type' => 'int',

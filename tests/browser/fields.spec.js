@@ -105,3 +105,31 @@ test( 'quick search rows stay compact (subtask styles never reach them)', async 
 	expect( sub.minHeight ).toBe( 'auto' );
 	expect( sub.cursor ).not.toBe( 'grab' );
 } );
+
+test( 'the header keeps its glass background while a panel is open on a scrolled page', async ( { page } ) => {
+	// Regression (owner, 2026-11-23): the scroll lock pinned the page, scrollY
+	// read 0 and the header dropped its background under every open panel.
+	await page.setViewportSize( { width: 1366, height: 700 } );
+	await page.evaluate( () => window.scrollTo( 0, 400 ) );
+	await expect( page.locator( '.nw-hdr.nw-stuck' ) ).toHaveCount( 1 );
+	await page.click( '#nw-bell-btn' );
+	await expect( page.locator( '.nw-pop.nw-notes' ) ).toBeVisible();
+	await page.waitForTimeout( 300 );
+	await expect( page.locator( '.nw-hdr.nw-stuck' ) ).toHaveCount( 1 );
+	await page.keyboard.press( 'Escape' );
+	await expect.poll( () => page.evaluate( () => window.scrollY ) ).toBe( 400 );
+} );
+
+test( 'a tracked task carries the flowing gradient on its Board card', async ( { page } ) => {
+	const T = unique( 'tracked card' );
+	await newTask( page, T );
+	const card = page.locator( 'article', { hasText: T } );
+	await card.hover();
+	await card.locator( '[data-act="track"]' ).click();
+	await expect( card ).toHaveClass( /nw-run/ );
+	// A sync redraw can replace the card between finding and reading it (a
+	// detached element reads ""), so read until a live card answers.
+	await expect.poll( () => card.evaluate( ( el ) => getComputedStyle( el, '::before' ).backgroundImage ) ).toContain( 'conic-gradient' );
+	await card.locator( '[data-act="track"]' ).click();
+	await expect( card ).not.toHaveClass( /nw-run/ );
+} );

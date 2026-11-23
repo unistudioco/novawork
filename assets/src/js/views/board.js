@@ -53,8 +53,10 @@ export function viewBoard() {
 				list.sort( byOrder );
 			}
 			const total = list.length;
+			// How many recent Done tasks show (setting done_shown, 8); the rest wait under "Show all".
+			const doneShown = Math.max( 1, Number( store().settings.doneShown ) || 8 );
 			if ( s.key === 'done' && ! ui.allDone ) {
-				list = list.slice( 0, 8 );
+				list = list.slice( 0, doneShown );
 			}
 			let warn = '';
 			if ( s.key === 'now' ) {
@@ -90,7 +92,7 @@ export function viewBoard() {
 						}${ prio( t.priority ) }${ avatars( t ) }</div></article>`;
 					} )
 					.join( '' ) +
-				( s.key === 'done' && total > 8
+				( s.key === 'done' && total > Math.max( 1, Number( store().settings.doneShown ) || 8 )
 					? `<button class="nw-btn nw-sm nw-ghost nw-add" type="button" data-tail data-act="all-done">${ esc(
 						ui.allDone ? __( 'Show recent only', 'novawork' ) : sprintf( /* translators: %d: number of done tasks. */ __( 'Show all %d', 'novawork' ), total )
 					) }</button>`

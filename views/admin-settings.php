@@ -171,6 +171,9 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_start( 'now_limit', __( 'Tasks in Now', 'novawork' ), __( 'How many tasks each person keeps in Now before the board warns them.', 'novawork' ), 'nw-f-now' ); ?>
 			<div class="nw-unit"><input class="nw-input" id="nw-f-now" type="number" min="1" max="20" x-model.number="values.now_limit"><span><?php esc_html_e( 'per person', 'novawork' ); ?></span></div>
 		<?php $novawork_row_end( 'now_limit' ); ?>
+		<?php $novawork_row_start( 'done_shown', __( 'Done on the board', 'novawork' ), __( 'How many recently finished tasks the Done column shows. The rest stay one click away under “Show all”.', 'novawork' ), 'nw-f-done' ); ?>
+			<div class="nw-unit"><input class="nw-input" id="nw-f-done" type="number" min="1" max="100" x-model.number="values.done_shown"><span><?php esc_html_e( 'tasks', 'novawork' ); ?></span></div>
+		<?php $novawork_row_end( 'done_shown' ); ?>
 		<?php $novawork_row_start( 'team_order', __( 'Team today order', 'novawork' ), __( 'How members are ordered on Focus, in the team list and in the header.', 'novawork' ), 'nw-f-order' ); ?>
 			<select id="nw-f-order" data-nw-sel data-block="1" x-model="values.team_order">
 				<option value="dynamic"><?php esc_html_e( 'Who’s here first, most tracked first', 'novawork' ); ?></option>

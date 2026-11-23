@@ -103,6 +103,12 @@ export default () => ( {
 		} );
 
 		const onScroll = () => {
+			// While a panel locks the page (lib/ui.js lockBgScroll), the body is
+			// pinned and scrollY reads 0: keep the header as it was, or it would
+			// drop its glass background under every open panel.
+			if ( document.documentElement.classList.contains( 'nw-scroll-locked' ) ) {
+				return;
+			}
 			this.stuck = window.scrollY > 4;
 		};
 		window.addEventListener( 'scroll', onScroll, { passive: true } );

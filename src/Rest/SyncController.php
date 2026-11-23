@@ -146,6 +146,7 @@ final class SyncController extends Controller {
 				'idleMinutes'    => Settings::int( 'idle_minutes' ),
 				'idleGrace'      => Settings::int( 'idle_grace', 10 ),
 				'nowLimit'       => Settings::int( 'now_limit' ),
+				'doneShown'      => Settings::int( 'done_shown' ),
 				'teamOrder'      => Settings::team_order(),
 				'decideRule'     => Settings::decide_rule(),
 				'decisionVotes'  => (bool) Settings::get( 'decision_votes' ),

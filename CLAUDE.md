@@ -639,10 +639,35 @@ running for good. Now:
 - `RELEASE.md` (never ships): the owner's decisions, the submission and SVN
   steps, and the guideline-by-guideline check. The owner submits.
 
+## Owner fixes before submitting 1.0.0 (2026-11-23)
+
+- The header keeps its glass while a panel locks the page: `onScroll` in
+  shell.js ignores scroll events while `html.nw-scroll-locked` (the pinned
+  body reads scrollY 0).
+- "Still working?" is a full-width bottom sheet on phones like every dialog
+  (`#nw-idle-dlg` width overridden in additions.css).
+- The subtask list scrolls after seven and a half rows.
+- Setting `done_shown` (8, 1–100; sync `doneShown`): how many recent tasks
+  the Board's Done column shows before "Show all N". Done tasks never
+  disappear; no separate archive (owner agreed).
+- README.md rewritten as the project's showcase (features, the small
+  things, stack, architecture, hooks, install, development, roadmap).
+
 ## Owner requests queued for later phases
 
 - (Built.) Chat @mentions: see "Chat" below.
 - (Built.) Notifications with Mine | Workspace: see "Notifications" below.
+- **1.1.0 (owner, 2026-11-23):**
+  - **Tooltips:** one modern, smooth, animated tooltip for anything that
+    needs one (icon buttons, the time tracker), replacing `title` popups.
+  - **Vote order:** setting "Order of vote options", **most votes first**
+    (default) or as written; ties keep the written order; options glide to
+    their new place when votes change.
+  - **Installable app (PWA):** a web app manifest (name, icons from the
+    workspace icon, theme colour, `display: standalone`, start URL = the
+    workspace) so it installs on Android, iPhone and desktop with its own
+    icon and window. On iPhone this is also what makes desktop alerts work.
+    No app store and no outside service.
 
 ## Design rules that bite (full list in the log)
 
@@ -654,9 +679,11 @@ running for good. Now:
 - **Never left accent bars** (`border-left` stripes, inset left shadows).
 - Avatars always the same size; status is a dot, never a ring. "You" is a small
   uppercase badge. Unassigned is `prohibit-inset` (fill).
-- Running timer: only the Focus card gets the gradient ring (`::before`, conic,
-  `@property`); the real border stays 1.5px so nothing moves. Timer text has a
-  min-width (4.2ch header, 3.6ch phone).
+- Running timer: the gradient ring (`::before`, conic, `@property`) is on the
+  Focus card and, since 2026-11-23 (owner), on the tracked task's Board card
+  and the phone's floating tracker, with the same moving colours on their
+  pause buttons (additions.css); the real border stays as it is so nothing
+  moves. Timer text has a min-width (4.2ch header, 3.6ch phone).
 - **CSS traps hit five times:** specific, namespaced class names (`.tick`,
   `.bar`, `.focus` collided, and on 2026-11-22 the subtask rows' `.nw-sub`
   restyled the quick-search results' `.nw-sub`; subtasks now use

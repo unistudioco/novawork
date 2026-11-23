@@ -135,6 +135,7 @@ try {
 	$t->ok( true === $me['online'], 'polling marks the member online' );
 	$t->ok( is_int( $me['onlineSince'] ) && $me['onlineSince'] <= $full['now'], 'members carry when they came online (for the "first online" order)', $me['onlineSince'] );
 	$t->ok( in_array( $full['settings']['teamOrder'], array( 'dynamic', 'tracked', 'online', 'fixed' ), true ) && 3 === $full['settings']['nowLimit'], 'sync sends the team order and the Now limit settings', $full['settings'] );
+	$t->ok( 8 === $full['settings']['doneShown'] && 100 === NovaWork\Settings::clean( 'done_shown', 500 ), 'sync sends how many Done tasks the board shows (8; capped at 100)', $full['settings']['doneShown'] ?? null );
 	$t->ok( is_string( $full['nonce'] ) && is_int( $full['cursor'] ), 'nonce and cursor come back' );
 	foreach ( array( 'projects', 'tasks', 'decisions', 'comments', 'messages', 'timeEntries', 'notifications' ) as $k ) {
 		$t->ok( isset( $full['data'][ $k ] ) && is_array( $full['data'][ $k ] ), "snapshot has $k" );
