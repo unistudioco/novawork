@@ -272,7 +272,7 @@ export function mountViews( sync ) {
 	bind( S );
 	bindSync( sync );
 	mountDialog();
-	mountIdle();
+	mountIdle( sync );
 	mountChat();
 	mountNotes();
 	mountTour();

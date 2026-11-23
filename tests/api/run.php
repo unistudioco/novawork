@@ -139,6 +139,20 @@ try {
 	$t->ok( 8 === $full['settings']['doneShown'] && 100 === NovaWork\Settings::clean( 'done_shown', 500 ), 'sync sends how many Done tasks the board shows (8; capped at 100)', $full['settings']['doneShown'] ?? null );
 	$t->ok( is_string( $full['nonce'] ) && is_int( $full['cursor'] ), 'nonce and cursor come back' );
 
+	// Activity across devices (owner report, 2026-11-23): each app reports its
+	// last activity with its poll; the latest on any device comes back.
+	$now_ms = NovaWork\Data\Db::now_ms();
+	delete_user_meta( $alex, NovaWork\Members::ACTIVE_META );
+	list( , $act ) = $t->call( $alex, 'GET', '/sync', array( 'active' => $now_ms - 5000 ) );
+	$t->ok( abs( $act['activeAt'] - ( $now_ms - 5000 ) ) < 2, 'a poll reports the app\'s last activity; activeAt brings back the latest', $act['activeAt'] ?? null );
+	list( , $act ) = $t->call( $alex, 'GET', '/sync', array( 'active' => $now_ms - 60000 ) );
+	$t->ok( abs( $act['activeAt'] - ( $now_ms - 5000 ) ) < 2, 'an older report from another device never moves it back', $act['activeAt'] ?? null );
+	list( , $act ) = $t->call( $alex, 'GET', '/sync', array( 'active' => $now_ms + 3600000 ) );
+	$t->ok( $act['activeAt'] <= NovaWork\Data\Db::now_ms(), 'a report from the future is held to now', $act['activeAt'] ?? null );
+	delete_user_meta( $sam, NovaWork\Members::ACTIVE_META );
+	list( , $act ) = $t->call( $sam, 'GET', '/sync' );
+	$t->ok( 0 === $act['activeAt'], 'each member hears only their own activity', $act['activeAt'] ?? null );
+
 	// Installable app (1.1.0).
 	$manifest = NovaWork\App\WebApp::manifest();
 	$t->ok( true === NovaWork\Settings::get( 'installable' ) && 'standalone' === $manifest['display'] && NovaWork\Settings::workspace_name() === $manifest['name'], 'installable by default: the manifest names the workspace and opens it standalone', $manifest );

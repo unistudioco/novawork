@@ -47,6 +47,8 @@ export function createStore( boot ) {
 		// Set when the server stopped your timer because your app went quiet
 		// (laptop folded, tab closed…): { endedAt, awayMs, taskId }.
 		timerAway: null,
+		// The member's latest activity on any device (server ms): views/idle.js.
+		activeAt: 0,
 		now: Date.now(),
 		view: 'focus',
 
@@ -95,6 +97,9 @@ export function createStore( boot ) {
 			}
 			if ( payload.timerAway ) {
 				this.timerAway = payload.timerAway;
+			}
+			if ( payload.activeAt && payload.activeAt !== this.activeAt ) {
+				this.activeAt = payload.activeAt;
 			}
 			if ( payload.cursor !== this.cursor ) {
 				this.cursor = payload.cursor;

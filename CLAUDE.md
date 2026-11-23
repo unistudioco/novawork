@@ -618,6 +618,19 @@ running for good. Now:
   The 2h 10m after that weren't counted." (said once even if page and server
   both notice).
 - Shorter gaps and plain inactivity keep the old rule ("Still working?").
+- **Activity counts across devices** (owner report, 2026-11-23: the phone
+  asked "Still working?" and paused the timer while the laptop was in use;
+  on Android "Yes" reopened it). `lib/activity.js` holds this device's last
+  activity; `sync.js` sends it as `active` (server ms) when it changed;
+  `Members::mark_active()` keeps the latest per member in user meta
+  `novawork_last_active` (every 10 s at most, never in the future); `/sync`
+  answers `activeAt`. views/idle.js asks only when the member was inactive
+  on every device, closes an open question when `activeAt` moves past the
+  value it saw when asking (server time, so latency can't fake it), clears
+  the Idle Detection API's `idleSince` on "Yes", and on waking polls first
+  (`sync.poll()` returns the poll in flight) so time worked elsewhere keeps
+  the timer. Tests: tests/browser/devices.spec.js (two devices; takes real
+  minutes) and the activity checks in tests/api/run.php.
 - Trade-off: tracking needs the workspace open in a browser that keeps the
   tab running. A browser that freezes or discards background tabs (Chrome's
   Memory Saver, phones) makes the app go quiet, and the timer stops there.

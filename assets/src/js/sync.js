@@ -4,6 +4,8 @@
  * No websockets and no outside services, so it works on any host.
  */
 import { get, setNonce } from './lib/api.js';
+import { lastActive } from './lib/activity.js';
+import { serverNow } from './store.js';
 
 const HIDDEN_MS = 30000;
 const MAX_BACKOFF_MS = 60000;
@@ -12,8 +14,22 @@ export function startSync( store ) {
 	let timer = null;
 	let busy = false;
 	let failures = 0;
+	// The last activity already reported (local ms).
+	let sentActive = 0;
 
-	async function poll() {
+	// A poll in flight; asking again waits for it (views/idle.js needs fresh data).
+	let inflight = null;
+
+	function poll() {
+		if ( ! inflight ) {
+			inflight = run().finally( () => {
+				inflight = null;
+			} );
+		}
+		return inflight;
+	}
+
+	async function run() {
 		if ( busy ) {
 			return;
 		}
@@ -22,7 +38,15 @@ export function startSync( store ) {
 		try {
 			let more = true;
 			while ( more ) {
-				const payload = await get( 'sync', store.cursor === null ? {} : { since: store.cursor } );
+				const args = store.cursor === null ? {} : { since: store.cursor };
+				// Activity on this device, so the member's other devices know
+				// they are here (views/idle.js).
+				const active = lastActive();
+				if ( active > sentActive ) {
+					args.active = Math.round( active + ( serverNow() - Date.now() ) );
+					sentActive = active;
+				}
+				const payload = await get( 'sync', args );
 				setNonce( payload.nonce );
 				store.apply( payload );
 				more = !! payload.more;

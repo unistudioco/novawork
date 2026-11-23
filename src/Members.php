@@ -50,6 +50,13 @@ final class Members {
 	public const ONLINE_WINDOW = 45;
 
 	/**
+	 * User meta: the member's latest activity (a key, click or touch) on any
+	 * of their devices, epoch milliseconds. Each app reports its own with its
+	 * poll, so "Still working?" on one device knows about the others.
+	 */
+	public const ACTIVE_META = 'novawork_last_active';
+
+	/**
 	 * Every member's user id, oldest account first.
 	 *
 	 * @return list<int>
@@ -167,6 +174,34 @@ final class Members {
 		if ( time() - $seen >= 15 ) {
 			update_user_meta( $user_id, self::SEEN_META, time() );
 		}
+	}
+
+	/**
+	 * Record activity an app reported. Keeps the latest across devices and
+	 * writes at most every 10 seconds; never in the future, nothing older than
+	 * a day.
+	 *
+	 * @param int $user_id User id.
+	 * @param int $ms      When (epoch milliseconds, server time).
+	 */
+	public static function mark_active( int $user_id, int $ms ): void {
+		$now = \NovaWork\Data\Db::now_ms();
+		$ms  = min( $ms, $now );
+		if ( $ms < $now - DAY_IN_SECONDS * 1000 ) {
+			return;
+		}
+		if ( $ms - self::active_at( $user_id ) >= 10000 ) {
+			update_user_meta( $user_id, self::ACTIVE_META, $ms );
+		}
+	}
+
+	/**
+	 * The member's latest activity on any device (epoch milliseconds), or 0.
+	 *
+	 * @param int $user_id User id.
+	 */
+	public static function active_at( int $user_id ): int {
+		return (int) get_user_meta( $user_id, self::ACTIVE_META, true );
 	}
 
 	/**

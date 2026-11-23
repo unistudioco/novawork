@@ -80,7 +80,12 @@ final class SyncController extends Controller {
 			WP_REST_Server::READABLE,
 			array( $this, 'sync' ),
 			array(
-				'since' => array(
+				'since'  => array(
+					'type'    => 'integer',
+					'minimum' => 0,
+				),
+				// The app's last activity (server ms): see Members::mark_active().
+				'active' => array(
 					'type'    => 'integer',
 					'minimum' => 0,
 				),
@@ -115,6 +120,9 @@ final class SyncController extends Controller {
 	public function sync( WP_REST_Request $request ): WP_REST_Response {
 		$me    = self::me();
 		$since = $request->get_param( 'since' );
+		if ( null !== $request->get_param( 'active' ) ) {
+			Members::mark_active( $me, (int) $request->get_param( 'active' ) );
+		}
 
 		// Before this poll counts as a sign of life: back after a folded laptop
 		// or a closed tab, a timer left running stops where they went quiet.
@@ -133,6 +141,8 @@ final class SyncController extends Controller {
 		$body   += array(
 			'now'       => Db::now_ms(),
 			'me'        => $me,
+			// The latest activity on any of this member's devices (idle rule).
+			'activeAt'  => Members::active_at( $me ),
 			'canManage' => current_user_can( \NovaWork\Access\Capabilities::MANAGE ),
 			'nonce'     => wp_create_nonce( 'wp_rest' ),
 			'members'   => Members::all(),

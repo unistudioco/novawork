@@ -17,6 +17,19 @@
  * - The server stops a timer whose app has been silent that long (see
  *   Timer::stop_if_away()), which also covers a closed tab or a flat battery.
  *   Whichever acts first, the member is told once what was not counted.
+ *
+ * Owner report (2026-11-23): with the workspace open on a phone and a laptop,
+ * the phone asked "Still working?" (and paused the timer, losing time) while
+ * the laptop was in use, and "Yes" brought the question straight back. Now:
+ * - Activity counts across devices: each app reports its last activity with
+ *   its poll (lib/activity.js, sync.js) and the server sends back the latest
+ *   on any device (`activeAt`). A device asks only when the member has been
+ *   inactive everywhere, and an open question closes by itself once they are
+ *   active on another device.
+ * - "Yes" also clears the Idle Detection API's "idle since", which kept the
+ *   question coming back on Android.
+ * - A device that wakes from sleep asks the server first: if the member kept
+ *   working elsewhere, the timer keeps running.
  */
 import { __, sprintf } from '../lib/i18n.js';
 import { icf } from '../lib/icons.js';
@@ -26,8 +39,8 @@ import { safeEffect } from '../lib/effect.js';
 import { serverNow } from '../store.js';
 import { store, myRun, task } from './model.js';
 import { stopTracking } from './actions.js';
+import { lastActive, markActive } from '../lib/activity.js';
 
-let lastActive = Date.now();
 let idle = null;
 let detector = null;
 let idleSince = null;
@@ -37,6 +50,16 @@ let lastTick = Date.now();
 /* When a stop for being away was last explained: the page and the server
    may both notice the same sleep a moment apart; say it once. */
 let toldAway = 0;
+/* The sync loop, to ask the server before acting on a wake-up. */
+let sync = null;
+/* True while a wake-up waits for the server. */
+let waking = false;
+
+/** The member's latest activity on any device, in local time (0 if none known). */
+function anywhere() {
+	const at = Number( store().activeAt ) || 0;
+	return at ? at - ( serverNow() - Date.now() ) : 0;
+}
 
 /* Same limit as the server: the idle threshold, never under three minutes. */
 const awayAfter = () => Math.max( 3 * MIN, threshold() );
@@ -61,17 +84,31 @@ function tellAway( endedAtServer, awayMs, taskId ) {
  * @param {number} wokeAt  Local time it woke up.
  * @param {number} gap     How long it slept.
  */
-function wokeUp( wokeAt, gap ) {
-	const run = myRun();
-	if ( ! run || gap < awayAfter() ) {
+async function wokeUp( wokeAt, gap ) {
+	if ( ! myRun() || gap < awayAfter() ) {
 		return;
 	}
-	const sleptAt = wokeAt - gap;
 	idle = null;
 	if ( dlg && dlg.open ) {
 		dlg.close();
 	}
-	lastActive = wokeAt;
+	// The member may have kept working on another device meanwhile: hear
+	// from the server first (it may also have stopped the timer already).
+	// Waking up is not reported as activity until then, or it would count.
+	waking = true;
+	if ( sync ) {
+		try {
+			await sync.poll();
+		} catch ( e ) {}
+	}
+	const run = myRun();
+	// Asleep here but active elsewhere: only the time away from every device counts.
+	const sleptAt = Math.max( wokeAt - gap, Math.min( anywhere(), wokeAt ) );
+	markActive( wokeAt );
+	waking = false;
+	if ( ! run || wokeAt - sleptAt < awayAfter() ) {
+		return;
+	}
 	const endServer = sleptAt + ( serverNow() - Date.now() );
 	tellAway( Math.max( endServer, run.start ), wokeAt - Math.max( sleptAt, run.start - ( serverNow() - Date.now() ) ), run.taskId );
 	stopTracking( true, Math.max( endServer, run.start ) );
@@ -92,7 +129,7 @@ async function startDetector() {
 			} else {
 				idleSince = null;
 				if ( ! idle ) {
-					lastActive = Date.now();
+					markActive();
 				}
 			}
 		} );
@@ -122,12 +159,13 @@ export function askIdlePermission() {
 
 function pause() {
 	const run = myRun();
-	const from = idle ? idle.from : Date.now();
+	// The last activity here or on any other device.
+	const from = idle ? Math.max( idle.from, Math.min( anywhere(), Date.now() ) ) : Date.now();
 	idle = null;
 	if ( dlg.open ) {
 		dlg.close();
 	}
-	lastActive = Date.now();
+	markActive();
 	if ( ! run ) {
 		return;
 	}
@@ -136,13 +174,16 @@ function pause() {
 	} );
 }
 
-function resume() {
+function resume( elsewhere = false ) {
 	idle = null;
-	lastActive = Date.now();
+	// Back now: also forget the Idle Detection API's "idle since", or the
+	// next tick would ask again (Android).
+	idleSince = null;
+	markActive();
 	if ( dlg.open ) {
 		dlg.close();
 	}
-	toast( __( 'Still tracking', 'novawork' ), 'play' );
+	toast( elsewhere ? __( 'Still tracking: you’re active on another device.', 'novawork' ) : __( 'Still tracking', 'novawork' ), 'play' );
 }
 
 /** Runs every second from the view ticker. */
@@ -158,6 +199,9 @@ export function checkIdle() {
 	if ( gap >= 2 * MIN ) {
 		wokeUp( now, gap );
 	}
+	if ( waking ) {
+		return;
+	}
 	const run = myRun();
 	if ( ! run ) {
 		if ( idle ) {
@@ -169,14 +213,22 @@ export function checkIdle() {
 		return;
 	}
 	const startedLocal = run.start - ( serverNow() - now );
+	const elsewhere = Math.min( anywhere(), now );
+	// Answered by activity on another device while the question is open:
+	// this device reports nothing while it asks, so a newer server value
+	// came from another one (compared in server time, untouched by latency).
+	if ( idle && ( Number( store().activeAt ) || 0 ) > idle.seen ) {
+		resume( true );
+		return;
+	}
 	let from = null;
 	if ( detector ) {
-		from = idleSince === null ? null : Math.max( idleSince, startedLocal );
+		from = idleSince === null ? null : Math.max( idleSince, lastActive(), elsewhere, startedLocal );
 	} else {
-		from = Math.max( lastActive, startedLocal );
+		from = Math.max( lastActive(), elsewhere, startedLocal );
 	}
 	if ( ! idle && from !== null && now - from >= threshold() ) {
-		idle = { from, asked: now };
+		idle = { from, asked: now, seen: Number( store().activeAt ) || 0 };
 		dlg.querySelector( '#nw-idle-for' ).textContent = dur( now - from );
 		if ( ! dlg.open ) {
 			dlg.showModal();
@@ -191,7 +243,8 @@ export function checkIdle() {
 	}
 }
 
-export function mountIdle() {
+export function mountIdle( syncLoop ) {
+	sync = syncLoop || null;
 	dlg = document.getElementById( 'nw-idle-dlg' );
 	if ( ! dlg ) {
 		return;
@@ -209,7 +262,7 @@ export function mountIdle() {
 			type,
 			() => {
 				if ( ! idle ) {
-					lastActive = Date.now();
+					markActive();
 				}
 			},
 			{ passive: true, capture: true }

@@ -34,7 +34,11 @@ async function trackNewTask( page, title ) {
 
 test( 'the page slept (laptop folded): it stops the timer on waking, without asking', async ( { page } ) => {
 	await trackNewTask( page, unique( 'folded' ) );
-	// Jump the page's clock 40 minutes, as a sleeping laptop does.
+	// Jump the page's clock 40 minutes, as a sleeping laptop does. The
+	// server's clock moved on too, so its record of the last activity on any
+	// device is 40 minutes old (nobody worked elsewhere meanwhile).
+	const me = await page.evaluate( () => window.novawork.me );
+	wpEval( `update_user_meta( ${ me }, NovaWork\\Members::ACTIVE_META, ( time() - 40 * 60 ) * 1000 );` );
 	await page.evaluate( () => {
 		const real = Date.now.bind( Date );
 		Date.now = () => real() + 40 * 60000;

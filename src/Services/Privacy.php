@@ -228,7 +228,8 @@ final class Privacy {
 							__( 'Workspace', 'novawork' ) => Settings::workspace_name(),
 							__( 'Member', 'novawork' )    => \NovaWork\Access\Capabilities::is_member( $id ) ? __( 'Yes', 'novawork' ) : __( 'No', 'novawork' ),
 							__( 'Colour', 'novawork' )    => (string) get_user_meta( $id, Members::COLOR_META, true ),
-							__( 'Last seen', 'novawork' ) => self::ms_date( (int) get_user_meta( $id, Members::SEEN_META, true ) ),
+							__( 'Last seen', 'novawork' ) => self::ms_date( 1000 * (int) get_user_meta( $id, Members::SEEN_META, true ) ),
+							__( 'Last active', 'novawork' ) => self::ms_date( Members::active_at( $id ) ),
 						)
 					);
 				}
@@ -307,7 +308,7 @@ final class Privacy {
 		self::unlink( new NotificationRepository(), 'notifications', array( 'actor_id' ), $id );
 		self::unlink( new InviteRepository(), 'invites', array( 'created_by', 'used_by' ), $id );
 
-		foreach ( array( Members::COLOR_META, Members::SEEN_META, Members::ONLINE_SINCE_META ) as $key ) {
+		foreach ( array( Members::COLOR_META, Members::SEEN_META, Members::ONLINE_SINCE_META, Members::ACTIVE_META ) as $key ) {
 			delete_user_meta( $id, $key );
 		}
 
