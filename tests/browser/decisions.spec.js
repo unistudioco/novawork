@@ -2,7 +2,7 @@
  * Decisions and comments in a real browser, as member A.
  */
 import { test, expect } from '@playwright/test';
-import { APP, signIn, serverData, unique, cleanUp } from './helpers.js';
+import { APP, signIn, serverData, unique, cleanUp, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {
 	await signIn( context );
@@ -100,4 +100,30 @@ test( 'someone else decides: you see "Waiting on …", not Decide', async ( { pa
 	const card = page.locator( '.nw-dec', { hasText: Q } );
 	await expect( card.locator( '.nw-waiting' ) ).toHaveText( 'Waiting on ' + other.name );
 	await expect( card.locator( '[data-act="decide"]' ) ).toHaveCount( 0 );
+} );
+
+test( 'vote order: the leading option rises to the top; "as written" keeps the order', async ( { page } ) => {
+	const Q = unique( 'vote order' );
+	const order = () => page.locator( '.nw-dec', { hasText: Q } ).locator( '.nw-vote .nw-vote-lbl' ).allTextContents();
+	const setOrder = ( v ) => wpEval( `$s = (array) get_option( NovaWork\\Settings::OPTION, array() ); $s['vote_order'] = '${ v }'; update_option( NovaWork\\Settings::OPTION, $s );` );
+	try {
+		setOrder( 'votes' );
+		await page.reload();
+		await page.locator( '[data-act="new-decision"]' ).first().waitFor();
+		await page.click( '[data-act="new-decision"]' );
+		await page.fill( '#nw-d-q', Q );
+		await page.check( '#nw-d-vote' );
+		await page.fill( '#nw-d-ol', 'Plan A\nPlan B\nPlan C' );
+		await page.click( '#nw-dlg button[value="save"]' );
+		await expect.poll( order ).toEqual( [ 'Plan A', 'Plan B', 'Plan C' ] ); // no votes: as written
+
+		await page.locator( '.nw-dec', { hasText: Q } ).locator( '.nw-vote', { hasText: 'Plan C' } ).click();
+		await expect.poll( order ).toEqual( [ 'Plan C', 'Plan A', 'Plan B' ] );
+
+		setOrder( 'written' );
+		await page.reload();
+		await expect.poll( order ).toEqual( [ 'Plan A', 'Plan B', 'Plan C' ] );
+	} finally {
+		setOrder( 'votes' );
+	}
 } );

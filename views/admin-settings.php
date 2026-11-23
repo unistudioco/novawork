@@ -191,6 +191,12 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_start( 'decision_votes', __( 'Team votes', 'novawork' ), __( 'Let a decision ask the team to vote on options. The vote advises; the decider still decides.', 'novawork' ) ); ?>
 			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-decision_votes" :aria-checked="String(!!values.decision_votes)" @click="values.decision_votes = !values.decision_votes"><span></span></button>
 		<?php $novawork_row_end( 'decision_votes' ); ?>
+		<?php $novawork_row_start( 'vote_order', __( 'Order of vote options', 'novawork' ), __( 'Most votes first lifts the leading option to the top as votes come in; ties keep the order they were written in.', 'novawork' ) ); ?>
+			<div class="nw-seg" role="radiogroup" aria-labelledby="nw-l-vote_order">
+				<button type="button" role="radio" :aria-checked="String(values.vote_order === 'votes')" :class="{ 'nw-on': values.vote_order === 'votes' }" @click="values.vote_order = 'votes'"><?php esc_html_e( 'Most votes first', 'novawork' ); ?></button>
+				<button type="button" role="radio" :aria-checked="String(values.vote_order === 'written')" :class="{ 'nw-on': values.vote_order === 'written' }" @click="values.vote_order = 'written'"><?php esc_html_e( 'As written', 'novawork' ); ?></button>
+			</div>
+		<?php $novawork_row_end( 'vote_order' ); ?>
 		<?php $novawork_row_start( 'due_soon_days', __( 'Due date reminders', 'novawork' ), __( 'Tell assignees and deciders this many days ahead. 0 tells them on the day.', 'novawork' ), 'nw-f-due' ); ?>
 			<div class="nw-unit"><input class="nw-input" id="nw-f-due" type="number" min="0" max="30" x-model.number="values.due_soon_days"><span><?php esc_html_e( 'days before', 'novawork' ); ?></span></div>
 		<?php $novawork_row_end( 'due_soon_days' ); ?>

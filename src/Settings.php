@@ -53,6 +53,7 @@ final class Settings {
 			'team_order'      => 'dynamic',
 			'decide_rule'     => 'named',
 			'decision_votes'  => true,
+			'vote_order'      => 'votes',
 			'desktop_alerts'  => true,
 			'show_tour'       => true,
 			'message_edits'   => 'always',
@@ -153,6 +154,10 @@ final class Settings {
 			'choices' => array( 'named', 'anyone' ),
 		),
 		'decision_votes'  => array( 'type' => 'bool' ),
+		'vote_order'      => array(
+			'type'    => 'choice',
+			'choices' => array( 'votes', 'written' ),
+		),
 		'desktop_alerts'  => array( 'type' => 'bool' ),
 		'show_tour'       => array( 'type' => 'bool' ),
 		'message_edits'   => array(
@@ -290,6 +295,14 @@ final class Settings {
 	public static function team_order(): string {
 		$order = (string) self::get( 'team_order' );
 		return in_array( $order, self::TEAM_ORDERS, true ) ? $order : 'dynamic';
+	}
+
+	/**
+	 * How a decision's vote options are ordered (owner, 2026-11-23): "votes"
+	 * (most votes first; ties keep the written order) or "written".
+	 */
+	public static function vote_order(): string {
+		return 'written' === self::get( 'vote_order' ) ? 'written' : 'votes';
 	}
 
 	/**

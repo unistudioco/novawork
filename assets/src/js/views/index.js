@@ -46,6 +46,32 @@ function busy() {
 	return !! drag || !! ( box && main.contains( box ) );
 }
 
+/*
+ * Elements marked data-flip="key" glide from where they were to where the
+ * redraw put them (owner, 2026-11-23: a vote option rising to the top).
+ * Off with reduced motion.
+ */
+function flipBefore( root ) {
+	const at = new Map();
+	if ( window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+		return at;
+	}
+	root.querySelectorAll( '[data-flip]' ).forEach( ( el ) => at.set( el.dataset.flip, el.getBoundingClientRect().top ) );
+	return at;
+}
+function flipAfter( root, before ) {
+	if ( ! before.size ) {
+		return;
+	}
+	root.querySelectorAll( '[data-flip]' ).forEach( ( el ) => {
+		const was = before.get( el.dataset.flip );
+		const dy = was === undefined ? 0 : was - el.getBoundingClientRect().top;
+		if ( Math.abs( dy ) > 1 && el.animate ) {
+			el.animate( [ { transform: `translateY(${ dy }px)` }, { transform: 'none' } ], { duration: 360, easing: 'cubic-bezier(.2, .9, .25, 1)' } );
+		}
+	} );
+}
+
 function paint( html ) {
 	if ( busy() ) {
 		pending = html;
@@ -57,7 +83,9 @@ function paint( html ) {
 	} else {
 		rememberRoadmapScroll( main );
 	}
+	const before = flipBefore( main );
 	main.innerHTML = html;
+	flipAfter( main, before );
 	enhance( main );
 	const wire = WIRE[ store().view ];
 	if ( wire ) {

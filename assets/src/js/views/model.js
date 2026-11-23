@@ -235,13 +235,19 @@ export function votesHTML( d, act, live ) {
 	} );
 	const total = Object.keys( votes ).length;
 	const mine = votes[ S.me ];
-	const rows = ( d.options || [] )
-		.map( ( o ) => {
+	// Most votes first (setting vote_order, the default); ties keep the
+	// written order. data-flip lets an option glide to its new place.
+	const options = ( d.options || [] ).map( ( o, i ) => ( { o, i, n: counts[ o.key ] || 0 } ) );
+	if ( S.settings.voteOrder !== 'written' ) {
+		options.sort( ( a, b ) => b.n - a.n || a.i - b.i );
+	}
+	const rows = options
+		.map( ( { o } ) => {
 			const n = counts[ o.key ] || 0;
 			const pct = total ? Math.round( ( n / total ) * 100 ) : 0;
 			const who = Object.keys( votes ).filter( ( uid ) => votes[ uid ] === o.key );
 			const label = esc( sprintf( /* translators: 1: option, 2: number of votes. */ __( '%1$s, %2$d votes', 'novawork' ), o.label, n ) );
-			return `<button class="nw-vote${ mine === o.key ? ' nw-on' : '' }" type="button" data-act="${ act }" data-id="${ d.id }" data-opt="${ esc( o.key ) }" aria-pressed="${ mine === o.key }" aria-label="${ label }"${ live ? '' : ' disabled' }><span class="nw-vote-fill" style="width:${ pct }%"></span><span class="nw-vote-lbl">${ esc( o.label ) }</span>${
+			return `<button class="nw-vote${ mine === o.key ? ' nw-on' : '' }" type="button" data-flip="vote-${ d.id }-${ esc( o.key ) }" data-act="${ act }" data-id="${ d.id }" data-opt="${ esc( o.key ) }" aria-pressed="${ mine === o.key }" aria-label="${ label }"${ live ? '' : ' disabled' }><span class="nw-vote-fill" style="width:${ pct }%"></span><span class="nw-vote-lbl">${ esc( o.label ) }</span>${
 				who.length ? `<span class="nw-avs">${ who.map( ( uid ) => avatar( uid ) ).join( '' ) }</span>` : ''
 			}<span class="nw-vote-n">${ n }</span></button>`;
 		} )
