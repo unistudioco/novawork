@@ -60,7 +60,7 @@ It is not another everything-tool. Few buttons, no setup project, nothing to con
 
 = What it is not =
 
-NovaWork is deliberately small. There are no Gantt charts, custom fields, automations or client portals, and there won't be. If you need those, a large SaaS tool is the better fit. If your team wants a quiet place to agree on what matters and do it, NovaWork is for you.
+NovaWork is deliberately small. There are no Gantt charts, custom fields, automation builders or client portals, and there won't be. If you need those, a large SaaS tool is the better fit. If your team wants a quiet place to agree on what matters and do it, NovaWork is for you.
 
 = Source code =
 
