@@ -143,6 +143,7 @@ NovaWork is free and complete. Nothing is locked.
 8. Time: who tracked what, by day, week, month or year.
 9. Dark mode.
 10. Settings, in wp-admin.
+11. On a phone: the same workspace, ready to install as an app.
 
 == External services ==
 

@@ -5,7 +5,8 @@
  * Run on a site with the generic demo data (bash bin/seed-dev.sh) and with
  * Fontshare reachable, so the real typefaces show:
  *
- *   node bin/screenshots.mjs
+ *   node bin/screenshots.mjs        (all of them)
+ *   node bin/screenshots.mjs 11     (only the ones named)
  *
  * Reads NOVAWORK_URL, NOVAWORK_USER_A (a member) and NOVAWORK_ADMIN from
  * .dev.env, like the browser tests. Uses the installed Chrome; set
@@ -31,8 +32,15 @@ mkdirSync( OUT, { recursive: true } );
 
 const browser = await chromium.launch( process.env.NOVAWORK_CHROME ? { executablePath: process.env.NOVAWORK_CHROME } : { channel: 'chrome' } );
 
-async function signedIn( [ user, pass ], colorScheme = 'light' ) {
-	const context = await browser.newContext( { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, colorScheme } );
+// Numbers on the command line take only those screenshots.
+const only = process.argv.slice( 2 ).map( Number ).filter( Boolean );
+const want = ( n ) => ! only.length || only.includes( n );
+
+// A phone: an iPhone-sized screen with touch, as the installed app shows it.
+const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
+
+async function signedIn( [ user, pass ], colorScheme = 'light', device = null ) {
+	const context = await browser.newContext( { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, colorScheme, ...( device || {} ) } );
 	await context.addCookies( [ { name: 'wordpress_test_cookie', value: 'WP Cookie check', url: BASE } ] );
 	const res = await context.request.post( BASE + '/wp-login.php', { form: { log: user, pwd: pass, testcookie: '1' }, maxRedirects: 0 } );
 	if ( res.status() !== 302 ) {
@@ -66,63 +74,93 @@ const shot = async ( page, n ) => {
 
 const p = await signedIn( MEMBER );
 
-// 1. Focus.
-await p.goto( APP + '#focus' );
-await p.waitForSelector( '.nw-focus' );
-await shot( p, 1 );
+if ( want( 1 ) ) {
+	// 1. Focus.
+	await p.goto( APP + '#focus' );
+	await p.waitForSelector( '.nw-focus' );
+	await shot( p, 1 );
+}
 
-// 2. The board.
-await p.goto( APP + '#board' );
-await p.waitForSelector( '.nw-card' );
-await shot( p, 2 );
+if ( want( 2 ) ) {
+	// 2. The board.
+	await p.goto( APP + '#board' );
+	await p.waitForSelector( '.nw-card' );
+	await shot( p, 2 );
+}
 
-// 3. A task with its checklist: the first card that has subtasks.
-const withSubs = p.locator( '.nw-card:has(.nw-subtask-n)' ).first();
-await ( ( await withSubs.count() ) ? withSubs : p.locator( '.nw-card' ).first() ).click();
-await p.waitForSelector( '#nw-dlg[open]' );
-await shot( p, 3 );
-await p.keyboard.press( 'Escape' );
+if ( want( 3 ) ) {
+	// 3. A task with its checklist: the first card that has subtasks.
+	await p.goto( APP + '#board' );
+	await p.waitForSelector( '.nw-card' );
+	const withSubs = p.locator( '.nw-card:has(.nw-subtask-n)' ).first();
+	await ( ( await withSubs.count() ) ? withSubs : p.locator( '.nw-card' ).first() ).click();
+	await p.waitForSelector( '#nw-dlg[open]' );
+	await shot( p, 3 );
+	await p.keyboard.press( 'Escape' );
+}
 
-// 4. Roadmap.
-await p.goto( APP + '#roadmap' );
-await p.waitForSelector( '.nw-proj' );
-await shot( p, 4 );
+if ( want( 4 ) ) {
+	// 4. Roadmap.
+	await p.goto( APP + '#roadmap' );
+	await p.waitForSelector( '.nw-proj' );
+	await shot( p, 4 );
+}
 
-// 5. Decisions.
-await p.goto( APP + '#decisions' );
-await p.waitForSelector( '.nw-dec' );
-await shot( p, 5 );
+if ( want( 5 ) ) {
+	// 5. Decisions.
+	await p.goto( APP + '#decisions' );
+	await p.waitForSelector( '.nw-dec' );
+	await shot( p, 5 );
+}
 
-// 6. Chat beside the board.
-await p.goto( APP + '#board' );
-await p.waitForSelector( '.nw-card' );
-await p.click( '#nw-chat-btn' );
-await p.waitForSelector( '#nw-chat:visible' );
-await shot( p, 6 );
-await p.click( '#nw-chat-close' );
+if ( want( 6 ) ) {
+	// 6. Chat beside the board.
+	await p.goto( APP + '#board' );
+	await p.waitForSelector( '.nw-card' );
+	await p.click( '#nw-chat-btn' );
+	await p.waitForSelector( '#nw-chat:visible' );
+	await shot( p, 6 );
+	await p.click( '#nw-chat-close' );
+}
 
-// 7. Notifications.
-await p.goto( APP + '#focus' );
-await p.waitForSelector( '.nw-focus' );
-await p.click( '#nw-bell-btn' );
-await p.waitForSelector( '.nw-pop.nw-notes .nw-nlist' );
-await shot( p, 7 );
+if ( want( 7 ) ) {
+	// 7. Notifications.
+	await p.goto( APP + '#focus' );
+	await p.waitForSelector( '.nw-focus' );
+	await p.click( '#nw-bell-btn' );
+	await p.waitForSelector( '.nw-pop.nw-notes .nw-nlist' );
+	await shot( p, 7 );
+}
 
-// 8. Time.
-await p.goto( APP + '#time' );
-await p.waitForTimeout( 1200 );
-await shot( p, 8 );
+if ( want( 8 ) ) {
+	// 8. Time.
+	await p.goto( APP + '#time' );
+	await p.waitForTimeout( 1200 );
+	await shot( p, 8 );
+}
 
-// 9. Dark mode.
-const dark = await signedIn( MEMBER, 'dark' );
-await dark.goto( APP + '#board' );
-await dark.waitForSelector( '.nw-card' );
-await shot( dark, 9 );
+if ( want( 9 ) ) {
+	// 9. Dark mode.
+	const dark = await signedIn( MEMBER, 'dark' );
+	await dark.goto( APP + '#board' );
+	await dark.waitForSelector( '.nw-card' );
+	await shot( dark, 9 );
+}
 
-// 10. Settings in wp-admin.
-const admin = await signedIn( ADMIN );
-await admin.goto( BASE + '/wp-admin/admin.php?page=novawork-settings' );
-await admin.waitForSelector( '.nw-admin .nw-scard' );
-await shot( admin, 10 );
+if ( want( 10 ) ) {
+	// 10. Settings in wp-admin.
+	const admin = await signedIn( ADMIN );
+	await admin.goto( BASE + '/wp-admin/admin.php?page=novawork-settings' );
+	await admin.waitForSelector( '.nw-admin .nw-scard' );
+	await shot( admin, 10 );
+}
+
+if ( want( 11 ) ) {
+	// 11. On a phone (the banner uses it too: bin/wporg-assets.mjs).
+	const phone = await signedIn( MEMBER, 'light', PHONE );
+	await phone.goto( APP + '#focus' );
+	await phone.waitForSelector( '.nw-focus' );
+	await shot( phone, 11 );
+}
 
 await browser.close();
