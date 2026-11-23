@@ -39,20 +39,20 @@ const ICON = `${ HEAD }<div class="mark" id="art" style="width:128px;height:128p
 // Banner, laid out at 772x250 and rendered at 1x and 2x.
 const BANNER = `${ HEAD }<style>
 #art{position:relative;width:772px;height:250px;overflow:hidden;background:#f7f5f2}
-.copy{position:absolute;left:44px;top:0;bottom:0;width:316px;display:flex;flex-direction:column;justify-content:center}
+.copy{position:absolute;left:48px;top:0;bottom:0;width:300px;display:flex;flex-direction:column;justify-content:center}
 .brand{display:flex;align-items:center;gap:9px}
 .brand .mark{width:28px;height:28px;border-radius:7px}
 .name{font:700 21px/1 Satoshi,Inter,sans-serif;letter-spacing:-.01em;color:#1d1919}
-.line{margin:18px 0 0;font:700 31px/1.12 Satoshi,Inter,sans-serif;letter-spacing:-.02em;color:#1d1919;white-space:nowrap}
+.line{margin:20px 0 0;font:700 24px/1.2 Satoshi,Inter,sans-serif;letter-spacing:-.015em;color:#1d1919;white-space:nowrap}
 .line em{font-style:normal;color:${ BLUE }}
-.sub{margin:12px 0 0;font:400 13.5px/1.5 Supreme,Inter,sans-serif;color:#6f6964;white-space:nowrap}
-.frame{position:absolute;left:472px;top:30px;width:420px;height:260px;border-radius:14px;overflow:hidden;background:#fff;border:1px solid #e6e1db;box-shadow:0 24px 60px -24px rgba(29,25,25,.28)}
-.frame img{display:block;width:560px;margin:-6px 0 0 -18px}
-.phone{position:absolute;left:366px;top:40px;width:124px;height:268px;box-sizing:border-box;border:4px solid #1d1919;border-radius:24px;overflow:hidden;background:#f7f5f2;padding-top:16px;box-shadow:0 22px 50px -18px rgba(29,25,25,.38)}
+.sub{margin:10px 0 0;font:400 13.5px/1.5 Supreme,Inter,sans-serif;color:#6f6964;white-space:nowrap}
+.frame{position:absolute;left:500px;top:30px;width:420px;height:260px;border-radius:14px;overflow:hidden;background:#fff;border:1px solid #e6e1db;box-shadow:0 24px 60px -24px rgba(29,25,25,.28)}
+.frame img{display:block;width:520px;margin:-6px 0 0 -16px}
+.phone{position:absolute;left:392px;top:40px;width:124px;height:268px;box-sizing:border-box;border:4px solid #1d1919;border-radius:24px;overflow:hidden;background:#f7f5f2;padding-top:16px;box-shadow:0 22px 50px -18px rgba(29,25,25,.38)}
 .phone img{display:block;width:100%}
 .phone .island{position:absolute;left:50%;top:6px;width:34px;height:10px;margin-left:-17px;border-radius:6px;background:#1d1919}
 </style><div id="art"><div class="copy"><div class="brand"><div class="mark">${ flag( 17 ) }</div><div class="name">NovaWork</div></div>
-<p class="line">The <em>calm</em> workspace<br>for small teams.</p>
+<p class="line">Less noise. <em>More done.</em></p>
 <p class="sub">Focus, board, roadmap, decisions and chat,<br>right inside WordPress. Free, on any device.</p></div>
 <div class="frame"><img src="${ shot }" alt=""></div>
 <div class="phone"><img src="${ phone }" alt=""><span class="island"></span></div></div>`;

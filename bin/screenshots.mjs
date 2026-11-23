@@ -14,6 +14,7 @@
  */
 import { chromium } from '@playwright/test';
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { wpEval } from '../tests/browser/helpers.js';
 
 if ( existsSync( '.dev.env' ) ) {
 	for ( const line of readFileSync( '.dev.env', 'utf8' ).split( '\n' ) ) {
@@ -66,6 +67,22 @@ const settle = async ( page ) => {
 	await page.evaluate( () => document.fonts.ready );
 	await page.waitForTimeout( 900 );
 };
+// Focus shows the timer running (its flowing gradient), at about 1h 24m:
+// start it in the app, move its start back, and delete that entry after
+// the screenshot so the demo's tracked time stays as it was.
+const RUNNING = `$e = new NovaWork\\Data\\TimeEntryRepository(); $u = get_user_by( 'login', '${ MEMBER[ 0 ] }' ); $r = $e->running_for( (int) $u->ID );`;
+async function runTimer( page ) {
+	await page.locator( '.nw-now-card [data-act="track"]' ).click();
+	await page.waitForSelector( '.nw-now-card.nw-run' );
+	wpEval( `${ RUNNING } $e->update( (int) $r['id'], array( 'started_at' => gmdate( 'Y-m-d H:i:s', time() - 84 * 60 ) ) );` );
+	// The next poll brings the earlier start.
+	await page.waitForFunction( () => Number( document.querySelector( '.nw-now-card [data-since]' )?.dataset.since ) < Date.now() - 3600e3, null, { timeout: 20000 } );
+	// Leave the button, so its tooltip goes.
+	await page.mouse.move( 2, 2 );
+	await page.waitForFunction( () => ! document.querySelector( '.nw-tip.nw-tip-on' ) );
+}
+const dropTimer = () => wpEval( `${ RUNNING } if ( $r ) { $e->delete( (int) $r['id'] ); }` );
+
 const shot = async ( page, n ) => {
 	await settle( page );
 	await page.screenshot( { path: `${ OUT }screenshot-${ n }.png` } );
@@ -78,7 +95,12 @@ if ( want( 1 ) ) {
 	// 1. Focus.
 	await p.goto( APP + '#focus' );
 	await p.waitForSelector( '.nw-focus' );
-	await shot( p, 1 );
+	await runTimer( p );
+	try {
+		await shot( p, 1 );
+	} finally {
+		dropTimer();
+	}
 }
 
 if ( want( 2 ) ) {
@@ -156,11 +178,17 @@ if ( want( 10 ) ) {
 }
 
 if ( want( 11 ) ) {
-	// 11. On a phone (the banner uses it too: bin/wporg-assets.mjs).
-	const phone = await signedIn( MEMBER, 'light', PHONE );
+	// 11. On a phone, in dark mode, the timer running (the banner uses it
+	// too: bin/wporg-assets.mjs).
+	const phone = await signedIn( MEMBER, 'dark', PHONE );
 	await phone.goto( APP + '#focus' );
 	await phone.waitForSelector( '.nw-focus' );
-	await shot( phone, 11 );
+	await runTimer( phone );
+	try {
+		await shot( phone, 11 );
+	} finally {
+		dropTimer();
+	}
 }
 
 await browser.close();
