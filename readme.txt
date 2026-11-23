@@ -174,6 +174,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * New: vote options with the most votes rise to the top, and glide to their new place as votes change. Setting: Order of vote options (most votes first, or as written).
 * New: one smooth tooltip for icon buttons and the timer, with the T shortcut, instead of the browser's plain popups.
 * Fix: with the workspace open on two devices, "Still working?" no longer appears on one while you work on the other, and never pauses the timer then; it closes by itself when you're active elsewhere. "I'm still working" no longer reopens on Android.
+* Fix: the Time page's Today chart now covers the whole day, 00:00 to 23:59; time tracked after midnight was counted but not drawn.
 * Fix: the personal data export showed the wrong "Last seen" date.
 
 = 1.0.0 =

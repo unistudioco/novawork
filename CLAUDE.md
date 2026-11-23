@@ -737,6 +737,8 @@ running for good. Now:
     (iOS 16.4+). Not verified on a device yet; test before promising it.
 - `.nw-pmenu-item > span:first-child` is the icon (muted); a label in a
   `span` keeps the ink colour.
+- Time → Today charts the whole day, hours 0 to 23 (owner, 2026-11-23; the
+  prototype's 6 to 24 hid time tracked after midnight).
 - Container tests: `WP_CLI_ALLOW_ROOT=1` for helpers that run WP-CLI; the
   dev server is `127.0.0.1:8080` (curl with `--connect-to
   novawork.local:80:127.0.0.1:8080 --noproxy novawork.local`).

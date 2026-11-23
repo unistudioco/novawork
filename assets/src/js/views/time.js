@@ -119,7 +119,9 @@ function body( S, range, tWho ) {
 	const buckets = [];
 	const d0 = new Date( from );
 	if ( range === 'today' ) {
-		for ( let h = 6; h < 24; h++ ) {
+		// The whole day, 00:00 to 23:59 (owner, 2026-11-23: the prototype's
+		// 6 to 24 hid time tracked after midnight).
+		for ( let h = 0; h < 24; h++ ) {
 			const a = new Date( d0 );
 			a.setHours( h );
 			buckets.push( { a: +a, b: +a + HOUR, l: h % 3 === 0 ? String( h ) : '', now: new Date( now ).getHours() === h } );
