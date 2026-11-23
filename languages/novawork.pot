@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: NovaWork 1.0.0\n"
+"Project-Id-Version: NovaWork 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/novawork/\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-23T01:54:11+00:00\n"
+"POT-Creation-Date: 2026-11-23T02:31:08+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -118,6 +118,24 @@ msgstr ""
 
 #: src/App/Login.php:251
 msgid "That email or username and password don’t match. Try again, or reset your password."
+msgstr ""
+
+#: src/App/WebApp.php:209
+msgid "Your team’s projects, tasks, decisions and chat."
+msgstr ""
+
+#: src/App/WebApp.php:244
+msgid "You’re offline"
+msgstr ""
+
+#. translators: %s: the workspace's name.
+#: src/App/WebApp.php:246
+#, php-format
+msgid "%s needs a connection. It opens again as soon as you’re back online."
+msgstr ""
+
+#: src/App/WebApp.php:247
+msgid "Try again"
 msgstr ""
 
 #: src/Rest/ChatController.php:118
@@ -391,7 +409,7 @@ msgid "NovaWork profile"
 msgstr ""
 
 #: src/Services/Privacy.php:134
-#: views/app.php:140
+#: views/app.php:142
 msgid "Message"
 msgstr ""
 
@@ -452,7 +470,7 @@ msgstr ""
 
 #: src/Services/Privacy.php:183
 #: src/Services/Privacy.php:216
-#: views/app.php:129
+#: views/app.php:131
 msgid "When"
 msgstr ""
 
@@ -592,40 +610,40 @@ msgstr ""
 msgid "The timer didn’t start. Try again."
 msgstr ""
 
-#: src/Settings.php:189
-#: src/Settings.php:237
+#: src/Settings.php:196
+#: src/Settings.php:244
 msgid "Unknown setting."
 msgstr ""
 
-#: src/Settings.php:194
+#: src/Settings.php:201
 msgid "Enter a number."
 msgstr ""
 
-#: src/Settings.php:201
+#: src/Settings.php:208
 msgid "Choose one of the options."
 msgstr ""
 
-#: src/Settings.php:213
+#: src/Settings.php:220
 msgid "Allow at least one type of file."
 msgstr ""
 
-#: src/Settings.php:217
+#: src/Settings.php:224
 msgid "Enter an address, such as “work”."
 msgstr ""
 
-#: src/Settings.php:220
+#: src/Settings.php:227
 msgid "WordPress already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:224
+#: src/Settings.php:231
 msgid "A page of this site already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:230
+#: src/Settings.php:237
 msgid "Choose an image from the media library."
 msgstr ""
 
-#: src/Settings.php:235
+#: src/Settings.php:242
 #: assets/src/js/settings.js:92
 msgid "Enter a colour as #hex or rgb(r, g, b)."
 msgstr ""
@@ -744,7 +762,7 @@ msgid "The colour of words and icons on accent buttons and badges. Auto uses whi
 msgstr ""
 
 #: views/admin-settings.php:118
-#: assets/src/js/shell.js:53
+#: assets/src/js/shell.js:54
 msgid "Auto"
 msgstr ""
 
@@ -753,7 +771,7 @@ msgid "White"
 msgstr ""
 
 #: views/admin-settings.php:120
-#: assets/src/js/shell.js:52
+#: assets/src/js/shell.js:53
 msgid "Dark"
 msgstr ""
 
@@ -814,9 +832,9 @@ msgid "After this, an unused link stops working."
 msgstr ""
 
 #: views/admin-settings.php:165
-#: views/admin-settings.php:247
-#: views/admin-settings.php:250
-#: views/admin-settings.php:253
+#: views/admin-settings.php:256
+#: views/admin-settings.php:259
+#: views/admin-settings.php:262
 msgid "days"
 msgstr ""
 
@@ -898,292 +916,316 @@ msgid "Let a decision ask the team to vote on options. The vote advises; the dec
 msgstr ""
 
 #: views/admin-settings.php:194
-msgid "Due date reminders"
+msgid "Order of vote options"
 msgstr ""
 
 #: views/admin-settings.php:194
+msgid "Most votes first lifts the leading option to the top as votes come in; ties keep the order they were written in."
+msgstr ""
+
+#: views/admin-settings.php:196
+msgid "Most votes first"
+msgstr ""
+
+#: views/admin-settings.php:197
+msgid "As written"
+msgstr ""
+
+#: views/admin-settings.php:200
+msgid "Due date reminders"
+msgstr ""
+
+#: views/admin-settings.php:200
 msgid "Tell assignees and deciders this many days ahead. 0 tells them on the day."
 msgstr ""
 
-#: views/admin-settings.php:195
+#: views/admin-settings.php:201
 msgid "days before"
 msgstr ""
 
-#: views/admin-settings.php:197
+#: views/admin-settings.php:203
 msgid "Desktop alerts"
 msgstr ""
 
-#: views/admin-settings.php:197
+#: views/admin-settings.php:203
 msgid "Members can choose to get a browser alert for their notifications while the workspace is open in a background tab. Each member turns it on for their own device, from the bell."
 msgstr ""
 
-#: views/admin-settings.php:200
+#: views/admin-settings.php:206
 msgid "Welcome tour"
 msgstr ""
 
-#: views/admin-settings.php:200
+#: views/admin-settings.php:206
 msgid "Show each member a short tour of the workspace the first time they open it. Anyone can take it again from their menu."
 msgstr ""
 
-#: views/admin-settings.php:206
+#: views/admin-settings.php:209
+msgid "Installable app"
+msgstr ""
+
+#: views/admin-settings.php:209
+msgid "Members can install the workspace as an app on their phone or computer, with its own icon and window. The icon is the workspace icon from Branding."
+msgstr ""
+
+#: views/admin-settings.php:215
 msgid "Time tracking"
 msgstr ""
 
-#: views/admin-settings.php:207
+#: views/admin-settings.php:216
 msgid "Inactivity reminder"
 msgstr ""
 
-#: views/admin-settings.php:207
+#: views/admin-settings.php:216
 msgid "While a timer runs, ask “Still working?” after this long without activity."
 msgstr ""
 
-#: views/admin-settings.php:208
+#: views/admin-settings.php:217
 msgid "minutes"
 msgstr ""
 
-#: views/admin-settings.php:210
+#: views/admin-settings.php:219
 msgid "Time to answer"
 msgstr ""
 
-#: views/admin-settings.php:210
+#: views/admin-settings.php:219
 msgid "Without an answer, the timer stops at the moment activity stopped."
 msgstr ""
 
-#: views/admin-settings.php:211
-#: views/admin-settings.php:244
+#: views/admin-settings.php:220
+#: views/admin-settings.php:253
 msgid "seconds"
 msgstr ""
 
-#: views/admin-settings.php:213
+#: views/admin-settings.php:222
 msgid "Week starts on"
 msgstr ""
 
-#: views/admin-settings.php:213
+#: views/admin-settings.php:222
 msgid "For “This week” in Time."
 msgstr ""
 
-#: views/admin-settings.php:223
+#: views/admin-settings.php:232
 msgid "Chat, comments and files"
 msgstr ""
 
-#: views/admin-settings.php:224
+#: views/admin-settings.php:233
 msgid "Editing and deleting"
 msgstr ""
 
-#: views/admin-settings.php:224
+#: views/admin-settings.php:233
 msgid "Whether members can change or remove their own messages and comments. Administrators can always delete."
 msgstr ""
 
-#: views/admin-settings.php:226
+#: views/admin-settings.php:235
 msgid "Always"
 msgstr ""
 
-#: views/admin-settings.php:227
+#: views/admin-settings.php:236
 msgid "For a while"
 msgstr ""
 
-#: views/admin-settings.php:228
+#: views/admin-settings.php:237
 msgid "Never"
 msgstr ""
 
-#: views/admin-settings.php:230
+#: views/admin-settings.php:239
 msgid "For"
 msgstr ""
 
-#: views/admin-settings.php:230
+#: views/admin-settings.php:239
 msgid "minutes after posting"
 msgstr ""
 
-#: views/admin-settings.php:232
+#: views/admin-settings.php:241
 msgid "File upload max size"
 msgstr ""
 
-#: views/admin-settings.php:236
+#: views/admin-settings.php:245
 msgid "File types"
 msgstr ""
 
-#: views/admin-settings.php:236
+#: views/admin-settings.php:245
 msgid "Extensions members can share, separated by commas. Scripts and web pages are never allowed."
 msgstr ""
 
-#: views/admin-settings.php:242
+#: views/admin-settings.php:251
 msgid "Housekeeping"
 msgstr ""
 
-#: views/admin-settings.php:243
+#: views/admin-settings.php:252
 msgid "Check for changes every"
 msgstr ""
 
-#: views/admin-settings.php:243
+#: views/admin-settings.php:252
 msgid "How often an open app asks for news. Lower feels more live; higher is lighter on the server."
 msgstr ""
 
-#: views/admin-settings.php:246
+#: views/admin-settings.php:255
 msgid "Keep the team feed"
 msgstr ""
 
-#: views/admin-settings.php:246
+#: views/admin-settings.php:255
 msgid "Notifications → Workspace."
 msgstr ""
 
-#: views/admin-settings.php:249
+#: views/admin-settings.php:258
 msgid "Keep read notifications"
 msgstr ""
 
-#: views/admin-settings.php:249
+#: views/admin-settings.php:258
 msgid "Unread ones always stay."
 msgstr ""
 
-#: views/admin-settings.php:252
+#: views/admin-settings.php:261
 msgid "Keep the change history"
 msgstr ""
 
-#: views/admin-settings.php:252
+#: views/admin-settings.php:261
 msgid "A device away for longer than this reloads everything when it comes back."
 msgstr ""
 
-#: views/admin-settings.php:258
+#: views/admin-settings.php:267
 msgid "Fonts and privacy"
 msgstr ""
 
-#: views/admin-settings.php:259
+#: views/admin-settings.php:268
 msgid "Load Satoshi and Supreme from Fontshare"
 msgstr ""
 
-#: views/admin-settings.php:259
+#: views/admin-settings.php:268
 msgid "NovaWork’s typefaces come from Fontshare (Indian Type Foundry) each time the workspace opens, which shares the visitor’s IP address with Fontshare. Turn this off to use the device’s own fonts and load nothing from outside your site."
 msgstr ""
 
-#: views/admin-settings.php:265
+#: views/admin-settings.php:274
 msgid "Data"
 msgstr ""
 
-#: views/admin-settings.php:267
+#: views/admin-settings.php:276
 msgid "Sample items"
 msgstr ""
 
-#: views/admin-settings.php:267
+#: views/admin-settings.php:276
 msgid "The project, task and decision NovaWork made on its first run to show where to start. Removing them also removes their comments and votes."
 msgstr ""
 
-#: views/admin-settings.php:271
+#: views/admin-settings.php:280
 msgid "Delete everything when NovaWork is deleted"
 msgstr ""
 
-#: views/admin-settings.php:271
+#: views/admin-settings.php:280
 msgid "Tasks, projects, decisions, chat, time, files and settings are removed for good when you delete the plugin. Off: deactivating or deleting keeps them."
 msgstr ""
 
-#: views/admin-settings.php:276
+#: views/admin-settings.php:285
 #: assets/src/js/settings.js:287
 msgid "Save changes"
 msgstr ""
 
-#: views/admin-settings.php:278
+#: views/admin-settings.php:287
 msgid "Discard"
 msgstr ""
 
 #. translators: %s: the workspace's name.
-#: views/app.php:38
+#: views/app.php:39
 #, php-format
 msgid "%s, Focus"
 msgstr ""
 
-#: views/app.php:40
+#: views/app.php:41
 msgid "Quick search…"
 msgstr ""
 
-#: views/app.php:40
+#: views/app.php:41
 msgid "Search tasks, projects, decisions and messages"
 msgstr ""
 
-#: views/app.php:40
+#: views/app.php:41
 #: assets/src/js/views/dialog.js:160
 #: assets/src/js/views/thread.js:163
 msgid "Cancel"
 msgstr ""
 
-#: views/app.php:44
+#: views/app.php:45
 #: assets/src/js/views/tour.js:95
 msgid "Search"
 msgstr ""
 
-#: views/app.php:49
-#: views/app.php:68
-#: views/app.php:124
+#: views/app.php:50
+#: views/app.php:69
 #: views/app.php:126
+#: views/app.php:128
 #: assets/src/js/views/tour.js:83
 msgid "Team chat"
 msgstr ""
 
-#: views/app.php:51
-#: assets/src/js/shell.js:292
+#: views/app.php:52
+#: assets/src/js/shell.js:302
 #: assets/src/js/views/notes.js:255
 #: assets/src/js/views/tour.js:90
 msgid "Notifications"
 msgstr ""
 
-#: views/app.php:53
-#: views/app.php:57
+#: views/app.php:54
+#: views/app.php:58
 msgid "Team"
 msgstr ""
 
-#: views/app.php:61
+#: views/app.php:62
 msgctxt "badge next to your own name"
 msgid "You"
 msgstr ""
 
-#: views/app.php:64
+#: views/app.php:65
 #: views/no-access.php:29
 msgid "Sign out"
 msgstr ""
 
-#: views/app.php:81
 #: views/app.php:82
+#: views/app.php:83
 msgid "Theme"
 msgstr ""
 
-#: views/app.php:91
+#: views/app.php:92
 msgid "Take the tour"
 msgstr ""
 
-#: views/app.php:92
+#: views/app.php:94
 msgid "Workspace settings"
 msgstr ""
 
-#: views/app.php:97
-#: views/app.php:111
+#: views/app.php:99
+#: views/app.php:113
 msgid "Views"
 msgstr ""
 
-#: views/app.php:107
+#: views/app.php:109
 msgid "Remove them"
 msgstr ""
 
-#: views/app.php:118
-#: views/app.php:146
+#: views/app.php:120
 #: views/app.php:148
+#: views/app.php:150
 msgid "Create"
 msgstr ""
 
-#: views/app.php:126
+#: views/app.php:128
 msgid "Drag to move. Drop at an edge to dock."
 msgstr ""
 
-#: views/app.php:126
 #: views/app.php:128
+#: views/app.php:130
 msgid "Search messages"
 msgstr ""
 
-#: views/app.php:126
+#: views/app.php:128
 msgid "Close chat"
 msgstr ""
 
-#: views/app.php:129
+#: views/app.php:131
 msgid "Any time"
 msgstr ""
 
-#: views/app.php:129
+#: views/app.php:131
 #: assets/src/js/views/chat.js:127
 #: assets/src/js/views/notes.js:201
 #: assets/src/js/views/roadmap.js:113
@@ -1192,88 +1234,88 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: views/app.php:129
+#: views/app.php:131
 #: assets/src/js/views/chat.js:132
 msgid "Yesterday"
 msgstr ""
 
-#: views/app.php:129
+#: views/app.php:131
 msgid "Last 7 days"
 msgstr ""
 
-#: views/app.php:129
+#: views/app.php:131
 msgid "Last 30 days"
 msgstr ""
 
-#: views/app.php:129
+#: views/app.php:131
 msgid "On a date…"
 msgstr ""
 
-#: views/app.php:130
+#: views/app.php:132
 msgid "Date"
 msgstr ""
 
-#: views/app.php:138
+#: views/app.php:140
 msgid "Attach files"
 msgstr ""
 
-#: views/app.php:140
-#: views/app.php:153
+#: views/app.php:142
+#: views/app.php:155
 msgid "Message the team"
 msgstr ""
 
-#: views/app.php:141
+#: views/app.php:143
 msgid "Send"
 msgstr ""
 
-#: views/app.php:150
+#: views/app.php:152
 #: assets/src/js/views/editors.js:187
 msgid "New task"
 msgstr ""
 
-#: views/app.php:150
+#: views/app.php:152
 msgid "Goes to Now, assigned to you"
 msgstr ""
 
-#: views/app.php:151
+#: views/app.php:153
 #: assets/src/js/views/editors.js:260
 #: assets/src/js/views/roadmap.js:47
 msgid "New project"
 msgstr ""
 
-#: views/app.php:151
+#: views/app.php:153
 msgid "With dates for the roadmap"
 msgstr ""
 
-#: views/app.php:152
+#: views/app.php:154
 #: assets/src/js/views/decisions.js:44
 #: assets/src/js/views/editors.js:374
 msgid "New decision"
 msgstr ""
 
-#: views/app.php:152
+#: views/app.php:154
 msgid "A question that blocks work"
 msgstr ""
 
-#: views/app.php:153
+#: views/app.php:155
 msgid "Opens the team chat"
 msgstr ""
 
-#: views/app.php:157
+#: views/app.php:159
 msgid "Still working?"
 msgstr ""
 
 #. translators: 1: time without activity, e.g. "10m"; 2: seconds left.
-#: views/app.php:161
+#: views/app.php:163
 #, php-format
 msgid "No activity for %1$s. The timer pauses in %2$ss, and the time you were away won’t be counted."
 msgstr ""
 
-#: views/app.php:166
+#: views/app.php:168
 msgid "Pause now"
 msgstr ""
 
-#: views/app.php:166
+#: views/app.php:168
 msgid "I’m still working"
 msgstr ""
 
@@ -1283,115 +1325,115 @@ msgstr ""
 msgid "Sign in · %s"
 msgstr ""
 
-#: views/login.php:55
+#: views/login.php:56
 msgid "You’re invited to join the workspace."
 msgstr ""
 
-#: views/login.php:57
+#: views/login.php:58
 msgid "Sign in to join the workspace."
 msgstr ""
 
-#: views/login.php:59
+#: views/login.php:60
 msgid "Forgot your password? Enter your email or username and we’ll send a link to set a new one."
 msgstr ""
 
-#: views/login.php:61
+#: views/login.php:62
 msgid "Choose a new password."
 msgstr ""
 
-#: views/login.php:63
+#: views/login.php:64
 msgid "Sign in to your workspace."
 msgstr ""
 
-#: views/login.php:74
+#: views/login.php:75
 msgid "Your new password is set. Sign in with it."
 msgstr ""
 
-#: views/login.php:76
+#: views/login.php:77
 msgid "You’ve signed out."
 msgstr ""
 
-#: views/login.php:81
+#: views/login.php:82
 msgid "Go to sign in"
 msgstr ""
 
 #. translators: %s: the signed-in person's name.
-#: views/login.php:87
+#: views/login.php:88
 #, php-format
 msgid "Join as %s"
 msgstr ""
 
-#: views/login.php:93
+#: views/login.php:94
 msgid "Your name"
 msgstr ""
 
-#: views/login.php:97
+#: views/login.php:98
 msgid "Email"
 msgstr ""
 
-#: views/login.php:101
+#: views/login.php:102
 msgid "Choose a password"
 msgstr ""
 
-#: views/login.php:104
-#: views/login.php:134
-#: views/login.php:152
-#: views/login.php:171
+#: views/login.php:105
+#: views/login.php:135
+#: views/login.php:153
+#: views/login.php:172
 #: assets/src/js/views/notes.js:247
 msgid "Show"
 msgstr ""
 
-#: views/login.php:108
+#: views/login.php:109
 msgid "Join"
 msgstr ""
 
-#: views/login.php:109
+#: views/login.php:110
 msgid "Already have an account? Sign in to join"
 msgstr ""
 
-#: views/login.php:114
-#: views/login.php:145
+#: views/login.php:115
+#: views/login.php:146
 msgid "Email or username"
 msgstr ""
 
-#: views/login.php:122
+#: views/login.php:123
 msgid "Send the link"
 msgstr ""
 
-#: views/login.php:124
-#: views/login.php:142
+#: views/login.php:125
+#: views/login.php:143
 msgid "Back to sign in"
 msgstr ""
 
-#: views/login.php:127
+#: views/login.php:128
 msgid "Get a new link"
 msgstr ""
 
-#: views/login.php:131
+#: views/login.php:132
 msgid "New password"
 msgstr ""
 
-#: views/login.php:140
+#: views/login.php:141
 msgid "Save the new password"
 msgstr ""
 
-#: views/login.php:149
+#: views/login.php:150
 msgid "Password"
 msgstr ""
 
-#: views/login.php:149
+#: views/login.php:150
 msgid "Forgot password?"
 msgstr ""
 
-#: views/login.php:155
+#: views/login.php:156
 msgid "Keep me signed in"
 msgstr ""
 
-#: views/login.php:162
+#: views/login.php:163
 msgid "Sign in"
 msgstr ""
 
-#: views/login.php:171
+#: views/login.php:172
 msgid "Hide"
 msgstr ""
 
@@ -1515,12 +1557,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/src/js/settings.js:156
-#: assets/src/js/shell.js:273
+#: assets/src/js/shell.js:283
 msgid "Sample items removed."
 msgstr ""
 
 #: assets/src/js/settings.js:158
-#: assets/src/js/shell.js:275
+#: assets/src/js/shell.js:285
 msgid "Could not remove them. Try again."
 msgstr ""
 
@@ -1578,68 +1620,80 @@ msgstr ""
 msgid "Could not save. Check your connection and try again."
 msgstr ""
 
-#: assets/src/js/shell.js:44
+#: assets/src/js/shell.js:45
 #: assets/src/js/views/focus.js:151
 msgid "Focus"
 msgstr ""
 
-#: assets/src/js/shell.js:45
+#: assets/src/js/shell.js:46
 #: assets/src/js/views/board.js:107
 msgid "Board"
 msgstr ""
 
-#: assets/src/js/shell.js:46
+#: assets/src/js/shell.js:47
 #: assets/src/js/views/roadmap.js:45
 #: assets/src/js/views/tour.js:66
 msgid "Roadmap"
 msgstr ""
 
-#: assets/src/js/shell.js:47
+#: assets/src/js/shell.js:48
 #: assets/src/js/views/time.js:98
 #: assets/src/js/views/tour.js:78
 msgid "Time"
 msgstr ""
 
-#: assets/src/js/shell.js:48
-#: assets/src/js/shell.js:513
+#: assets/src/js/shell.js:49
+#: assets/src/js/shell.js:530
 #: assets/src/js/views/decisions.js:41
 #: assets/src/js/views/tour.js:72
 msgid "Decisions"
 msgstr ""
 
-#: assets/src/js/shell.js:51
+#: assets/src/js/shell.js:52
 msgid "Light"
 msgstr ""
 
-#: assets/src/js/shell.js:56
+#: assets/src/js/shell.js:57
+msgid "Install app"
+msgstr ""
+
+#: assets/src/js/shell.js:58
+msgid "Add to Home Screen"
+msgstr ""
+
+#: assets/src/js/shell.js:59
+msgid "Add to Dock"
+msgstr ""
+
+#: assets/src/js/shell.js:60
 msgid "Start tracking"
 msgstr ""
 
-#: assets/src/js/shell.js:57
+#: assets/src/js/shell.js:61
 #: assets/src/js/views/focus.js:68
 msgid "Pause tracking"
 msgstr ""
 
-#: assets/src/js/shell.js:58
+#: assets/src/js/shell.js:62
 msgid "Timer running. Open Time"
 msgstr ""
 
-#: assets/src/js/shell.js:59
+#: assets/src/js/shell.js:63
 msgid "Tracked today. Open Time"
 msgstr ""
 
-#: assets/src/js/shell.js:60
+#: assets/src/js/shell.js:64
 #: assets/src/js/views/focus.js:44
 msgid "Online"
 msgstr ""
 
-#: assets/src/js/shell.js:61
+#: assets/src/js/shell.js:65
 #: assets/src/js/views/focus.js:44
 msgid "Away"
 msgstr ""
 
 #. translators: %d: number of other members online.
-#: assets/src/js/shell.js:202
+#: assets/src/js/shell.js:212
 #, js-format
 msgid "%d more here"
 msgid_plural "%d more here"
@@ -1647,13 +1701,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: time tracked today, e.g. "2h 5m".
-#: assets/src/js/shell.js:246
+#: assets/src/js/shell.js:256
 #, js-format
 msgid "Online · %s today"
 msgstr ""
 
 #. translators: %d: number of sample items.
-#: assets/src/js/shell.js:259
+#: assets/src/js/shell.js:269
 #, js-format
 msgid "%d sample item shows where to start."
 msgid_plural "%d sample items show where to start."
@@ -1661,53 +1715,53 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of unread notifications.
-#: assets/src/js/shell.js:292
+#: assets/src/js/shell.js:302
 #, js-format
 msgid "%d unread notifications"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/shell.js:299
+#: assets/src/js/shell.js:310
 #, js-format
 msgid "Pause: %s"
 msgstr ""
 
-#: assets/src/js/shell.js:499
+#: assets/src/js/shell.js:516
 msgid "active"
 msgstr ""
 
-#: assets/src/js/shell.js:499
+#: assets/src/js/shell.js:516
 msgid "paused"
 msgstr ""
 
-#: assets/src/js/shell.js:499
+#: assets/src/js/shell.js:516
 msgid "done"
 msgstr ""
 
-#: assets/src/js/shell.js:511
+#: assets/src/js/shell.js:528
 msgid "Tasks"
 msgstr ""
 
-#: assets/src/js/shell.js:512
+#: assets/src/js/shell.js:529
 msgid "Projects"
 msgstr ""
 
-#: assets/src/js/shell.js:513
+#: assets/src/js/shell.js:530
 #: assets/src/js/views/decisions.js:48
 msgid "Decided"
 msgstr ""
 
-#: assets/src/js/shell.js:513
+#: assets/src/js/shell.js:530
 #: assets/src/js/views/decisions.js:45
 msgid "Open"
 msgstr ""
 
-#: assets/src/js/shell.js:515
+#: assets/src/js/shell.js:532
 msgid "Messages"
 msgstr ""
 
 #. translators: %s: what was searched for.
-#: assets/src/js/shell.js:529
+#: assets/src/js/shell.js:546
 #, js-format
 msgid "Nothing matches “%s”."
 msgstr ""
@@ -1793,7 +1847,7 @@ msgid "Filter by person"
 msgstr ""
 
 #: assets/src/js/views/board.js:199
-#: assets/src/js/views/index.js:171
+#: assets/src/js/views/index.js:199
 msgid "Done. Nice work."
 msgstr ""
 
@@ -2254,11 +2308,11 @@ msgstr ""
 msgid "Still tracking"
 msgstr ""
 
-#: assets/src/js/views/index.js:217
+#: assets/src/js/views/index.js:245
 msgid "That item was deleted."
 msgstr ""
 
-#: assets/src/js/views/index.js:221
+#: assets/src/js/views/index.js:249
 msgid "Showing everyone’s tasks so you can see it."
 msgstr ""
 
@@ -2366,13 +2420,13 @@ msgid "Mark %s done"
 msgstr ""
 
 #. translators: 1: option, 2: number of votes.
-#: assets/src/js/views/model.js:243
+#: assets/src/js/views/model.js:249
 #, js-format
 msgid "%1$s, %2$d votes"
 msgstr ""
 
 #. translators: 1: members who voted, 2: all members.
-#: assets/src/js/views/model.js:249
+#: assets/src/js/views/model.js:255
 #, js-format
 msgid "%1$d of %2$d voted"
 msgstr ""
@@ -3014,4 +3068,17 @@ msgstr ""
 
 #: assets/src/js/views/undo.js:35
 msgid "Could not delete. It’s back where it was."
+msgstr ""
+
+#: assets/src/js/views/webapp.js:58
+msgid "Tap Share, then Add to Home Screen."
+msgstr ""
+
+#: assets/src/js/views/webapp.js:58
+#: assets/src/js/views/webapp.js:60
+msgid "Got it"
+msgstr ""
+
+#: assets/src/js/views/webapp.js:60
+msgid "In Safari, choose File, then Add to Dock."
 msgstr ""

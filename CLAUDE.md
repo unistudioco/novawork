@@ -576,7 +576,8 @@ Delete" below.
   shows alerts and handles clicks (Android shows notifications only through
   a worker); it has no fetch handler and caches nothing; its scope is the
   plugin's assets folder. Several tabs alert once (`nw.alertedId` + tag).
-  iPhone: only once the workspace is added to the Home Screen (not built).
+  iPhone: only once the workspace is added to the Home Screen (the
+  installable app, 1.1.0).
 - **Subtasks are a checklist inside a task** (owner's choice over child
   tasks): table `subtasks` (schema v8), `SubtaskRepository` (not logged
   itself; every write touches the parent task, so they travel as
@@ -672,17 +673,58 @@ running for good. Now:
 
 - (Built.) Chat @mentions: see "Chat" below.
 - (Built.) Notifications with Mine | Workspace: see "Notifications" below.
-- **1.1.0 (owner, 2026-11-23):**
-  - **Tooltips:** one modern, smooth, animated tooltip for anything that
-    needs one (icon buttons, the time tracker), replacing `title` popups.
-  - **Vote order:** setting "Order of vote options", **most votes first**
-    (default) or as written; ties keep the written order; options glide to
-    their new place when votes change.
-  - **Installable app (PWA):** a web app manifest (name, icons from the
-    workspace icon, theme colour, `display: standalone`, start URL = the
-    workspace) so it installs on Android, iPhone and desktop with its own
-    icon and window. On iPhone this is also what makes desktop alerts work.
-    No app store and no outside service.
+- (Built in 1.1.0.) Tooltips, vote order, installable app: see "Release
+  1.1.0" below.
+
+## Release 1.1.0 (built 2026-11-23, branch `release-1.1.0`)
+
+- **Vote order** (setting `vote_order`: `votes` default | `written`; sync
+  `voteOrder`): `votesHTML()` in views/model.js sorts by count, ties keep the
+  written order. Options glide to their new place: `data-flip` keys and
+  `flipBefore()`/`flipAfter()` around the view redraw in views/index.js
+  (FLIP, 360 ms, off with reduced motion).
+- **Tooltips** (`lib/tooltip.js`, `mountTooltips()` in app.js): one tooltip
+  for anything with `title`, `data-tip`, or an icon-only button/link with an
+  `aria-label`. The `title` moves to `data-nw-title` while it shows (no
+  browser popup) and comes back after. `data-tip-key="T"` adds a key chip;
+  `data-no-tip` opts out. Hover after 380 ms (none between neighbours) or
+  keyboard focus; never touch. It is a `popover="manual"` in the top layer,
+  so it shows over modal dialogs; `pointer-events: none`. Styles `.nw-tip`
+  in additions.css.
+- **Installable app** (`App\WebApp`, setting `installable`, on):
+  `?novawork=manifest`, `?novawork=icon-{any-192|any-512|mask-512|apple-180}`
+  and `?novawork=app-worker`, answered in `Route::maybe_render()` for anyone
+  (browsers fetch the manifest without cookies; it holds only what the
+  sign-in page shows). Addresses carry `ver` (name, accent, icon, address)
+  and are cached for good while current.
+  - Icons: the workspace icon (cropped square; white behind it for iOS), or
+    the header's mark: black layers `assets/app-icons/shape.png` and
+    `flag.png` coloured with the accent and its text colour through GD
+    (`IMG_FILTER_COLORIZE`); maskable and Apple versions are edge to edge.
+    No GD: the blue `icon-*.png` files. Rebuild the layers with
+    `NOVAWORK_CHROME=… node bin/app-icons.mjs`. Never `assets/icons`
+    (that name is close to `assets/src/icons`, the Phosphor set).
+  - `assets/app-worker.js` (PHP prepends `const NOVAWORK = {pages, offline}`):
+    only navigations to the workspace or its sign-in page, network first,
+    the offline page when the network fails (it reloads itself when back
+    online). Caches nothing, no navigation preload (in home mode its scope
+    is the whole site). Scope = the workspace address (the site folder with
+    plain links). Turned off, the served worker unregisters itself and the
+    page removes it too.
+  - `WebApp::head()` (app and sign-in documents): manifest link,
+    theme-color metas (page colour, light/dark; `themeColor()` in
+    views/webapp.js follows the Theme switch), apple tags and touch icon.
+  - The team menu shows "Install app" after `beforeinstallprompt` (the
+    browser's banner is held back), "Add to Home Screen" on iPhone/iPad and
+    "Add to Dock" in Mac Safari (a hint toast); nothing when already
+    installed (`display-mode: standalone`).
+  - iPhone alerts: Safari offers notifications only to Home Screen web apps
+    (iOS 16.4+). Not verified on a device yet; test before promising it.
+- `.nw-pmenu-item > span:first-child` is the icon (muted); a label in a
+  `span` keeps the ink colour.
+- Container tests: `WP_CLI_ALLOW_ROOT=1` for helpers that run WP-CLI; the
+  dev server is `127.0.0.1:8080` (curl with `--connect-to
+  novawork.local:80:127.0.0.1:8080 --noproxy novawork.local`).
 
 ## Design rules that bite (full list in the log)
 

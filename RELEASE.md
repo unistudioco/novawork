@@ -58,6 +58,16 @@ svn checkout https://plugins.svn.wordpress.org/novawork novawork-svn
 - `svn ci -m "Release 1.0.0"`. One commit per release (guideline 14: no rapid-fire commits).
 - On the plugin's page, **Advanced** view: set the Live Preview to public once you have tried it as a committer.
 
+## 4b. Later releases (1.1.0 onwards)
+
+1.1.0 is ready on the `release-1.1.0` branch (version set in all four places, changelog and upgrade notice written). If 1.0.0 is still in review, keep it there: submit 1.1.0 after approval as the first update.
+
+1. Merge the release branch into `main`, then `composer run plugin-check` (0 errors, 0 warnings) and test the zip on a clean site.
+2. In the SVN checkout: replace `trunk/` with `build/release/novawork/` (`svn add --force` new files, `svn rm` removed ones), then `svn cp trunk tags/1.1.0`.
+3. Rerun `node bin/screenshots.mjs` and `node bin/blueprint.mjs` if the UI or demo data changed, and copy them into `assets/`.
+4. `svn ci -m "Release 1.1.0"`. One commit per release.
+5. GitHub: a `v1.1.0` release with `build/novawork-1.1.0.zip` uploaded as `novawork.zip` (the live demo installs the latest release's `novawork.zip`).
+
 ## 5. Guidelines check (2026-11-22)
 
 Checked against the 18 Detailed Plugin Guidelines (from the WordPress/wporg-plugin-guidelines repository) and the Security APIs rules (sanitize input, escape output late, nonces, capability checks, prepared SQL).
@@ -71,7 +81,7 @@ Checked against the 18 Detailed Plugin Guidelines (from the WordPress/wporg-plug
 | 5 | No trialware | ✓ Nothing locked; no Pro version. |
 | 6 | SaaS documented | ✓ Not a service. Outside requests documented in "External services". |
 | 7 | No tracking without consent | ✓ No analytics or phoning home. Fontshare (default on, switchable) and Gravatar (WordPress's own "Show Avatars") are disclosed; see decision 2. |
-| 8 | No executable code from third parties | ✓ No remote JS/CSS except fonts; updates only from WordPress.org; no iframes. The alerts service worker ships in the plugin. |
+| 8 | No executable code from third parties | ✓ No remote JS/CSS except fonts; updates only from WordPress.org; no iframes. The alerts worker and the app worker (1.1.0) ship in the plugin; the app worker's settings come from this site. |
 | 9 | Nothing illegal or dishonest | ✓ |
 | 10 | No credits on the public site | ✓ No "Powered by" or links on the workspace, sign-in or no-access pages. |
 | 11 | Don't hijack the admin | ✓ No admin notices or dashboard widgets; one menu and a settings page. |

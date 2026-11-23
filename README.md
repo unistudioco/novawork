@@ -37,6 +37,7 @@ It is deliberately *not* another everything-tool: few buttons, nothing to config
 ### Decide: decisions and votes
 - Write down the questions that block work, with context and a date to decide by.
 - **One person decides; votes advise.** Ask the team to vote on up to 8 options; the person named records the decision, with who and when.
+- The options with the most votes rise to the top and glide to their new place as votes come in (or keep the order you wrote).
 
 ### Time
 - Where the hours went: today, week, month or year, with the daily average, sessions, the top project and a breakdown by person.
@@ -53,6 +54,7 @@ It is deliberately *not* another everything-tool: few buttons, nothing to config
 ### Your site, your workspace
 - **Its own address** (`yoursite.com/novawork/`, any slug you like) or the home page of a site or subdomain; its own sign-in, reset and invite pages; an option to show only the workspace.
 - **Your name, icon, logo and accent colour.** Every accent tone is derived and kept readable in light and dark.
+- **Install it as an app** on Android, iPhone, iPad and desktop, with your icon and its own window, and a calm offline page. No app store.
 - **Members are WordPress users.** Invite people with a link or by email, or tick "NovaWork member" on an existing user's profile. Nobody signs up on their own.
 - **Every choice an admin could want is a setting**, on a settings screen in NovaWork's own design inside wp-admin.
 
@@ -78,6 +80,7 @@ The details that make it feel finished:
 | **Dark mode** | Follows the device, with tokens tuned for both themes. |
 | **First run** | Three sample items show where to start and leave in one click. |
 | **Welcome tour** | A first visit walks through each page with a gliding spotlight; anyone can take it again from their menu (an admin can turn it off). |
+| **Tooltips** | One smooth tooltip for icon buttons and the timer (with its <kbd>T</kbd> shortcut), above dialogs too; never on touch. |
 | **Settings from the workspace** | Administrators open the settings screen from the team menu, no detour through wp-admin. |
 
 ---
@@ -117,6 +120,7 @@ flowchart LR
   subgraph Browser
     A["Alpine.js app<br/>(views, store)"]
     W["Alerts worker"]
+    P["App worker<br/>(offline page only)"]
   end
   subgraph WordPress
     R["REST: novawork/v1<br/>(controllers)"]
@@ -132,6 +136,7 @@ flowchart LR
   S --> Repo
   Cron --> Svc
   A -. "background tab" .-> W
+  A -. "installed app" .-> P
 ```
 
 - **Writes** go through REST controllers, which validate input and check both the capability and the object (who may change this decision?). Repositories hold all SQL and record every write in a **change log**.
@@ -167,7 +172,7 @@ bash bin/build-zip.sh          # → build/novawork-<version>.zip
 
 Upload the zip under Plugins → Add New → Upload Plugin.
 
-Requirements: WordPress 6.4+ and PHP 8.1+. Desktop alerts need HTTPS.
+Requirements: WordPress 6.4+ and PHP 8.1+. Desktop alerts and installing the app need HTTPS.
 
 ---
 
@@ -202,10 +207,10 @@ composer run plugin-check  # Plugin Check on the release zip
 
 ## Roadmap
 
-**1.1** (next)
+**1.1** (built)
 - **Tooltips**: one smooth, animated tooltip for every icon button and the time tracker.
 - **Vote order**: the leading option rises to the top (a setting: most votes first, or as written).
-- **Installable app**: a web app manifest, so the workspace installs on Android, iPhone and desktop with its own icon and window (and alerts on iPhone).
+- **Installable app**: a web app manifest, icons and an offline page, so the workspace installs on Android, iPhone, iPad and desktop with its own icon and window.
 
 **Ideas we are considering**
 - Alerts with the workspace closed (Web Push), and a daily or weekly email digest.

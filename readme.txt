@@ -4,7 +4,7 @@ Tags: project management, kanban, time tracking, team chat, roadmap
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,7 @@ It is not another everything-tool. Few buttons, no setup project, nothing to con
 = Decide: Decisions and votes =
 
 * Write down the questions that block work, with context and a date to decide by.
-* **One person decides; votes advise.** Ask the team to vote on up to 8 options, then the person named records the decision.
+* **One person decides; votes advise.** Ask the team to vote on up to 8 options, then the person named records the decision. The options with the most votes rise to the top (or keep the order you wrote them in).
 * Every decision keeps its answer, who decided and when.
 
 = Talk: Chat, comments and notifications =
@@ -51,6 +51,7 @@ It is not another everything-tool. Few buttons, no setup project, nothing to con
 
 * **Its own address** (yoursite.com/novawork/ by default, or the home page of a site or subdomain), its own sign-in page and no theme styles leaking in.
 * **Your name, icon, logo and accent colour.** Light and dark mode follow the device.
+* **Install it as an app** on phones, tablets and computers, with your icon and its own window. No app store.
 * **Members are WordPress users.** Invite people with a link or by email, or tick "NovaWork member" on an existing user's profile. Nobody signs up on their own.
 * **Every choice is a setting**: tasks in Now, the inactivity reminder, upload size and types, who records decisions, message editing, retention and more.
 * **Privacy built in**: personal data export and erasure through WordPress's own tools, suggested privacy-policy text, and an uninstall that removes everything only when you ask it to.
@@ -100,7 +101,11 @@ It stops where your device went quiet, and the time away is not counted. The sam
 
 = Why don't I see the option for desktop alerts? =
 
-Browsers only allow alerts on secure (https) sites, and an administrator can switch them off for everyone. On an iPhone or iPad, alerts work once the workspace is added to the Home Screen.
+Browsers only allow alerts on secure (https) sites, and an administrator can switch them off for everyone. On an iPhone or iPad, Safari offers alerts only to web apps added to the Home Screen (iOS 16.4 or later).
+
+= Can members install it as an app? =
+
+Yes. In Chrome, Edge and on Android, choose "Install app" in the team menu. On an iPhone or iPad, open the workspace in Safari and choose Share, then Add to Home Screen; in Safari on a Mac, File, then Add to Dock. The app uses the workspace icon from Branding and opens in its own window. It needs a secure (https) site. An administrator can switch it off in Settings.
 
 = Can the workspace be the whole site, on its own subdomain? =
 
@@ -157,16 +162,24 @@ Gravatar: https://gravatar.com/ – Automattic privacy policy: https://automatti
 
 == Privacy ==
 
-NovaWork keeps the workspace's data in your WordPress database: tasks, projects, decisions, comments, chat messages and their files, tracked time, votes, notifications and the team feed, each linked to the member who wrote or did it. Members' browsers keep a few preferences in local storage (filters, the chat window's position, the notifications tab and whether desktop alerts are on).
+NovaWork keeps the workspace's data in your WordPress database: tasks, projects, decisions, comments, chat messages and their files, tracked time, votes, notifications and the team feed, each linked to the member who wrote or did it. Members' browsers keep a few preferences in local storage (filters, the chat window's position, the notifications tab and whether desktop alerts are on). The installed app's small worker script stores nothing; it only shows an offline page.
 
 NovaWork works with WordPress's personal data tools (Tools → Export Personal Data and Erase Personal Data), and adds suggested text for your privacy policy to WordPress's policy guide (Settings → Privacy → Policy Guide).
 
 == Changelog ==
 
+= 1.1.0 =
+* New: install the workspace as an app on phones, tablets and computers, with the workspace icon and its own window, and a calm offline page. Setting: Installable app.
+* New: vote options with the most votes rise to the top, and glide to their new place as votes change. Setting: Order of vote options (most votes first, or as written).
+* New: one smooth tooltip for icon buttons and the timer, with the T shortcut, instead of the browser's plain popups.
+
 = 1.0.0 =
 * First release: Focus with a server-side timer, the board with subtasks, projects and the roadmap, decisions with team votes, time analytics, team chat with mentions, links and private files, notifications with desktop alerts, quick search, invites, branding, privacy tools and translations.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Install the workspace as an app, vote options ordered by votes, and new tooltips.
 
 = 1.0.0 =
 First release.
