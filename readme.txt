@@ -182,7 +182,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 == Upgrade Notice ==
 
 = 1.1.0 =
-Install the workspace as an app, vote options ordered by votes, and new tooltips.
+Install the workspace as an app, vote options ordered by votes, new tooltips, and a timer fix for teams who use NovaWork on two devices.
 
 = 1.0.0 =
 First release.
