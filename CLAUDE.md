@@ -634,7 +634,9 @@ running for good. Now:
   reachable for the real fonts) and `blueprints/blueprint.json` from
   `node bin/blueprint.mjs`, which builds the Live Preview from
   `tests/seed/dev-data.php` (one demo; the visitor is the admin, shown as
-  Alex). Rerun both after changing the demo data or the UI.
+  Alex). Rerun both after changing the demo data or the UI. The directory's
+  icon and banner come from `node bin/wporg-assets.mjs` (the app mark; the
+  banner crops screenshot-1.png), with Fontshare reachable for the type.
 - Every PHP file starts with `defined( 'ABSPATH' ) || exit;` (after the
   namespace and imports in src/); reviewers flag direct file access.
 - `RELEASE.md` (never ships): the owner's decisions, the submission and SVN

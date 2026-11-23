@@ -53,7 +53,7 @@ svn checkout https://plugins.svn.wordpress.org/novawork novawork-svn
 - `assets/` ← the contents of `.wordpress-org/`:
   - `screenshot-1.png` … `screenshot-10.png` (match the readme's `== Screenshots ==` order),
   - `blueprints/blueprint.json` (the Live Preview; regenerate with `node bin/blueprint.mjs` after changing the demo data),
-  - your banner (`banner-772x250.png`, `banner-1544x500.png`) and icon (`icon-128x128.png`, `icon-256x256.png`).
+  - the banner (`banner-772x250.png`, `banner-1544x500.png`) and icon (`icon-128x128.png`, `icon-256x256.png`) from `node bin/wporg-assets.mjs` (run it where Fontshare is reachable, after `bin/screenshots.mjs`: the banner shows screenshot 1).
 - `tags/<version>/` ← a copy of `trunk/` (`svn cp trunk tags/1.0.0`).
 - `svn ci -m "Release 1.0.0"`. One commit per release (guideline 14: no rapid-fire commits).
 - On the plugin's page, **Advanced** view: set the Live Preview to public once you have tried it as a committer.
