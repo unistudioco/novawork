@@ -48,6 +48,9 @@ async function signedIn( [ user, pass ], colorScheme = 'light' ) {
 		} catch ( e ) {}
 	} );
 	page.on( 'pageerror', ( e ) => console.error( 'Page error:', e.message ) );
+	// The welcome tour would start on top of the screenshots: mark it seen.
+	await page.goto( APP );
+	await page.evaluate( () => fetch( window.novawork.restUrl + 'tour/seen', { method: 'POST', headers: { 'X-WP-Nonce': window.novawork.nonce } } ) );
 	return page;
 }
 // Let fonts, avatars and animations settle.

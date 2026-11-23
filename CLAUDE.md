@@ -652,6 +652,21 @@ running for good. Now:
   disappear; no separate archive (owner agreed).
 - README.md rewritten as the project's showcase (features, the small
   things, stack, architecture, hooks, install, development, roadmap).
+- **Welcome tour** (owner, in 1.0.0): `views/tour.js`. It goes to each page
+  (hash) and spotlights the part it talks about, like `nw:goto`: a fixed
+  spotlight whose huge box-shadow dims the rest, kept inside the free area
+  (below the sticky header, above the phone's bottom bar), and a card beside
+  it (top or bottom on phones). 11 steps, phone and admin variants. Starts by
+  itself once per member: boot `tour.auto` = setting `show_tour` (on) and no
+  user meta `novawork_tour_seen`; finishing or skipping calls
+  `POST /tour/seen` (`Rest\TourController`). "Take the tour" in the team
+  menu replays it (`nw:tour`). Keys: → / Enter next, ← back, Esc leaves; the
+  app's shortcuts wait while it is open. Browser tests mark it seen for the
+  test members in `tests/browser/setup.js` (globalSetup); tour.spec.js
+  resets it on purpose; bin/screenshots.mjs marks it seen first.
+- **Workspace settings from the workspace** (owner, in 1.0.0): the team
+  menu's last rows (`.nw-pmenu`): "Take the tour" for everyone, "Workspace
+  settings" for administrators (boot `settingsUrl`, empty for members).
 
 ## Owner requests queued for later phases
 

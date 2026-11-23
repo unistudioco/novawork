@@ -47,24 +47,28 @@ final class Page {
 	private static function boot(): array {
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/novawork/v1/sync' ) );
 		return array(
-			'restUrl'   => esc_url_raw( rest_url( 'novawork/v1/' ) ),
-			'nonce'     => wp_create_nonce( 'wp_rest' ),
-			'me'        => get_current_user_id(),
-			'appUrl'    => esc_url_raw( Route::url() ),
+			'restUrl'     => esc_url_raw( rest_url( 'novawork/v1/' ) ),
+			'nonce'       => wp_create_nonce( 'wp_rest' ),
+			'me'          => get_current_user_id(),
+			'appUrl'      => esc_url_raw( Route::url() ),
 			// wp_logout_url() is escaped for HTML; the app needs the plain address.
-			'logoutUrl' => esc_url_raw( wp_specialchars_decode( wp_logout_url( Route::login_url( true ) ) ) ),
-			'locale'    => str_replace( '_', '-', determine_locale() ),
-			'version'   => NOVAWORK_VERSION,
+			'logoutUrl'   => esc_url_raw( wp_specialchars_decode( wp_logout_url( Route::login_url( true ) ) ) ),
+			'locale'      => str_replace( '_', '-', determine_locale() ),
+			'version'     => NOVAWORK_VERSION,
 			// Where an administrator invites people (the "Invite your team" row).
-			'inviteUrl' => current_user_can( Capabilities::MANAGE ) ? esc_url_raw( admin_url( 'admin.php?page=novawork-settings#nw-members' ) ) : '',
+			'inviteUrl'   => current_user_can( Capabilities::MANAGE ) ? esc_url_raw( admin_url( 'admin.php?page=novawork-settings#nw-members' ) ) : '',
+			// Administrators reach the settings screen from the workspace (owner, 2026-11-23).
+			'settingsUrl' => current_user_can( Capabilities::MANAGE ) ? esc_url_raw( admin_url( 'admin.php?page=novawork-settings' ) ) : '',
+			// The welcome tour starts by itself once per member (owner, 2026-11-23).
+			'tour'        => array( 'auto' => \NovaWork\Rest\TourController::should_start( get_current_user_id() ) ),
 			// Desktop alerts: the worker that shows them (Android shows alerts only
 			// through one) and the icon they carry.
-			'alerts'    => array(
+			'alerts'      => array(
 				'worker' => esc_url_raw( NOVAWORK_URL . 'assets/alerts-worker.js' ),
 				'icon'   => esc_url_raw( self::alert_icon() ),
 				'name'   => \NovaWork\Settings::workspace_name(),
 			),
-			'sync'      => $response->is_error() ? null : $response->get_data(),
+			'sync'        => $response->is_error() ? null : $response->get_data(),
 		);
 	}
 

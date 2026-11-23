@@ -446,3 +446,41 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
   .nw-card.nw-run::before, .nw-ftimer.nw-run::before { animation: nw-spin 7s linear infinite; }
   .nw-card .nw-tbtn.nw-run::before, .nw-ftimer.nw-run .nw-tplay::before { animation: nw-mesh 11s ease-in-out infinite; }
 }
+
+/* The team menu's last rows (owner, 2026-11-23): "Take the tour" for
+   everyone, "Workspace settings" for administrators. */
+.nw-pmenu { display: grid; gap: 2px; margin: 0 -6px; }
+.nw-pmenu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--nw-fg); font: 500 13.5px/1.2 var(--nw-font-head); text-align: left; text-decoration: none; cursor: pointer; }
+.nw-pmenu-item > span { display: grid; place-items: center; color: var(--nw-muted); }
+.nw-pmenu-item:hover, .nw-pmenu-item:focus-visible { background: var(--nw-field); outline: none; }
+.nw-pmenu-item:hover > span { color: var(--nw-fg); }
+
+/* The welcome tour (owner, 2026-11-23): a spotlight that glides from one
+   part of the workspace to the next, the page dimmed around it, and a card
+   that follows. On phones the card sits at the top or the bottom, away from
+   the spotlight. */
+.nw-tour { position: fixed; inset: 0; z-index: 70; }
+.nw-tour-spot { position: fixed; border-radius: 14px; pointer-events: none; box-shadow: 0 0 0 2px var(--nw-accent-line), 0 0 0 200vmax color-mix(in srgb, #14110f 56%, transparent); }
+.nw-tour-spot.nw-tour-none { box-shadow: 0 0 0 200vmax color-mix(in srgb, #14110f 56%, transparent); }
+.nw-tour-card { position: fixed; display: grid; justify-items: start; gap: 8px; width: min(370px, calc(100vw - 24px)); padding: 18px 18px 14px; background: var(--nw-raised); border: 1px solid var(--nw-line); border-radius: 16px; box-shadow: var(--nw-shadow-pop); color: var(--nw-fg); }
+.nw-tour-card h3 { font: 700 16.5px/1.3 var(--nw-font-head); letter-spacing: -.015em; }
+.nw-tour-card p { margin: 0; color: var(--nw-muted); font-size: 13.5px; line-height: 1.55; }
+.nw-tour-ic { --nw-c: var(--nw-accent); width: 44px; height: 44px; border-radius: 14px; margin-bottom: 4px; }
+.nw-tour-step { font: 600 11px/1 var(--nw-font-head); letter-spacing: .08em; text-transform: uppercase; color: var(--nw-accent-ink); }
+.nw-tour-acts { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 8px; }
+.nw-tour-acts .nw-sp { flex: 1; }
+.nw-tour-dots { display: flex; gap: 4px; }
+.nw-tour-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--nw-line-strong); }
+.nw-tour-dots i.nw-on { width: 16px; background: var(--nw-accent); }
+@media (max-width: 719px) { .nw-tour-dots { display: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .nw-tour { animation: nw-tour-in .25s ease both; }
+  .nw-tour.nw-tour-out { animation: nw-tour-out .2s ease both; }
+  .nw-tour-spot { transition: top .42s cubic-bezier(.2, .9, .25, 1), left .42s cubic-bezier(.2, .9, .25, 1), width .42s cubic-bezier(.2, .9, .25, 1), height .42s cubic-bezier(.2, .9, .25, 1); }
+  .nw-tour-card { transition: top .42s cubic-bezier(.2, .9, .25, 1), left .42s cubic-bezier(.2, .9, .25, 1), opacity .2s ease, transform .2s ease; }
+  .nw-tour-card.nw-tour-swap { opacity: 0; transform: translateY(6px); }
+  .nw-tour-dots i { transition: width .25s ease, background-color .25s ease; }
+  @keyframes nw-tour-in { from { opacity: 0; } }
+  @keyframes nw-tour-out { to { opacity: 0; } }
+}
+@media (prefers-reduced-motion: reduce) { .nw-tour-card.nw-tour-swap { opacity: 0; } }

@@ -197,6 +197,9 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_start( 'desktop_alerts', __( 'Desktop alerts', 'novawork' ), __( 'Members can choose to get a browser alert for their notifications while the workspace is open in a background tab. Each member turns it on for their own device, from the bell.', 'novawork' ) ); ?>
 			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-desktop_alerts" :aria-checked="String(!!values.desktop_alerts)" @click="values.desktop_alerts = !values.desktop_alerts"><span></span></button>
 		<?php $novawork_row_end( 'desktop_alerts' ); ?>
+		<?php $novawork_row_start( 'show_tour', __( 'Welcome tour', 'novawork' ), __( 'Show each member a short tour of the workspace the first time they open it. Anyone can take it again from their menu.', 'novawork' ) ); ?>
+			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-show_tour" :aria-checked="String(!!values.show_tour)" @click="values.show_tour = !values.show_tour"><span></span></button>
+		<?php $novawork_row_end( 'show_tour' ); ?>
 	</section>
 
 	<section class="nw-scard" aria-labelledby="nw-s-time">

@@ -68,6 +68,8 @@ export default () => ( {
 	notesOpen: false,
 	// Signing out comes back to the workspace's sign-in page.
 	logoutUrl: ( window.novawork || {} ).logoutUrl || '',
+	// Administrators only: wp-admin → NovaWork → Settings (owner, 2026-11-23).
+	settingsUrl: ( window.novawork || {} ).settingsUrl || '',
 	notesClosing: false,
 	theme: store( 'nw.theme' ) || 'system',
 	pop: { open: false },
@@ -321,6 +323,11 @@ export default () => ( {
 		( this.phone ? document.body : this.$refs.right ).appendChild( this.$refs.pop );
 		this.pop.open = true;
 		this.$nextTick( () => placeInd( this.$refs.appear, true ) );
+	},
+	/** "Take the tour" in the menu: close the menu, then start (views/tour.js). */
+	startTour() {
+		this.closePop( true );
+		window.dispatchEvent( new CustomEvent( 'nw:tour' ) );
 	},
 	closePop( instant ) {
 		if ( ! this.pop.open || this.pop.closing ) {

@@ -16,6 +16,7 @@ if ( existsSync( '.dev.env' ) ) {
 export default defineConfig( {
 	testDir: 'tests/browser',
 	testMatch: '*.spec.js',
+	globalSetup: './tests/browser/setup.js',
 	globalTeardown: './tests/browser/teardown.js',
 	workers: 1,
 	timeout: 60000,

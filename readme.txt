@@ -54,6 +54,7 @@ It is not another everything-tool. Few buttons, no setup project, nothing to con
 * **Members are WordPress users.** Invite people with a link or by email, or tick "NovaWork member" on an existing user's profile. Nobody signs up on their own.
 * **Every choice is a setting**: tasks in Now, the inactivity reminder, upload size and types, who records decisions, message editing, retention and more.
 * **Privacy built in**: personal data export and erasure through WordPress's own tools, suggested privacy-policy text, and an uninstall that removes everything only when you ask it to.
+* **A welcome tour** shows each new member around the first time, and anyone can take it again from their menu. Administrators reach the settings from the same menu.
 * **Translation ready**, in the member's own language.
 
 = What it is not =

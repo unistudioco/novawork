@@ -75,6 +75,8 @@ The details that make it feel finished:
 | **Phones** | Bottom sheets with swipe-to-close, a floating tracker, a create button, and a full-screen search. |
 | **Dark mode** | Follows the device, with tokens tuned for both themes. |
 | **First run** | Three sample items show where to start and leave in one click. |
+| **Welcome tour** | A first visit walks through each page with a gliding spotlight; anyone can take it again from their menu (an admin can turn it off). |
+| **Settings from the workspace** | Administrators open the settings screen from the team menu, no detour through wp-admin. |
 
 ---
 

@@ -86,6 +86,11 @@ wp_print_styles( Assets::styles() );
 							</template>
 						</div>
 					</div>
+					<div class="nw-sep"></div>
+					<div class="nw-pmenu">
+						<button class="nw-pmenu-item" type="button" @click="startTour()"><span x-html="ic('compass', 18)"></span><?php esc_html_e( 'Take the tour', 'novawork' ); ?></button>
+						<template x-if="settingsUrl"><a class="nw-pmenu-item" :href="settingsUrl"><span x-html="ic('gear-six', 18)"></span><?php esc_html_e( 'Workspace settings', 'novawork' ); ?></a></template>
+					</div>
 				</div>
 			</div>
 		</div>

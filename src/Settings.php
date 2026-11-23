@@ -54,6 +54,7 @@ final class Settings {
 			'decide_rule'     => 'named',
 			'decision_votes'  => true,
 			'desktop_alerts'  => true,
+			'show_tour'       => true,
 			'message_edits'   => 'always',
 			'edit_minutes'    => 15,
 			'activity_days'   => 30,
@@ -153,6 +154,7 @@ final class Settings {
 		),
 		'decision_votes'  => array( 'type' => 'bool' ),
 		'desktop_alerts'  => array( 'type' => 'bool' ),
+		'show_tour'       => array( 'type' => 'bool' ),
 		'message_edits'   => array(
 			'type'    => 'choice',
 			'choices' => array( 'always', 'window', 'never' ),

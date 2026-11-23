@@ -25,6 +25,7 @@ import { viewTime, wireTime } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
 import { mountChat } from './chat.js';
 import { mountNotes } from './notes.js';
+import { mountTour } from './tour.js';
 import { patch } from '../lib/api.js';
 
 const VIEWS = {
@@ -246,6 +247,7 @@ export function mountViews( sync ) {
 	mountIdle();
 	mountChat();
 	mountNotes();
+	mountTour();
 	main = document.getElementById( 'nw-main' );
 	main.addEventListener( 'nw:painted', tick );
 

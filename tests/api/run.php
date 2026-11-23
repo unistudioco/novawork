@@ -265,6 +265,21 @@ try {
 	$t->ok( 0 === $left, 'deleting a task removes its subtasks' );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Welcome tour (owner, 2026-11-23)' );
+	delete_user_meta( $sam, NovaWork\Rest\TourController::SEEN_META );
+	$t->ok( NovaWork\Rest\TourController::should_start( $sam ), 'the tour starts by itself for a member who has not seen it' );
+	list( $s ) = $t->call( (int) $outsider, 'POST', '/tour/seen' );
+	$t->ok( 403 === $s, 'non-member → 403', $s );
+	list( $s, $seen ) = $t->call( $sam, 'POST', '/tour/seen' );
+	$t->ok( 200 === $s && true === $seen['seen'] && ! NovaWork\Rest\TourController::should_start( $sam ), 'finishing or skipping it is remembered for that member' );
+	$t->ok( NovaWork\Rest\TourController::should_start( $alex ) === ! get_user_meta( $alex, NovaWork\Rest\TourController::SEEN_META, true ), 'and only for that member' );
+	delete_user_meta( $sam, NovaWork\Rest\TourController::SEEN_META );
+	$settings_before = get_option( NovaWork\Settings::OPTION, array() );
+	update_option( NovaWork\Settings::OPTION, array_merge( (array) $settings_before, array( 'show_tour' => false ) ) );
+	$t->ok( ! NovaWork\Rest\TourController::should_start( $sam ), 'setting show_tour off: it never starts by itself' );
+	update_option( NovaWork\Settings::OPTION, $settings_before );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Sync: incremental and scoped' );
 	list( , $inc ) = $t->call( $sam, 'GET', '/sync', array( 'since' => $cursor ) );
 	$t->ok( false === $inc['full'], 'a recent cursor gets only changes' );
