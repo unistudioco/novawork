@@ -40,15 +40,17 @@ function steps() {
 		},
 		{
 			view: 'focus',
-			target: [ '.nw-slots' ],
-			title: __( 'Your three', 'novawork' ),
-			text: __( 'Keep a short list in Now. Everything else waits in Next or Later, so the day stays clear. Tick a task when it is done.', 'novawork' ),
+			target: [ '.nw-now-card' ],
+			title: __( 'Your day and the timer', 'novawork' ),
+			text: phone
+				? __( 'Press play here, on any task, or on the floating timer to track time. Step away, close the tab or lock your phone, and the timer stops where you left; the time away is never counted.', 'novawork' )
+				: __( 'Press play here, on any task, or on the timer in the header to track time. Step away, close the tab or fold your laptop, and the timer stops where you left; the time away is never counted.', 'novawork' ),
 		},
 		{
 			view: 'focus',
-			target: phone ? [ '#nw-ftimer' ] : [ '#nw-tracker' ],
-			title: __( 'Track time with one click', 'novawork' ),
-			text: __( 'Press play on any task. Step away, close the tab or fold your laptop, and the timer stops where you left; the time away is never counted.', 'novawork' ),
+			target: [ '.nw-slots' ],
+			title: __( 'Your three', 'novawork' ),
+			text: __( 'Keep a short list in Now. Everything else waits in Next or Later, so the day stays clear. Tick a task when it is done.', 'novawork' ),
 		},
 		{
 			view: 'board',
@@ -60,21 +62,21 @@ function steps() {
 		},
 		{
 			view: 'roadmap',
-			target: [ '#nw-main > :nth-child(2)' ],
+			target: [ '#nw-tl-scroll', '#nw-main > :nth-child(2)' ],
 			title: __( 'Roadmap', 'novawork' ),
-			text: __( 'Projects on a timeline, by months or quarters, with their goals, target dates and deadlines.', 'novawork' ),
+			text: __( 'Every project on a timeline, from its start to its target date. Bars fill as tasks get done, and a dashed red line marks a hard deadline. Click a bar to edit the project.', 'novawork' ),
 		},
 		{
 			view: 'decisions',
-			target: [ '#nw-main > :nth-child(2)' ],
+			target: [ '.nw-decs', '#nw-main > :nth-child(2)' ],
 			title: __( 'Decisions', 'novawork' ),
 			text: __( 'Write down the questions that block work. Ask the team to vote; the person named records the decision.', 'novawork' ),
 		},
 		{
 			view: 'time',
-			target: [ '#nw-main > :nth-child(2)', '#nw-main > :nth-child(3)' ],
+			target: [ '#nw-tbody', '#nw-main > :nth-child(3)' ],
 			title: __( 'Time', 'novawork' ),
-			text: __( 'Where the hours went: today, this week, this month or this year, for you and for the team.', 'novawork' ),
+			text: __( 'Where the hours went: the total, the daily average, sessions, the top project, and every day, project and task, for you or the team, by day, week, month or year.', 'novawork' ),
 		},
 		{
 			target: phone ? [ '#nw-fab' ] : [ '#nw-chat-btn' ],

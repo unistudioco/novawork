@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-23T01:25:39+00:00\n"
+"POT-Creation-Date: 2026-11-23T01:54:11+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -1104,7 +1104,7 @@ msgid "Cancel"
 msgstr ""
 
 #: views/app.php:44
-#: assets/src/js/views/tour.js:93
+#: assets/src/js/views/tour.js:95
 msgid "Search"
 msgstr ""
 
@@ -1112,14 +1112,14 @@ msgstr ""
 #: views/app.php:68
 #: views/app.php:124
 #: views/app.php:126
-#: assets/src/js/views/tour.js:81
+#: assets/src/js/views/tour.js:83
 msgid "Team chat"
 msgstr ""
 
 #: views/app.php:51
 #: assets/src/js/shell.js:292
 #: assets/src/js/views/notes.js:255
-#: assets/src/js/views/tour.js:88
+#: assets/src/js/views/tour.js:90
 msgid "Notifications"
 msgstr ""
 
@@ -1590,20 +1590,20 @@ msgstr ""
 
 #: assets/src/js/shell.js:46
 #: assets/src/js/views/roadmap.js:45
-#: assets/src/js/views/tour.js:64
+#: assets/src/js/views/tour.js:66
 msgid "Roadmap"
 msgstr ""
 
 #: assets/src/js/shell.js:47
 #: assets/src/js/views/time.js:98
-#: assets/src/js/views/tour.js:76
+#: assets/src/js/views/tour.js:78
 msgid "Time"
 msgstr ""
 
 #: assets/src/js/shell.js:48
 #: assets/src/js/shell.js:513
 #: assets/src/js/views/decisions.js:41
-#: assets/src/js/views/tour.js:70
+#: assets/src/js/views/tour.js:72
 msgid "Decisions"
 msgstr ""
 
@@ -2179,7 +2179,7 @@ msgstr ""
 #. translators: 1: tasks in Now, 2: the Now limit.
 #. translators: 1: step, 2: number of steps.
 #: assets/src/js/views/focus.js:94
-#: assets/src/js/views/tour.js:138
+#: assets/src/js/views/tour.js:140
 #, js-format
 msgid "%1$d of %2$d"
 msgstr ""
@@ -2277,7 +2277,7 @@ msgid "%d at most, per person"
 msgstr ""
 
 #: assets/src/js/views/model.js:32
-#: assets/src/js/views/tour.js:143
+#: assets/src/js/views/tour.js:145
 msgid "Next"
 msgstr ""
 
@@ -2917,94 +2917,98 @@ msgid "A quick look around: where your day lives, how work moves, and where the 
 msgstr ""
 
 #: assets/src/js/views/tour.js:44
+msgid "Your day and the timer"
+msgstr ""
+
+#: assets/src/js/views/tour.js:46
+msgid "Press play here, on any task, or on the floating timer to track time. Step away, close the tab or lock your phone, and the timer stops where you left; the time away is never counted."
+msgstr ""
+
+#: assets/src/js/views/tour.js:47
+msgid "Press play here, on any task, or on the timer in the header to track time. Step away, close the tab or fold your laptop, and the timer stops where you left; the time away is never counted."
+msgstr ""
+
+#: assets/src/js/views/tour.js:52
 msgid "Your three"
 msgstr ""
 
-#: assets/src/js/views/tour.js:45
+#: assets/src/js/views/tour.js:53
 msgid "Keep a short list in Now. Everything else waits in Next or Later, so the day stays clear. Tick a task when it is done."
 msgstr ""
 
-#: assets/src/js/views/tour.js:50
-msgid "Track time with one click"
-msgstr ""
-
-#: assets/src/js/views/tour.js:51
-msgid "Press play on any task. Step away, close the tab or fold your laptop, and the timer stops where you left; the time away is never counted."
-msgstr ""
-
-#: assets/src/js/views/tour.js:56
+#: assets/src/js/views/tour.js:58
 msgid "The board"
 msgstr ""
 
-#: assets/src/js/views/tour.js:58
+#: assets/src/js/views/tour.js:60
 msgid "Now, Next, Later and Done. Open a task for its notes, subtasks and comments."
 msgstr ""
 
-#: assets/src/js/views/tour.js:59
+#: assets/src/js/views/tour.js:61
 msgid "Now, Next, Later and Done. Drag cards to reorder them or move them across, and open a task for its notes, subtasks and comments. Press N for a new task."
 msgstr ""
 
-#: assets/src/js/views/tour.js:65
-msgid "Projects on a timeline, by months or quarters, with their goals, target dates and deadlines."
+#: assets/src/js/views/tour.js:67
+msgid "Every project on a timeline, from its start to its target date. Bars fill as tasks get done, and a dashed red line marks a hard deadline. Click a bar to edit the project."
 msgstr ""
 
-#: assets/src/js/views/tour.js:71
+#: assets/src/js/views/tour.js:73
 msgid "Write down the questions that block work. Ask the team to vote; the person named records the decision."
 msgstr ""
 
-#: assets/src/js/views/tour.js:77
-msgid "Where the hours went: today, this week, this month or this year, for you and for the team."
-msgstr ""
-
-#: assets/src/js/views/tour.js:81
-msgid "Create and chat"
+#: assets/src/js/views/tour.js:79
+msgid "Where the hours went: the total, the daily average, sessions, the top project, and every day, project and task, for you or the team, by day, week, month or year."
 msgstr ""
 
 #: assets/src/js/views/tour.js:83
+msgid "Create and chat"
+msgstr ""
+
+#: assets/src/js/views/tour.js:85
 msgid "Create tasks, projects and decisions from here, and open the team chat. In chat, type @ to mention someone and / to link a task."
 msgstr ""
 
-#: assets/src/js/views/tour.js:84
+#: assets/src/js/views/tour.js:86
 msgid "Talk with the team beside your work. Type @ to mention someone and / to link a task, decision or project."
 msgstr ""
 
-#: assets/src/js/views/tour.js:89
+#: assets/src/js/views/tour.js:91
 msgid "What is about you, and what the team did. You can turn on desktop alerts here for this device."
 msgstr ""
 
-#: assets/src/js/views/tour.js:95
+#: assets/src/js/views/tour.js:97
 msgid "Find any task, project, decision or message."
 msgstr ""
 
-#: assets/src/js/views/tour.js:96
+#: assets/src/js/views/tour.js:98
 msgid "Find any task, project, decision or message. Press / to search from anywhere."
 msgstr ""
 
-#: assets/src/js/views/tour.js:100
+#: assets/src/js/views/tour.js:102
 msgid "You, your team and the settings"
 msgstr ""
 
-#: assets/src/js/views/tour.js:100
+#: assets/src/js/views/tour.js:102
 msgid "You and your team"
 msgstr ""
 
-#: assets/src/js/views/tour.js:102
+#: assets/src/js/views/tour.js:104
 msgid "Who is here, the theme, this tour again, and the workspace settings: name, address, branding, invites and more."
 msgstr ""
 
-#: assets/src/js/views/tour.js:103
+#: assets/src/js/views/tour.js:105
 msgid "Who is here, the theme, and this tour again whenever you want it."
 msgstr ""
 
-#: assets/src/js/views/tour.js:141
+#: assets/src/js/views/tour.js:143
 msgid "Skip"
 msgstr ""
 
-#: assets/src/js/views/tour.js:142
+#: assets/src/js/views/tour.js:144
 msgid "Back"
 msgstr ""
 
-#: assets/src/js/views/tour.js:143
+#: assets/src/js/views/tour.js:145
 msgid "Start working"
 msgstr ""
 

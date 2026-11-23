@@ -24,7 +24,9 @@ test( 'first visit: the tour starts, walks the pages, and Esc ends it for good',
 	await expect( card ).toContainText( 'Welcome to' );
 	await expect( card ).toContainText( '1 of' );
 
-	// Next: the spotlight lands on "your three".
+	// Next: the spotlight lands on the Focus timer, then on "your three".
+	await page.keyboard.press( 'ArrowRight' );
+	await expect( card ).toContainText( 'Your day and the timer' );
 	await page.keyboard.press( 'ArrowRight' );
 	await expect( card ).toContainText( 'Your three' );
 	const slots = await page.locator( '.nw-slots' ).boundingBox();
@@ -39,11 +41,25 @@ test( 'first visit: the tour starts, walks the pages, and Esc ends it for good',
 
 	// On to the board: the tour goes to the page.
 	await page.click( '[data-tour="next"]' );
-	await page.click( '[data-tour="next"]' );
 	await expect( card ).toContainText( 'The board' );
 	await expect.poll( () => page.evaluate( () => window.location.hash ) ).toBe( '#board' );
 	await page.click( '[data-tour="back"]' );
 	await expect( card ).not.toContainText( 'The board' );
+
+	// Roadmap and Time spotlight the timeline and the analytics, not their toolbars.
+	for ( const [ title, sel ] of [ [ 'Roadmap', '#nw-tl-scroll' ], [ 'Time', '#nw-tbody' ] ] ) {
+		while ( ( await card.locator( 'h3' ).textContent() ) !== title ) {
+			// One step at a time: wait for the card to move on before clicking again.
+			const before = await card.locator( '.nw-tour-step' ).textContent();
+			await page.click( '[data-tour="next"]' );
+			await expect( card.locator( '.nw-tour-step' ) ).not.toHaveText( before );
+		}
+		await expect.poll( async () => {
+			const t = await page.locator( sel ).boundingBox();
+			const s = await page.locator( '.nw-tour-spot' ).boundingBox();
+			return !! t && !! s && s.height > 150 && s.y < t.y + 60 && s.y + s.height > t.y + 100;
+		} ).toBe( true );
+	}
 
 	await page.keyboard.press( 'Escape' );
 	await expect( page.locator( '.nw-tour' ) ).toHaveCount( 0 );

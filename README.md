@@ -6,7 +6,7 @@ It is deliberately *not* another everything-tool: few buttons, nothing to config
 
 ![Focus: your three, the timer, who is here today and what is due](.wordpress-org/screenshot-1.png)
 
-**[▶ Try the live demo](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json)**: a private copy of NovaWork in your browser, with a demo team and their work. Nothing to install, nothing you do reaches anyone else, and a reload starts fresh.
+**[▶ Try the live demo](https://playground.wordpress.net/?mode=seamless&blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json)**: a private copy of NovaWork in your browser, with a demo team and their work. Nothing to install, nothing you do reaches anyone else, and a reload starts fresh.
 
 - **Free and complete.** GPLv2 or later, nothing locked, no Pro version of the core.
 - **Yours.** Everything lives in your WordPress database and uploads folder. The app talks only to your own site.

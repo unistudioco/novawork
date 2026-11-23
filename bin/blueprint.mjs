@@ -10,7 +10,7 @@
  * - demo/blueprint.json: the "Try the live demo" link for the website
  *   (owner, 2026-11-23). Installs the newest GitHub Release's novawork.zip,
  *   so it works before WordPress.org approval and the link never changes:
- *   https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json
+ *   https://playground.wordpress.net/?mode=seamless&blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json
  *   Playground runs in each visitor's browser: everyone gets a private copy,
  *   nothing they do reaches anyone else, and a reload starts fresh.
  *

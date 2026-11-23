@@ -16,7 +16,7 @@ The owner submits. Never submit, tag or commit to SVN on the owner's behalf.
 
 The website's demo button opens NovaWork in WordPress Playground, in the visitor's own browser: everyone gets a private copy, signed in as "Alex" with the demo team, and nothing they do reaches anyone else or any server. A reload starts fresh.
 
-- Link: https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json
+- Link: https://playground.wordpress.net/?mode=seamless&blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json (`mode=seamless` hides Playground's own toolbar)
 - `demo/blueprint.json` installs the newest GitHub Release's `novawork.zip` (`releases/latest/download/novawork.zip`), so the link never changes. Playground downloads it through its own CORS proxy.
 - **Every release:** build the zip, copy it to the fixed name `novawork.zip`, and publish a GitHub Release with it attached:
   ```
