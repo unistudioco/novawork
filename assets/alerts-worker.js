@@ -15,6 +15,21 @@ self.addEventListener( 'activate', ( event ) => event.waitUntil( self.clients.cl
 self.addEventListener( 'notificationclick', ( event ) => {
 	const data = event.notification.data || {};
 	event.notification.close();
+	if ( data.idle ) {
+		// "Still working?" (1.2.0): its buttons answer without leaving the
+		// window you're in; a click on the alert itself opens the workspace.
+		event.waitUntil(
+			self.clients.matchAll( { type: 'window', includeUncontrolled: true } ).then( ( list ) => {
+				const app = data.appUrl ? list.find( ( c ) => c.url.indexOf( data.appUrl ) === 0 ) : null;
+				if ( ! app ) {
+					return data.appUrl ? self.clients.openWindow( data.appUrl ) : undefined;
+				}
+				app.postMessage( { novaworkIdle: event.action || 'open' } );
+				return event.action ? undefined : app.focus();
+			} )
+		);
+		return;
+	}
 	event.waitUntil(
 		self.clients.matchAll( { type: 'window', includeUncontrolled: true } ).then( ( list ) => {
 			const app = data.appUrl ? list.find( ( c ) => c.url.indexOf( data.appUrl ) === 0 ) : null;

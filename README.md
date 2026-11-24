@@ -41,7 +41,9 @@ It is deliberately *not* another everything-tool: few buttons, nothing to config
 
 ### Time
 - Where the hours went: today, week, month or year, with the daily average, sessions, the top project and a breakdown by person.
-- **Time away is never counted.** After a while without activity the timer asks "Still working?". Fold the laptop, close the tab or lose the connection, and the timer stops where the device went quiet, with a note saying what was not counted.
+- **Never loses time silently, never counts time nobody confirmed.** After a while without activity the timer asks "Still working?", also as a desktop or phone alert you can answer from any window. Fold the laptop, close the window or lose the connection, and it stops where the device went quiet; next time you're back it asks **"Were you working?"** and Count it puts the time back.
+- **Works offline:** the timer keeps counting, and Stop is saved when the connection returns.
+- **Administrators fix time by hand:** add a session, change its task and times, or delete it with Undo.
 
 ### Talk: chat, comments, notifications
 - **Team chat** that docks to either side, floats anywhere, or opens as a sheet on phones; Shift+Enter for a new line.
@@ -56,6 +58,7 @@ It is deliberately *not* another everything-tool: few buttons, nothing to config
 - **Your name, icon, logo and accent colour.** Every accent tone is derived and kept readable in light and dark.
 - **Install it as an app** on Android, iPhone, iPad and desktop, with your icon and its own window, and a calm offline page. No app store.
 - **Members are WordPress users.** Invite people with a link or by email, or tick "NovaWork member" on an existing user's profile. Nobody signs up on their own.
+- **Members change their own work** (tasks they created or are assigned to, projects and decisions they created); administrators change everything. A setting opens it to the whole team.
 - **Every choice an admin could want is a setting**, on a settings screen in NovaWork's own design inside wp-admin.
 
 ### Privacy and data
@@ -74,7 +77,7 @@ The details that make it feel finished:
 | **Undo everywhere** | Deleting a task, project, decision, comment, message or subtask shows "Deleted. Undo", and Undo really brings it back. |
 | **Live without websockets** | Changes reach everyone within seconds through one polling endpoint, so it works on ordinary shared hosting. |
 | **Keyboard** | <kbd>N</kbd> new task · <kbd>/</kbd> search · <kbd>T</kbd> start or pause the timer · <kbd>Esc</kbd> closes whatever is open. |
-| **Honest timer** | A heartbeat on the server plus a sleep check in the page: a folded laptop never keeps tracking. |
+| **Honest timer** | A heartbeat on the server plus a sleep check in the page: a folded laptop never keeps tracking, and "Were you working?" puts real work back. |
 | **Flowing gradient** | The running timer's card, the tracked task's card and the phone's floating tracker share one animated ring (off with reduced motion). |
 | **Phones** | Bottom sheets with swipe-to-close, a floating tracker, a create button, and a full-screen search. |
 | **Dark mode** | Follows the device, with tokens tuned for both themes. |
@@ -152,7 +155,7 @@ Code map: `src/` (PHP: `App`, `Rest`, `Data`, `Services`, `Install`, `Access`, `
 NovaWork is built so an add-on can listen and act, including authors that are not people (a planned AI teammate, "Spike", will post in chat and comment like a team member).
 
 - **Agents:** register a non-human author with the `novawork_agents` filter; messages and comments can be written by an agent instead of a user.
-- **Actions:** `novawork_task_created|updated`, `novawork_subtask_created|updated|deleted`, `novawork_project_created|updated`, `novawork_decision_created|updated|decided`, `novawork_comment_created|updated|deleted`, `novawork_message_created|updated|deleted`, `novawork_timer_started|stopped`, `novawork_member_joined`, `novawork_settings_saved`, `novawork_loaded`.
+- **Actions:** `novawork_task_created|updated`, `novawork_subtask_created|updated|deleted`, `novawork_project_created|updated`, `novawork_decision_created|updated|decided`, `novawork_comment_created|updated|deleted`, `novawork_message_created|updated|deleted`, `novawork_timer_started|stopped`, `novawork_time_entry_saved|deleted`, `novawork_member_joined`, `novawork_settings_saved`, `novawork_loaded`.
 - **Team feed:** add rows with `NovaWork\Services\Activity::record()`.
 
 ---
@@ -206,6 +209,11 @@ composer run plugin-check  # Plugin Check on the release zip
 ---
 
 ## Roadmap
+
+**1.2** (built)
+- **A smarter timer**: "Were you working?" after an automatic stop, "Still working?" as an alert with its answers, and Stop that works offline.
+- **Time editing** for administrators on the Time page.
+- **Edit rights**: members change their own work; administrators everything (a setting).
 
 **1.1** (built)
 - **Tooltips**: one smooth, animated tooltip for every icon button and the time tracker.

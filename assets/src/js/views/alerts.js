@@ -18,6 +18,7 @@
 import { safeEffect } from '../lib/effect.js';
 import { serverNow } from '../store.js';
 import { store } from './model.js';
+import { __ } from '../lib/i18n.js';
 
 const PREF = 'nw.alerts';
 const LAST = 'nw.alertedId';
@@ -125,6 +126,64 @@ async function show( n ) {
 		};
 	} catch ( e ) {
 		// Browsers that only allow alerts through a worker: nothing to show.
+	}
+}
+
+/* The page's own "Still working?" alert, where no worker could show it. */
+let idleNote = null;
+
+/**
+ * "Still working?" as an alert (owner, 1.2.0), for when the question opens
+ * while the workspace isn't the window in front. Chrome, Edge and Android
+ * show its two answers as buttons; elsewhere a click brings the workspace
+ * forward, on the question.
+ *
+ * @param {string} body What the alert says under its title.
+ * @return {Promise<boolean>} Whether an alert was shown.
+ */
+export async function showIdleAlert( body ) {
+	if ( alertState() !== 'on' ) {
+		return false;
+	}
+	const title = __( 'Still working?', 'novawork' );
+	const options = {
+		body,
+		tag: 'novawork-idle',
+		renotify: true,
+		requireInteraction: true,
+		icon: boot().icon || undefined,
+		data: { idle: true, appUrl: ( window.novawork || {} ).appUrl || '' },
+		actions: [
+			{ action: 'resume', title: __( 'I’m still working', 'novawork' ) },
+			{ action: 'pause', title: __( 'Pause', 'novawork' ) },
+		],
+	};
+	const reg = await registration();
+	if ( reg ) {
+		await reg.showNotification( title, options );
+		return true;
+	}
+	try {
+		idleNote = new Notification( title, { body, tag: options.tag, requireInteraction: true, icon: options.icon } );
+		idleNote.onclick = () => {
+			window.focus();
+			idleNote.close();
+		};
+		return true;
+	} catch ( e ) {
+		return false;
+	}
+}
+
+/** The question was answered (here or on the alert): take the alert away. */
+export async function closeIdleAlert() {
+	if ( idleNote ) {
+		idleNote.close();
+		idleNote = null;
+	}
+	const reg = worker ? await worker : null;
+	if ( reg && reg.getNotifications ) {
+		( await reg.getNotifications( { tag: 'novawork-idle' } ) ).forEach( ( n ) => n.close() );
 	}
 }
 

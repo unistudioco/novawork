@@ -584,7 +584,8 @@ Delete" below.
   `task.subtasks` [{id, title, done, doneAt, assigneeId, order}]),
   `Rest\SubtasksController` (`POST /tasks/{id}/subtasks`, `PATCH|DELETE
   /tasks/{id}/subtasks/{sid}`, `POST …/{sid}/move`; every answer is the
-  whole task). Up to 50 per task. Any member can change any checklist.
+  whole task). Up to 50 per task. Since 1.2.0 only the task's editors change
+  its checklist (edit rights), and someone given a subtask may tick it.
   Giving someone a subtask sends an `assign` notification about the task
   with `data.subtask`. Deleting a task removes its subtasks; a removed member
   is unassigned; the eraser clears `created_by`. UI: `views/subtasks.js` in
@@ -742,6 +743,57 @@ running for good. Now:
 - Container tests: `WP_CLI_ALLOW_ROOT=1` for helpers that run WP-CLI; the
   dev server is `127.0.0.1:8080` (curl with `--connect-to
   novawork.local:80:127.0.0.1:8080 --noproxy novawork.local`).
+
+## Release 1.2.0 (built 2026-11-24, branch `release-1.2.0`)
+
+Owner report: Oussama folded his laptop with the timer running, worked
+elsewhere, and found 40 minutes of 2h+ kept; offline, two hours were lost
+and Stop did nothing. The rule now: **NovaWork never loses time silently,
+and never counts time nobody confirmed.** Scenario matrix and test plan:
+the "NovaWork timer: scenarios and rules" doc.
+
+- **Edit rights** (setting `edit_rule`: `own` default | `anyone`; sync
+  `editRule`): `Capabilities::can_edit_task()` (creator or assignee) and
+  `can_edit_own()` (creator, for projects and decisions); administrators
+  always. Checked on every update, move and delete (403
+  `novawork_not_your_work`); a decision's decider may still change only its
+  outcome (status, answer); someone given a subtask may tick it. App:
+  `canEditTask()/canEditOwn()` in views/model.js; someone else's work opens
+  read only (`lockFields()` + `closeOnly()` in dialog.js, `.nw-ro`), its
+  cards don't drag, the checklist locks itself (`wireSubtasks( id, ro )`).
+- **Time editing** (administrators): `Services\TimeEdits` (no overlaps per
+  member, nothing in the future, a minute at least; a running session keeps
+  running), `POST /time-entries`, `PATCH|DELETE /time-entries/{id}`
+  (`can_edit_time()`), hooks `novawork_time_entry_saved|deleted`. Time page:
+  "Sessions" lists the whole period (8, then "Show all"), edit buttons and
+  "Add time" for administrators (`openSession()` in editors.js; delete is
+  immediate on the server, Undo posts it back). `forgetHistory()` refetches
+  Month/Year after an edit.
+- **"Were you working?"** (setting `recover_time`, on; sync `recoverTime`):
+  `Timer::stop( $user, $end, $reason )` with reason `away` (server silence),
+  `sleep` (the page woke) or `idle` (no answer) records user meta
+  `novawork_pending_stop`; `/sync` sends `pendingStop`;
+  `POST /timer/recover {until, keep}` ("Count it", optionally keep
+  tracking: the same session runs on) or `POST /timer/dismiss`. Own stop
+  only, within 24 h, capped at the next session's start (and then never
+  kept running). views/recover.js asks once per page (never over another
+  dialog or the tour); answered elsewhere, it closes. With it on, the old
+  "weren't counted" toasts stay quiet.
+- **"Still working?" as an alert**: `showIdleAlert()/closeIdleAlert()` in
+  views/alerts.js (tag `novawork-idle`, actions resume|pause) when the
+  question opens and the window isn't in front; alerts-worker.js posts
+  `{novaworkIdle}` back, idle.js answers. Needs desktop alerts on for that
+  device. An answer from another device must be newer on the server and
+  later than the activity the question counts from (`anywhere() > idle.from`).
+- **Offline**: sync.js sets `offlineSince` on a network failure (no HTTP
+  status) and fires `nw:offline` / `nw:online`; activity is marked sent
+  only after it arrived. `stopTracking()` offline queues `nw.queuedStop`
+  {start, at}; `flushQueuedStop()` (on `nw:online` and at load) asks the
+  server for that session: still running → stop at `at`; stopped meanwhile
+  → recover until `at`.
+- Tests: tests/browser/rights.spec.js, timer.spec.js (alert test lets the
+  click's scroll settle before moving the clock: a scroll is activity), the
+  "Edit rights", "Were you working?" and "fix time by hand" API sections.
 
 ## Design rules that bite (full list in the log)
 

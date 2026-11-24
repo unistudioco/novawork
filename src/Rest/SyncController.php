@@ -162,6 +162,7 @@ final class SyncController extends Controller {
 				'teamOrder'      => Settings::team_order(),
 				'decideRule'     => Settings::decide_rule(),
 				'editRule'       => Settings::edit_rule(),
+				'recoverTime'    => (bool) Settings::get( 'recover_time' ),
 				'decisionVotes'  => (bool) Settings::get( 'decision_votes' ),
 				'voteOrder'      => Settings::vote_order(),
 				'desktopAlerts'  => (bool) Settings::get( 'desktop_alerts' ),

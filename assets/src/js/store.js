@@ -49,6 +49,12 @@ export function createStore( boot ) {
 		timerAway: null,
 		// The member's latest activity on any device (server ms): views/idle.js.
 		activeAt: 0,
+		// "Were you working?" after an automatic stop (1.2.0): views/recover.js.
+		pendingStop: null,
+		// No answer from the site (1.2.0): since when (local ms), else 0; and
+		// the last offline span [from, to], to word "Were you working?".
+		offlineSince: 0,
+		lastOffline: null,
 		now: Date.now(),
 		view: 'focus',
 
@@ -100,6 +106,9 @@ export function createStore( boot ) {
 			}
 			if ( payload.activeAt && payload.activeAt !== this.activeAt ) {
 				this.activeAt = payload.activeAt;
+			}
+			if ( 'pendingStop' in payload && JSON.stringify( payload.pendingStop ) !== JSON.stringify( this.pendingStop ) ) {
+				this.pendingStop = payload.pendingStop;
 			}
 			if ( payload.cursor !== this.cursor ) {
 				this.cursor = payload.cursor;

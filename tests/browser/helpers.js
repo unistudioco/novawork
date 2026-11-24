@@ -14,6 +14,9 @@ export async function signIn( context, which = 'A' ) {
 	if ( res.status() !== 302 ) {
 		throw new Error( 'Sign-in failed for ' + user );
 	}
+	// A "Were you working?" question left by an earlier test's automatic stop
+	// (1.2.0) would open over the page: every test starts without one.
+	wpEval( `$u = get_user_by( 'login', '${ user }' ); if ( $u ) { delete_user_meta( $u->ID, NovaWork\\Services\\TimeEdits::PENDING_META ); }` );
 }
 
 /** Read the server's current data the way the app does. */

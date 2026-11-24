@@ -2,7 +2,7 @@
  * Writes to the API with the prototype's feedback: a toast on success, a
  * calm error toast on failure, and an immediate sync so every view updates.
  */
-import { post } from '../lib/api.js';
+import { post, get } from '../lib/api.js';
 import { __, sprintf } from '../lib/i18n.js';
 import { dur, dayStart } from '../lib/format.js';
 import { serverNow } from '../store.js';
@@ -73,14 +73,89 @@ export async function startTracking( taskId ) {
  * @param {boolean} silent No toast (e.g. when switching tasks).
  * @param {number}  endMs  End at this time instead of now (idle pause).
  */
-export async function stopTracking( silent, endMs ) {
+/* A Stop pressed while offline (1.2.0), sent when the site answers again. */
+const QUEUE = 'nw.queuedStop';
+export function queuedStop() {
+	try {
+		return JSON.parse( window.localStorage.getItem( QUEUE ) || 'null' );
+	} catch ( e ) {
+		return null;
+	}
+}
+function setQueued( q ) {
+	try {
+		if ( q ) {
+			window.localStorage.setItem( QUEUE, JSON.stringify( q ) );
+		} else {
+			window.localStorage.removeItem( QUEUE );
+		}
+	} catch ( e ) {}
+}
+
+/**
+ * Back online: end the session where Stop was pressed. The server may have
+ * stopped it meanwhile (it heard nothing), then the stop is put back to
+ * that moment through "Were you working?" without asking.
+ */
+export async function flushQueuedStop() {
+	const q = queuedStop();
+	if ( ! q ) {
+		return;
+	}
+	const S = store();
+	try {
+		// Ask the server, not this page (it still shows the session stopped).
+		const mine = await get( 'time-entries', { from: q.start - 1000, user: S.me } );
+		const same = ( mine || [] ).find( ( e ) => e.start === q.start );
+		const pending = S.pendingStop;
+		if ( same && same.running ) {
+			await post( 'timer/stop', { endedAt: Math.round( q.at ) } );
+		} else if ( pending && pending.startedAt === q.start ) {
+			await post( 'timer/recover', { until: Math.round( q.at ), keep: false } );
+		}
+		setQueued( null );
+		toast( __( 'Back online. Your timer was saved where you stopped it.', 'novawork' ), 'check' );
+	} catch ( e ) {
+		if ( e.status ) {
+			// The site refused it (nothing left to fix): forget it.
+			setQueued( null );
+		}
+	}
+	poll();
+}
+
+/**
+ * Stop your timer.
+ *
+ * @param {boolean} silent No "Paused" toast.
+ * @param {number}  endMs  End there (server ms) instead of now.
+ * @param {string}  reason The app stopped it on its own: "idle" or "sleep" (1.2.0).
+ */
+export async function stopTracking( silent, endMs, reason ) {
 	const S = store();
 	const run = myRun();
 	if ( ! run ) {
 		return null;
 	}
-	const res = await write( () => post( 'timer/stop', endMs ? { endedAt: Math.round( endMs ) } : {} ) );
-	if ( ! res ) {
+	const body = endMs ? { endedAt: Math.round( endMs ) } : {};
+	if ( reason ) {
+		body.reason = reason;
+	}
+	let res = null;
+	try {
+		res = await post( 'timer/stop', body );
+		poll();
+	} catch ( e ) {
+		if ( ! e.status && ! reason ) {
+			// Offline: stop here now, send it when the site answers again.
+			const at = endMs || serverNow();
+			setQueued( { start: run.start, at } );
+			S.upsert( 'timeEntries', Object.assign( {}, run, { running: false, end: at } ) );
+			toast( __( 'Stopped. You’re offline, so it’s saved as soon as you’re back.', 'novawork' ), 'pause' );
+			return null;
+		}
+		const human = e && e.status >= 400 && e.status < 500 && e.message;
+		toast( human ? e.message : __( 'Could not save. Check your connection and try again.', 'novawork' ), 'x' );
 		return null;
 	}
 	S.remove( 'timeEntries', run.id );

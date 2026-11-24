@@ -11,8 +11,8 @@ import { safeEffect } from '../lib/effect.js';
 import { __ } from '../lib/i18n.js';
 import { esc, clock, dur, dayStart } from '../lib/format.js';
 import { serverNow } from '../store.js';
-import { bind, store, tracked, task, canEditTask } from './model.js';
-import { bindSync, toggleTask, write, keepTask } from './actions.js';
+import { bind, store, tracked, task, canEditTask, myRun } from './model.js';
+import { bindSync, toggleTask, write, keepTask, flushQueuedStop } from './actions.js';
 import { enhance, openSelectBox } from './select.js';
 import { mountDialog } from './dialog.js';
 import { openTask, openProject, openDecision, openSession, vote } from './editors.js';
@@ -23,6 +23,7 @@ import { viewFocus } from './focus.js';
 import { viewRoadmap, wireRoadmap, scrollToToday, forgetRoadmapScroll, rememberRoadmapScroll } from './roadmap.js';
 import { viewTime, wireTime, sessionById, forgetHistory } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
+import { mountRecover } from './recover.js';
 import { mountChat } from './chat.js';
 import { mountNotes } from './notes.js';
 import { mountTour } from './tour.js';
@@ -289,6 +290,15 @@ export function mountViews( sync ) {
 	bindSync( sync );
 	mountDialog();
 	mountIdle( sync );
+	mountRecover();
+	// Offline (1.2.0): say what still works; back online, send a Stop pressed meanwhile.
+	window.addEventListener( 'nw:offline', () => {
+		if ( myRun() ) {
+			toast( __( 'You’re offline. The timer keeps counting here, and Stop still works.', 'novawork' ), 'warning-circle', { label: __( 'OK', 'novawork' ), run: () => {} } );
+		}
+	} );
+	window.addEventListener( 'nw:online', flushQueuedStop );
+	setTimeout( flushQueuedStop, 2000 );
 	mountChat();
 	mountNotes();
 	mountTour();

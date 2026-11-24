@@ -97,7 +97,11 @@ The app checks for changes every few seconds while it is open (a setting) and le
 
 = What happens to the timer if I close my laptop? =
 
-It stops where your device went quiet, and the time away is not counted. The same happens when the tab is closed or the connection is lost for longer than the inactivity reminder (10 minutes by default). You will see a short note saying what was not counted. Working in other apps with the workspace open in a background tab is fine.
+It stops where your device went quiet, so time nobody was there for is never counted. The same happens when the window is closed or the connection is lost for longer than the inactivity reminder (10 minutes by default). The next time you're back, NovaWork asks "Were you working?": Count it puts the time back, up to the moment you choose. Working on another device with NovaWork open keeps it running, and an administrator can fix any session by hand.
+
+= Can everyone change every task? =
+
+By default, members change their own work: tasks they created or are assigned to, and projects and decisions they created. Everyone can still comment, vote and track time on anything, and administrators can change everything. Settings → "Who can change work" switches to "Anyone in the team".
 
 = Why don't I see the option for desktop alerts? =
 
@@ -169,6 +173,15 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 
 == Changelog ==
 
+= 1.2.0 =
+* New: "Were you working?" When NovaWork stops a timer on its own (a sleeping laptop, a closed window, no internet, no answer to "Still working?"), it asks you the next time you're back, and Count it puts the time back. Setting: Ask after an automatic stop.
+* New: "Still working?" also shows as a desktop or phone alert when the workspace isn't the window in front, with "I'm still working" and "Pause" on it.
+* New: the timer works offline: it keeps counting, Stop is remembered and saved when the connection returns.
+* New: administrators fix time by hand on the Time page: add a session, change its task, start and end, or delete it with Undo.
+* New: members change their own work: tasks they created or are assigned to, and projects and decisions they created. Anyone can still comment, vote and track time. Administrators can change everything. Setting: Who can change work.
+* Improved: the Time page lists every session in the period, not only the newest eight.
+* Fix: activity from a moment offline now reaches your other devices once you're back.
+
 = 1.1.0 =
 * New: install the workspace as an app on phones, tablets and computers, with the workspace icon and its own window, and a calm offline page. Setting: Installable app.
 * New: vote options with the most votes rise to the top, and glide to their new place as votes change. Setting: Order of vote options (most votes first, or as written).
@@ -181,6 +194,9 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * First release: Focus with a server-side timer, the board with subtasks, projects and the roadmap, decisions with team votes, time analytics, team chat with mentions, links and private files, notifications with desktop alerts, quick search, invites, branding, privacy tools and translations.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+A smarter timer that never loses time silently, admin time editing, and members changing only their own work (a setting).
 
 = 1.1.0 =
 Install the workspace as an app, vote options ordered by votes, new tooltips, and a timer fix for teams who use NovaWork on two devices.

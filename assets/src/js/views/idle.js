@@ -39,6 +39,7 @@ import { safeEffect } from '../lib/effect.js';
 import { serverNow } from '../store.js';
 import { store, myRun, task } from './model.js';
 import { stopTracking } from './actions.js';
+import { showIdleAlert, closeIdleAlert } from './alerts.js';
 import { lastActive, markActive } from '../lib/activity.js';
 
 let idle = null;
@@ -65,7 +66,9 @@ function anywhere() {
 const awayAfter = () => Math.max( 3 * MIN, threshold() );
 
 function tellAway( endedAtServer, awayMs, taskId ) {
-	if ( Date.now() - toldAway < 30000 ) {
+	// With "Ask after an automatic stop" on, "Were you working?" explains it
+	// and offers to count the time (views/recover.js, 1.2.0).
+	if ( Date.now() - toldAway < 30000 || store().settings.recoverTime ) {
 		return;
 	}
 	toldAway = Date.now();
@@ -111,7 +114,7 @@ async function wokeUp( wokeAt, gap ) {
 	}
 	const endServer = sleptAt + ( serverNow() - Date.now() );
 	tellAway( Math.max( endServer, run.start ), wokeAt - Math.max( sleptAt, run.start - ( serverNow() - Date.now() ) ), run.taskId );
-	stopTracking( true, Math.max( endServer, run.start ) );
+	stopTracking( true, Math.max( endServer, run.start ), 'sleep' );
 }
 
 const threshold = () => Math.max( 1, Number( store().settings.idleMinutes ) || 10 ) * MIN;
@@ -157,11 +160,18 @@ export function askIdlePermission() {
 		.catch( () => {} );
 }
 
-function pause() {
+/**
+ * Pause at the last activity.
+ *
+ * @param {boolean} chosen The member pressed Pause (no "Were you working?"
+ *                         later); otherwise nobody answered in time.
+ */
+function pause( chosen = true ) {
 	const run = myRun();
 	// The last activity here or on any other device.
 	const from = idle ? Math.max( idle.from, Math.min( anywhere(), Date.now() ) ) : Date.now();
 	idle = null;
+	closeIdleAlert();
 	if ( dlg.open ) {
 		dlg.close();
 	}
@@ -169,13 +179,16 @@ function pause() {
 	if ( ! run ) {
 		return;
 	}
-	stopTracking( true, from + ( serverNow() - Date.now() ) ).then( () => {
-		toast( sprintf( /* translators: %s: time away, e.g. "12m". */ __( 'Timer paused. The %s you were away wasn’t counted.', 'novawork' ), dur( Date.now() - from ) ), 'pause' );
+	stopTracking( true, from + ( serverNow() - Date.now() ), chosen ? undefined : 'idle' ).then( () => {
+		if ( chosen || ! store().settings.recoverTime ) {
+			toast( sprintf( /* translators: %s: time away, e.g. "12m". */ __( 'Timer paused. The %s you were away wasn’t counted.', 'novawork' ), dur( Date.now() - from ) ), 'pause' );
+		}
 	} );
 }
 
 function resume( elsewhere = false ) {
 	idle = null;
+	closeIdleAlert();
 	// Back now: also forget the Idle Detection API's "idle since", or the
 	// next tick would ask again (Android).
 	idleSince = null;
@@ -214,10 +227,11 @@ export function checkIdle() {
 	}
 	const startedLocal = run.start - ( serverNow() - now );
 	const elsewhere = Math.min( anywhere(), now );
-	// Answered by activity on another device while the question is open:
-	// this device reports nothing while it asks, so a newer server value
-	// came from another one (compared in server time, untouched by latency).
-	if ( idle && ( Number( store().activeAt ) || 0 ) > idle.seen ) {
+	// Answered by activity on another device while the question is open: a
+	// newer server value than when it asked, and later than the activity the
+	// question counts from (this device's own last report can still be on
+	// its way; it is never later than that).
+	if ( idle && ( Number( store().activeAt ) || 0 ) > idle.seen && anywhere() > idle.from + 1000 ) {
 		resume( true );
 		return;
 	}
@@ -233,12 +247,22 @@ export function checkIdle() {
 		if ( ! dlg.open ) {
 			dlg.showModal();
 		}
+		// Not the window in front (working in another app): ask there too, as
+		// an alert with the two answers (owner, 1.2.0).
+		if ( document.visibilityState !== 'visible' || ! document.hasFocus() ) {
+			const t = task( run.taskId );
+			showIdleAlert(
+				t
+					? sprintf( /* translators: 1: time without activity, e.g. "10m", 2: task. */ __( 'No activity for %1$s. Your timer on %2$s is still running.', 'novawork' ), dur( now - from ), t.title )
+					: sprintf( /* translators: %s: time without activity, e.g. "10m". */ __( 'No activity for %s. Your timer is still running.', 'novawork' ), dur( now - from ) )
+			);
+		}
 	}
 	if ( idle ) {
 		const left = Math.max( 0, Math.ceil( ( idle.asked + grace() - now ) / 1000 ) );
 		dlg.querySelector( '#nw-idle-left' ).textContent = String( left );
 		if ( ! left ) {
-			pause();
+			pause( false );
 		}
 	}
 }
@@ -282,6 +306,20 @@ export function mountIdle( syncLoop ) {
 		e.preventDefault();
 		resume();
 	} );
+	// Answered from the alert's buttons (views/alerts.js, alerts-worker.js).
+	if ( 'serviceWorker' in navigator ) {
+		navigator.serviceWorker.addEventListener( 'message', ( e ) => {
+			const answer = e.data && e.data.novaworkIdle;
+			if ( ! idle || ! answer ) {
+				return;
+			}
+			if ( answer === 'resume' ) {
+				resume();
+			} else if ( answer === 'pause' ) {
+				pause();
+			}
+		} );
+	}
 	// Allowed before? Start without asking again.
 	if ( 'IdleDetector' in window && navigator.permissions ) {
 		navigator.permissions

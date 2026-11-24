@@ -44,16 +44,28 @@ export function startSync( store ) {
 				const active = lastActive();
 				if ( active > sentActive ) {
 					args.active = Math.round( active + ( serverNow() - Date.now() ) );
-					sentActive = active;
 				}
 				const payload = await get( 'sync', args );
+				// Counted as sent only once it arrived (offline, it goes with the next poll).
+				sentActive = Math.max( sentActive, args.active ? active : 0 );
 				setNonce( payload.nonce );
 				store.apply( payload );
 				more = !! payload.more;
 			}
 			failures = 0;
+			if ( store.offlineSince ) {
+				// Back online (1.2.0): a Stop pressed offline is sent now (views/actions.js).
+				store.lastOffline = [ store.offlineSince, Date.now() ];
+				store.offlineSince = 0;
+				window.dispatchEvent( new CustomEvent( 'nw:online' ) );
+			}
 		} catch ( error ) {
 			failures++;
+			if ( ! error.status && ! store.offlineSince ) {
+				// No answer at all: the network, not the site.
+				store.offlineSince = Date.now();
+				window.dispatchEvent( new CustomEvent( 'nw:offline' ) );
+			}
 			// Signed out, or the nonce expired while the laptop slept: a reload
 			// either sends them to the login screen or gets a fresh nonce.
 			if ( error.status === 401 || error.code === 'rest_cookie_invalid_nonce' ) {

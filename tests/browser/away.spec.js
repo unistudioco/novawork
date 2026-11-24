@@ -1,6 +1,8 @@
 /**
  * A running timer needs a sign of life (owner, 2026-11-22): a folded laptop
- * or a closed tab must not keep tracking.
+ * or a closed tab must not keep tracking. Since 1.2.0 the member is then
+ * asked "Were you working?" (setting recover_time, on) instead of being told
+ * the time wasn't counted; timer.spec.js covers the answers.
  */
 import { test, expect } from '@playwright/test';
 import { APP, signIn, unique, cleanUp, wpEval } from './helpers.js';
@@ -14,7 +16,9 @@ test.beforeEach( async ( { context, page } ) => {
 test.afterEach( async ( { page } ) => {
 	if ( ! page.isClosed() ) {
 		await page.evaluate( async () => {
-			await fetch( window.novawork.restUrl + 'timer/stop', { method: 'POST', headers: { 'X-WP-Nonce': window.novawork.nonce } } );
+			const h = { 'X-WP-Nonce': window.novawork.nonce };
+			await fetch( window.novawork.restUrl + 'timer/stop', { method: 'POST', headers: h } );
+			await fetch( window.novawork.restUrl + 'timer/dismiss', { method: 'POST', headers: h } );
 		} );
 		await cleanUp( page );
 	}
@@ -43,8 +47,8 @@ test( 'the page slept (laptop folded): it stops the timer on waking, without ask
 		const real = Date.now.bind( Date );
 		Date.now = () => real() + 40 * 60000;
 	} );
-	await expect( page.locator( '.nw-toast', { hasText: 'went quiet' } ) ).toBeVisible( { timeout: 5000 } );
-	await expect( page.locator( '.nw-now-card.nw-run' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.nw-now-card.nw-run' ) ).toHaveCount( 0, { timeout: 5000 } );
+	await expect( page.locator( '#nw-dlg[open] .nw-recover-lead' ) ).toContainText( 'went to sleep', { timeout: 10000 } );
 	await expect( page.locator( '#nw-idle-dlg[open]' ) ).toHaveCount( 0 );
 	const running = await page.evaluate( async () => {
 		const d = await ( await fetch( window.novawork.restUrl + 'sync', { headers: { 'X-WP-Nonce': window.novawork.nonce } } ) ).json();
@@ -62,7 +66,7 @@ test( 'the tab was closed: opening the app again finds the timer stopped where i
 		`$e = new NovaWork\\Data\\TimeEntryRepository(); $r = $e->running_for( ${ me } ); $e->update( (int) $r['id'], array( 'started_at' => gmdate( 'Y-m-d H:i:s', time() - 50 * 60 ) ) ); update_user_meta( ${ me }, NovaWork\\Members::SEEN_META, time() - 30 * 60 );`
 	);
 	await page.reload();
-	await expect( page.locator( '.nw-toast', { hasText: 'went quiet' } ) ).toContainText( title );
+	await expect( page.locator( '#nw-dlg[open] .nw-recover-lead' ) ).toContainText( title, { timeout: 10000 } );
 	await expect( page.locator( '.nw-now-card.nw-run' ) ).toHaveCount( 0 );
 	const kept = await page.evaluate( async ( taskId ) => {
 		const d = await ( await fetch( window.novawork.restUrl + 'sync', { headers: { 'X-WP-Nonce': window.novawork.nonce } } ) ).json();
