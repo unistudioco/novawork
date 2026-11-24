@@ -52,6 +52,7 @@ final class Settings {
 			'read_note_days'  => 90,
 			'team_order'      => 'dynamic',
 			'decide_rule'     => 'named',
+			'edit_rule'       => 'own',
 			'decision_votes'  => true,
 			'vote_order'      => 'votes',
 			'desktop_alerts'  => true,
@@ -153,6 +154,10 @@ final class Settings {
 		'decide_rule'     => array(
 			'type'    => 'choice',
 			'choices' => array( 'named', 'anyone' ),
+		),
+		'edit_rule'       => array(
+			'type'    => 'choice',
+			'choices' => array( 'own', 'anyone' ),
 		),
 		'decision_votes'  => array( 'type' => 'bool' ),
 		'vote_order'      => array(
@@ -305,6 +310,16 @@ final class Settings {
 	 */
 	public static function vote_order(): string {
 		return 'written' === self::get( 'vote_order' ) ? 'written' : 'votes';
+	}
+
+	/**
+	 * Who may change work (owner, 1.2.0): "own" (default) lets members change
+	 * tasks they created or are assigned to, and projects and decisions they
+	 * created; "anyone" lets every member change everything. Administrators
+	 * always may.
+	 */
+	public static function edit_rule(): string {
+		return 'anyone' === self::get( 'edit_rule' ) ? 'anyone' : 'own';
 	}
 
 	/**

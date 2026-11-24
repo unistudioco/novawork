@@ -182,6 +182,12 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 				<option value="fixed"><?php esc_html_e( 'Always the same order', 'novawork' ); ?></option>
 			</select>
 		<?php $novawork_row_end( 'team_order' ); ?>
+		<?php $novawork_row_start( 'edit_rule', __( 'Who can change work', 'novawork' ), __( 'Their own: members change tasks they created or are assigned to, and projects and decisions they created. Everyone can still comment, vote and track time. Administrators can always change everything.', 'novawork' ) ); ?>
+			<div class="nw-seg" role="radiogroup" aria-labelledby="nw-l-edit_rule">
+				<button type="button" role="radio" :aria-checked="String(values.edit_rule === 'own')" :class="{ 'nw-on': values.edit_rule === 'own' }" @click="values.edit_rule = 'own'"><?php esc_html_e( 'Their own', 'novawork' ); ?></button>
+				<button type="button" role="radio" :aria-checked="String(values.edit_rule === 'anyone')" :class="{ 'nw-on': values.edit_rule === 'anyone' }" @click="values.edit_rule = 'anyone'"><?php esc_html_e( 'Anyone in the team', 'novawork' ); ?></button>
+			</div>
+		<?php $novawork_row_end( 'edit_rule' ); ?>
 		<?php $novawork_row_start( 'decide_rule', __( 'Who records a decision', 'novawork' ), __( 'Administrators always can.', 'novawork' ) ); ?>
 			<div class="nw-seg" role="radiogroup" aria-labelledby="nw-l-decide_rule">
 				<button type="button" role="radio" :aria-checked="String(values.decide_rule === 'named')" :class="{ 'nw-on': values.decide_rule === 'named' }" @click="values.decide_rule = 'named'"><?php esc_html_e( 'The person named', 'novawork' ); ?></button>

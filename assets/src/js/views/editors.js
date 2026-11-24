@@ -17,10 +17,11 @@ import { wireThread, quoteHTML, actsHTML, kindOf } from './thread.js';
 import Alpine from 'alpinejs';
 import { safeEffect } from '../lib/effect.js';
 import { routeUrl, currentNonce } from '../lib/api.js';
-import { openDialog, actions, onDelete, onComment, dialogForm } from './dialog.js';
+import { openDialog, actions, closeOnly, lockFields, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
 import {
 	store, me, people, person, projects, task, project, has, commentsOf, myRun, avatar, COLORS, STATUSES, PRIORITIES, fmt, iso, todayISO, size, byOrder, votesHTML,
+	canEditTask, canEditOwn, canDecide,
 } from './model.js';
 
 /* ---------- comments ---------- */
@@ -183,8 +184,10 @@ export function openTask( id, defaults ) {
 	const run = myRun();
 	const spent = ( t.trackedMs || 0 ) + ( id && run && run.taskId === t.id ? serverNow() - run.start : 0 );
 	const L = ( s ) => esc( s );
+	// Someone else's task (edit rights, 1.2.0): read, comment, track; no changes.
+	const ro = !! id && ! canEditTask( t );
 	openDialog(
-		id ? __( 'Edit task', 'novawork' ) : __( 'New task', 'novawork' ),
+		ro ? __( 'Task', 'novawork' ) : id ? __( 'Edit task', 'novawork' ) : __( 'New task', 'novawork' ),
 		`<div class="nw-field"><label for="nw-f-title" class="nw-vh">${ L( __( 'Task', 'novawork' ) ) }</label><input class="nw-input nw-big" id="nw-f-title" name="title" required maxlength="200" autofocus value="${ esc( t.title ) }" placeholder="${ L( __( 'What needs to happen?', 'novawork' ) ) }"></div>` +
 			`<div class="nw-tabs nw-seg nw-full" role="radiogroup" aria-label="${ L( __( 'Status', 'novawork' ) ) }"><span class="nw-ind" aria-hidden="true"></span>${ STATUSES()
 				.map( ( s ) => `<label class="nw-tab nw-s-${ s.key }${ s.key === t.status ? ' nw-on' : '' }"><input type="radio" name="status" value="${ s.key }"${ s.key === t.status ? ' checked' : '' }><span class="nw-sdot"></span>${ L( s.label ) }</label>` )
@@ -203,7 +206,7 @@ export function openTask( id, defaults ) {
 				? `<div class="nw-field"><span class="nw-flabel">${ L( __( 'Time tracked', 'novawork' ) ) }</span><div style="display:flex;align-items:center;gap:10px"><b class="nw-tnum" style="font:700 15px var(--nw-font-head)">${ esc( dur( spent ) ) }</b><span style="color:var(--nw-faint);font-size:12.5px">${ L( __( 'across all sessions', 'novawork' ) ) }</span></div></div><div class="nw-dlg-sep"></div>` +
 				  commentBox( 'task', id )
 				: '' ) +
-			actions( !! id ),
+			( ro ? closeOnly( __( 'Only the people on this task, its creator or an administrator can change it.', 'novawork' ) ) : actions( !! id ) ),
 		async ( fd ) => {
 			const title = String( fd.get( 'title' ) || '' ).trim();
 			if ( ! title ) {
@@ -232,9 +235,14 @@ export function openTask( id, defaults ) {
 			return !! saved;
 		}
 	);
-	wireSubtasks( id || null );
+	wireSubtasks( id || null, ro );
+	if ( ro ) {
+		lockFields();
+	}
 	if ( id ) {
 		commentsFor( 'task', id );
+	}
+	if ( id && ! ro ) {
 		onDelete( () => {
 			deleteWithUndo( 'tasks', id, 'tasks/' + id );
 			return true;
@@ -251,13 +259,14 @@ export function openProject( id ) {
 		return;
 	}
 	const L = ( s ) => esc( s );
+	const ro = !! id && ! canEditOwn( p );
 	const statuses = [
 		[ 'active', __( 'Active', 'novawork' ) ],
 		[ 'paused', __( 'Paused', 'novawork' ) ],
 		[ 'done', __( 'Done', 'novawork' ) ],
 	];
 	openDialog(
-		id ? __( 'Edit project', 'novawork' ) : __( 'New project', 'novawork' ),
+		ro ? __( 'Project', 'novawork' ) : id ? __( 'Edit project', 'novawork' ) : __( 'New project', 'novawork' ),
 		`<div class="nw-field"><label for="nw-p-name" class="nw-vh">${ L( __( 'Name', 'novawork' ) ) }</label><input class="nw-input nw-big" id="nw-p-name" name="name" required maxlength="80" autofocus value="${ esc( p.name ) }" placeholder="${ L( __( 'Project name', 'novawork' ) ) }"></div>` +
 			`<div class="nw-field"><label for="nw-p-goal">${ L( __( 'Goal', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-p-goal" name="goal" maxlength="600" placeholder="${ L( __( 'What does done look like?', 'novawork' ) ) }">${ esc( p.goal || '' ) }</textarea></div>` +
 			`<div class="nw-two"><div class="nw-field"><label for="nw-p-start">${ L( __( 'Start', 'novawork' ) ) }</label><input class="nw-input" id="nw-p-start" type="date" name="start" value="${ esc( p.start || '' ) }"></div><div class="nw-field"><label for="nw-p-target">${ L( __( 'Target', 'novawork' ) ) }</label><input class="nw-input" id="nw-p-target" type="date" name="target" value="${ esc( p.target || '' ) }"></div></div>` +
@@ -265,7 +274,7 @@ export function openProject( id ) {
 				.map( ( s ) => `<option value="${ s[ 0 ] }"${ s[ 0 ] === ( p.status || 'active' ) ? ' selected' : '' }>${ L( s[ 1 ] ) }</option>` )
 				.join( '' ) }</select></div></div>` +
 			`<div class="nw-field"><span class="nw-flabel">${ L( __( 'Colour', 'novawork' ) ) }</span>${ swatches( 'color', p.color ) }</div>` +
-			actions( !! id ),
+			( ro ? closeOnly( __( 'Only its creator or an administrator can change this project.', 'novawork' ) ) : actions( !! id ) ),
 		async ( fd ) => {
 			const data = {
 				name: String( fd.get( 'name' ) || '' ).trim(),
@@ -286,7 +295,9 @@ export function openProject( id ) {
 			return !! saved;
 		}
 	);
-	if ( id ) {
+	if ( ro ) {
+		lockFields();
+	} else if ( id ) {
 		onDelete( () => {
 			deleteWithUndo( 'projects', id, 'projects/' + id );
 			return true;
@@ -370,6 +381,10 @@ export function openDecision( id, decideNow ) {
 	}
 	const showAnswer = decideNow || d.status === 'decided';
 	const L = ( s ) => esc( s );
+	// Someone else's decision (edit rights, 1.2.0): the one who decides still
+	// records or reopens it; everything else is read only.
+	const ro = !! id && ! canEditOwn( d );
+	const decider = ro && canDecide( d ) && showAnswer;
 	openDialog(
 		decideNow ? __( 'Record decision', 'novawork' ) : id ? __( 'Edit decision', 'novawork' ) : __( 'New decision', 'novawork' ),
 		`<div class="nw-field"><label for="nw-d-q" class="nw-vh">${ L( __( 'Question', 'novawork' ) ) }</label><input class="nw-input nw-big" id="nw-d-q" name="question" required maxlength="240" ${ decideNow ? '' : 'autofocus ' }value="${ esc( d.question ) }" placeholder="${ L(
@@ -396,8 +411,26 @@ export function openDecision( id, decideNow ) {
 				  ( id && d.status === 'decided' ? `<label class="nw-checkline"><input type="checkbox" name="reopen" value="1"> ${ L( __( 'Reopen this decision', 'novawork' ) ) }</label>` : '' )
 				: '' ) +
 			( id ? commentBox( 'decision', id ) : '' ) +
-			actions( !! id ),
+			( ro && ! decider ? closeOnly( __( 'Only its creator or an administrator can change this decision.', 'novawork' ) ) : actions( !! id && ! ro ) ),
 		async ( fd ) => {
+			if ( ro ) {
+				// The one who decides: only the outcome.
+				const outcome = { answer: String( fd.get( 'answer' ) || '' ) };
+				if ( decideNow ) {
+					if ( ! outcome.answer.trim() ) {
+						return false;
+					}
+					outcome.status = 'decided';
+				}
+				if ( fd.get( 'reopen' ) ) {
+					outcome.status = 'open';
+				}
+				const done = await write( () => patch( 'decisions/' + id, outcome ), decideNow ? __( 'Decision recorded', 'novawork' ) : __( 'Saved', 'novawork' ) );
+				if ( done && done.id ) {
+					store().upsert( 'decisions', done );
+				}
+				return !! done;
+			}
 			const data = {
 				question: String( fd.get( 'question' ) || '' ).trim(),
 				context: String( fd.get( 'context' ) || '' ),
@@ -433,8 +466,13 @@ export function openDecision( id, decideNow ) {
 		}
 	);
 	wireDecisionDialog();
+	if ( ro ) {
+		lockFields( decider ? '#nw-d-a, [name="reopen"]' : '' );
+	}
 	if ( id ) {
 		commentsFor( 'decision', id );
+	}
+	if ( id && ! ro ) {
 		onDelete( () => {
 			deleteWithUndo( 'decisions', id, 'decisions/' + id );
 			return true;

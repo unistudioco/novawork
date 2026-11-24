@@ -209,6 +209,16 @@ export const checkBtn = ( t ) =>
 	`<button class="nw-check" type="button" data-act="done" data-id="${ t.id }" aria-label="${ esc( sprintf( /* translators: %s: task title. */ __( 'Mark %s done', 'novawork' ), t.title ) ) }">${ ic( 'check' ) }</button>`;
 
 /**
+ * Edit rights (owner, 1.2.0), as the server checks them (Capabilities):
+ * administrators, or everyone with the edit_rule setting "anyone";
+ * otherwise tasks you created or are assigned to, and projects and
+ * decisions you created. Something new (no id yet) is always yours.
+ */
+const editsAnything = () => !! ( S.canManage || S.settings.editRule === 'anyone' );
+export const canEditTask = ( t ) => !! t && ( ! t.id || editsAnything() || t.createdBy === S.me || has( t, S.me ) );
+export const canEditOwn = ( row ) => !! row && ( ! row.id || editsAnything() || row.createdBy === S.me );
+
+/**
  * Whether you may record (or reopen) a decision: administrators always;
  * otherwise the person named in "Who decides", or anyone when no one is
  * named (or when the decide_rule setting is "anyone"). The server enforces

@@ -11,7 +11,7 @@ import { safeEffect } from '../lib/effect.js';
 import { __ } from '../lib/i18n.js';
 import { esc, clock, dur, dayStart } from '../lib/format.js';
 import { serverNow } from '../store.js';
-import { bind, store, tracked } from './model.js';
+import { bind, store, tracked, task, canEditTask } from './model.js';
 import { bindSync, toggleTask, write, keepTask } from './actions.js';
 import { enhance, openSelectBox } from './select.js';
 import { mountDialog } from './dialog.js';
@@ -130,8 +130,15 @@ const itemAfter = ( items, y ) =>
 		return y < r.top + r.height / 2;
 	} ) || null;
 
+const notYours = () => toast( __( 'Only the people on this task, its creator or an administrator can change it.', 'novawork' ), 'warning-circle' );
+
 function wireDrag( root ) {
 	root.querySelectorAll( '[data-drag]' ).forEach( ( el ) => {
+		// Someone else's task stays where it is (edit rights, 1.2.0).
+		if ( ! canEditTask( task( Number( el.dataset.id ) ) ) ) {
+			el.draggable = false;
+			return;
+		}
 		el.draggable = true;
 		el.addEventListener( 'dragstart', ( e ) => {
 			drag = el.dataset.id;
@@ -195,6 +202,8 @@ function onClick( e ) {
 		openTask( id );
 	} else if ( act === 'new-task' ) {
 		openTask( null, Object.assign( { status: el.dataset.status || 'next' }, el.dataset.project ? { projectId: Number( el.dataset.project ) } : {} ) );
+	} else if ( ( act === 'done' || act === 'to-now' ) && ! canEditTask( task( id ) ) ) {
+		notYours();
 	} else if ( act === 'done' ) {
 		write( () => patch( 'tasks/' + id, { status: 'done' } ), __( 'Done. Nice work.', 'novawork' ) ).then( keepTask );
 	} else if ( act === 'to-now' ) {

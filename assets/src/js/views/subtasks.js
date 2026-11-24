@@ -15,7 +15,7 @@ import { __, sprintf } from '../lib/i18n.js';
 import { esc } from '../lib/format.js';
 import { post, patch, del } from '../lib/api.js';
 import { toast } from '../lib/ui.js';
-import { store, task, people, subtasksOf } from './model.js';
+import { store, task, people, subtasksOf, avatar } from './model.js';
 import { enhance } from './select.js';
 import { write, keepTask } from './actions.js';
 
@@ -48,6 +48,16 @@ function rowHTML( s ) {
 		people()
 			.map( ( p ) => `<option data-person value="${ p.id }"${ p.id === s.assigneeId ? ' selected' : '' }${ p.id === store().me ? ' data-you' : '' }>${ esc( p.name ) }</option>` )
 			.join( '' );
+	if ( current && current.ro ) {
+		// Someone else's task (edit rights, 1.2.0): read only, except ticking
+		// a subtask given to you.
+		const mine = s.assigneeId === store().me;
+		return `<li class="nw-subtask nw-subtask-ro${ s.done ? ' nw-done' : '' }${ s.assigneeId ? ' nw-has-who' : '' }" data-sid="${ s.id }">` +
+			`<button class="nw-subtask-check" type="button" data-sub="tick" aria-pressed="${ s.done }" aria-label="${ label }"${ mine ? '' : ' disabled' }>${ ic( 'check', 13 ) }</button>` +
+			`<span class="nw-subtask-t">${ esc( s.title ) }</span>` +
+			( s.assigneeId ? `<span class="nw-subtask-by">${ avatar( s.assigneeId ) }</span>` : '' ) +
+			'</li>';
+	}
 	return `<li class="nw-subtask${ s.done ? ' nw-done' : '' }${ s.assigneeId ? ' nw-has-who' : '' }" data-sid="${ s.id }" draggable="true">` +
 		`<button class="nw-subtask-check" type="button" data-sub="tick" aria-pressed="${ s.done }" aria-label="${ label }">${ ic( 'check', 13 ) }</button>` +
 		`<span class="nw-subtask-t" data-sub="edit" tabindex="0" role="button" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Rename %s', 'novawork' ), s.title ) ) }">${ esc( s.title ) }</span>` +
@@ -69,7 +79,7 @@ function draw() {
 	const bar = field.querySelector( '.nw-subtasks-bar' );
 	bar.hidden = ! list.length;
 	bar.firstChild.style.width = list.length ? Math.round( ( done / list.length ) * 100 ) + '%' : '0';
-	field.querySelector( '.nw-subtask-add' ).hidden = list.length >= MAX;
+	field.querySelector( '.nw-subtask-add' ).hidden = list.length >= MAX || current.ro;
 }
 
 /* ---------- changes ---------- */
@@ -280,10 +290,11 @@ function wireDrag( ul ) {
 /**
  * Wire the checklist of the open dialog.
  *
- * @param {number|null} id Task id, or null for a new task (a draft).
+ * @param {number|null} id       Task id, or null for a new task (a draft).
+ * @param {boolean}     readOnly Someone else's task (edit rights, 1.2.0).
  */
-export function wireSubtasks( id ) {
-	current = { id, draft: [], temp: 0, editing: false };
+export function wireSubtasks( id, readOnly = false ) {
+	current = { id, draft: [], temp: 0, editing: false, ro: !! readOnly };
 	const ul = document.getElementById( 'nw-subtasks' );
 	const input = document.getElementById( 'nw-subtask-in' );
 	if ( ! ul || ! input ) {

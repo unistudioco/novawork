@@ -182,7 +182,7 @@ try {
 	$t->ok( 'active' === $p1['status'] && '2027-01-31' === $p1['target'] && '' === $p1['deadline'], 'defaults and dates' );
 	list( , $p2 ) = $t->call( $sam, 'POST', '/projects', array( 'name' => 'Second' ) );
 	$t->ok( $p2['order'] > $p1['order'], 'new project goes last' );
-	list( $s, $p1b ) = $t->call( $sam, 'PATCH', '/projects/' . $p1['id'], array( 'status' => 'paused', 'deadline' => '' ) );
+	list( $s, $p1b ) = $t->call( $alex, 'PATCH', '/projects/' . $p1['id'], array( 'status' => 'paused', 'deadline' => '' ) );
 	$t->ok( 200 === $s && 'paused' === $p1b['status'] && 'Launch site' === $p1b['name'], 'PATCH changes only what was sent' );
 	list( , $moved ) = $t->call( $alex, 'POST', '/projects/' . $p2['id'] . '/move', array( 'beforeId' => $p1['id'] ) );
 	$t->ok( $moved['order'] < $p1['order'], 'move before another project' );
@@ -210,7 +210,7 @@ try {
 	list( , $t2 ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Second' ) );
 	list( , $t3 ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Third' ) );
 	$t->ok( $t1['order'] < $t2['order'] && $t2['order'] < $t3['order'], 'new tasks go to the end of their column' );
-	list( , $m ) = $t->call( $sam, 'POST', '/tasks/' . $t3['id'] . '/move', array( 'beforeId' => $t1['id'] ) );
+	list( , $m ) = $t->call( $alex, 'POST', '/tasks/' . $t3['id'] . '/move', array( 'beforeId' => $t1['id'] ) );
 	$repo  = new TaskRepository();
 	$order = array_column( array_filter( $repo->present_many( $repo->all() ), fn( $x ) => 'next' === $x['status'] && in_array( $x['id'], array( $t1['id'], $t2['id'], $t3['id'] ), true ) ), 'id' );
 	$t->ok( array( $t3['id'], $t1['id'], $t2['id'] ) === array_values( $order ), 'drag: Third moved before the first task', $order );
@@ -219,7 +219,7 @@ try {
 	$repo->update( $t1['id'], array( 'sort_order' => 5 ) );
 	$repo->update( $t2['id'], array( 'sort_order' => 6 ) );
 	$repo->update( $t3['id'], array( 'sort_order' => 7 ) );
-	$t->call( $sam, 'POST', '/tasks/' . $t3['id'] . '/move', array( 'beforeId' => $t2['id'] ) );
+	$t->call( $alex, 'POST', '/tasks/' . $t3['id'] . '/move', array( 'beforeId' => $t2['id'] ) );
 	$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT id, sort_order FROM %i WHERE id IN (%d,%d,%d) ORDER BY sort_order', $repo->table_name(), $t1['id'], $t2['id'], $t3['id'] ), ARRAY_A );
 	$t->ok( array( $t1['id'], $t3['id'], $t2['id'] ) === array_map( 'intval', array_column( $rows, 'id' ) ), 'no room left → the column is renumbered and the order holds' );
 
@@ -235,6 +235,40 @@ try {
 	$t->ok( array() === $un['assignees'], 'assignees can be cleared' );
 	list( , $keep ) = $t->call( $alex, 'PATCH', '/tasks/' . $t1['id'], array( 'notes' => 'Only notes' ) );
 	$t->ok( 'Write the brief' === $keep['title'] && 'high' === $keep['priority'] && $p1['id'] === $keep['projectId'], 'PATCH without a field leaves it alone' );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Edit rights (owner, 1.2.0)' );
+	$t->ok( 'own' === NovaWork\Settings::edit_rule() && 'own' === $full['settings']['editRule'], 'members change their own work by default; sync says so', $full['settings']['editRule'] ?? null );
+	list( $s ) = $t->call( $sam, 'PATCH', '/tasks/' . $t3['id'], array( 'title' => 'Not his' ) );
+	$t->ok( 403 === $s, 'a task someone else created and isn\'t yours → 403', $s );
+	list( $s ) = $t->call( $sam, 'POST', '/tasks/' . $t3['id'] . '/move', array( 'status' => 'now' ) );
+	$t->ok( 403 === $s, '…nor move it → 403', $s );
+	list( $s ) = $t->call( $sam, 'DELETE', '/tasks/' . $t3['id'] );
+	$t->ok( 403 === $s, '…nor delete it → 403', $s );
+	$t->call( $alex, 'PATCH', '/tasks/' . $t3['id'], array( 'assignees' => array( $alex, $sam ) ) );
+	list( $s, $as ) = $t->call( $sam, 'POST', '/tasks/' . $t3['id'] . '/move', array( 'status' => 'now' ) );
+	$t->ok( 200 === $s && 'now' === $as['status'], 'assigned to it: he can move it', $s );
+	list( $s ) = $t->call( $admin, 'PATCH', '/tasks/' . $t2['id'], array( 'notes' => 'An admin note' ) );
+	$t->ok( 200 === $s, 'an administrator changes anyone\'s task', $s );
+	list( $s ) = $t->call( $sam, 'PATCH', '/projects/' . $p1['id'], array( 'status' => 'done' ) );
+	$t->ok( 403 === $s, 'a project someone else created → 403', $s );
+	list( $s ) = $t->call( $sam, 'POST', '/projects/' . $p1['id'] . '/move', array( 'beforeId' => null ) );
+	$t->ok( 403 === $s, '…nor reorder it → 403', $s );
+	list( $s ) = $t->call( $sam, 'PATCH', '/projects/' . $p2['id'], array( 'goal' => 'His own' ) );
+	$t->ok( 200 === $s, 'his own project → 200', $s );
+	list( , $er_d ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Who ships it?', 'ownerId' => $sam ) );
+	list( $s ) = $t->call( $sam, 'PATCH', '/decisions/' . $er_d['id'], array( 'question' => 'Changed' ) );
+	$t->ok( 403 === $s, 'a decision someone else created → 403', $s );
+	list( $s, $er_dd ) = $t->call( $sam, 'PATCH', '/decisions/' . $er_d['id'], array( 'question' => 'Who ships it?', 'status' => 'decided', 'answer' => 'Sam does.' ) );
+	$t->ok( 200 === $s && 'decided' === $er_dd['status'], 'the one who decides still records it from the editor (only the outcome changes)', $s );
+	list( $s ) = $t->call( $sam, 'DELETE', '/decisions/' . $er_d['id'] );
+	$t->ok( 403 === $s, '…but can\'t delete it → 403', $s );
+	$er_set = (array) get_option( NovaWork\Settings::OPTION, array() );
+	update_option( NovaWork\Settings::OPTION, array_merge( $er_set, array( 'edit_rule' => 'anyone' ) ) );
+	list( $s ) = $t->call( $sam, 'PATCH', '/projects/' . $p1['id'], array( 'goal' => 'Anyone may' ) );
+	$t->ok( 200 === $s && 'anyone' === NovaWork\Settings::clean( 'edit_rule', 'anyone' ), 'with "Anyone in the team", every member changes everything', $s );
+	update_option( NovaWork\Settings::OPTION, $er_set );
+	$t->ok( is_wp_error( NovaWork\Settings::clean( 'edit_rule', 'some' ) ), 'only own|anyone accepted' );
 
 	// ------------------------------------------------------------------
 	$t->section( 'Subtasks (owner request, 2026-11-22)' );
@@ -265,15 +299,25 @@ try {
 	list( $s ) = $t->call( (int) $outsider, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
 	$t->ok( 403 === $s, 'non-member cannot tick a subtask → 403', $s );
 
-	list( , $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
+	list( , $st ) = $t->call( $alex, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
 	$first_done   = $st['subtasks'][0]['doneAt'];
-	$t->ok( true === $st['subtasks'][0]['done'] && is_int( $first_done ), 'any member can tick a subtask' );
-	list( , $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true, 'title' => 'Outline the brief' ) );
+	$t->ok( true === $st['subtasks'][0]['done'] && is_int( $first_done ), 'the task\'s creator ticks a subtask' );
+	list( , $st ) = $t->call( $alex, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true, 'title' => 'Outline the brief' ) );
 	$t->ok( $first_done === $st['subtasks'][0]['doneAt'] && 'Outline the brief' === $st['subtasks'][0]['title'], 'ticking again keeps when it was done; rename' );
-	list( , $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => false ) );
+	list( , $st ) = $t->call( $alex, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => false ) );
 	$t->ok( false === $st['subtasks'][0]['done'] && null === $st['subtasks'][0]['doneAt'], 'untick' );
-	list( $s ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'title' => '' ) );
+	list( $s ) = $t->call( $alex, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'title' => '' ) );
 	$t->ok( 400 === $s, 'renaming to nothing → 400', $s );
+	// Edit rights (1.2.0): sam is no longer on the task, but "First draft" is his.
+	list( $s, $st ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s2, array( 'done' => true ) );
+	$t->ok( 200 === $s && true === $st['subtasks'][1]['done'], 'someone given a subtask can tick it on a task that isn\'t theirs', $s );
+	$t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s2, array( 'done' => false ) );
+	list( $s ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s2, array( 'title' => 'Renamed' ) );
+	$t->ok( 403 === $s, '…but not rename it → 403', $s );
+	list( $s ) = $t->call( $sam, 'PATCH', '/tasks/' . $t1['id'] . '/subtasks/' . $s1, array( 'done' => true ) );
+	$t->ok( 403 === $s, '…nor tick someone else\'s → 403', $s );
+	list( $s ) = $t->call( $sam, 'POST', '/tasks/' . $t1['id'] . '/subtasks', array( 'title' => 'Mine now' ) );
+	$t->ok( 403 === $s, '…nor add to its checklist → 403', $s );
 
 	list( , $st ) = $t->call( $alex, 'POST', '/tasks/' . $t1['id'] . '/subtasks/' . $s3 . '/move', array( 'beforeId' => $s1 ) );
 	$t->ok( array( $s3, $s1, $s2 ) === array_column( $st['subtasks'], 'id' ), 'drag a subtask to the top' );
@@ -729,9 +773,9 @@ try {
 	$t->ok( array( 'task_added' ) === $feed( 'task', $at['id'] ), 'adding a task is in the feed' );
 	$t->call( $alex, 'PATCH', '/tasks/' . $at['id'], array( 'title' => 'Activity task renamed' ) );
 	$t->ok( array( 'task_added' ) === $feed( 'task', $at['id'] ), 'an ordinary edit is not' );
-	$t->call( $sam, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'done' ) );
-	$t->call( $sam, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'now' ) );
-	$t->call( $sam, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'done' ) );
+	$t->call( $alex, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'done' ) );
+	$t->call( $alex, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'now' ) );
+	$t->call( $alex, 'PATCH', '/tasks/' . $at['id'], array( 'status' => 'done' ) );
 	$t->ok( array( 'task_added', 'task_done' ) === $feed( 'task', $at['id'] ), 'finishing a task is in the feed once, even when ticked twice', $feed( 'task', $at['id'] ) );
 	$t->call( $alex, 'PATCH', '/projects/' . $ap['id'], array( 'status' => 'done' ) );
 	$t->ok( in_array( 'project_done', $feed( 'project', $ap['id'] ), true ), 'finishing a project is in the feed' );

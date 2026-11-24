@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Rest;
 
+use NovaWork\Access\Capabilities;
 use NovaWork\Data\Db;
 use NovaWork\Data\ProjectRepository;
 use NovaWork\Data\TaskRepository;
@@ -123,6 +124,9 @@ final class TasksController extends Controller {
 		if ( ! $before ) {
 			return self::not_found();
 		}
+		if ( ! Capabilities::can_edit_task( $before, self::me() ) ) {
+			return self::not_your_work( 'task' );
+		}
 		$sent = self::sent( $request, self::FIELDS );
 		$data = $this->columns( $sent );
 		if ( $data instanceof WP_Error ) {
@@ -169,8 +173,12 @@ final class TasksController extends Controller {
 	public function delete( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$repo = new TaskRepository();
 		$id   = self::id( $request );
-		if ( ! $repo->find( $id ) ) {
+		$task = $repo->find( $id );
+		if ( ! $task ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_task( $task, self::me() ) ) {
+			return self::not_your_work( 'task' );
 		}
 		$this->stop_my_timer_on( $id );
 		$repo->delete( $id );
@@ -190,6 +198,9 @@ final class TasksController extends Controller {
 		$task = $repo->find( $id );
 		if ( ! $task ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_task( $task, self::me() ) ) {
+			return self::not_your_work( 'task' );
 		}
 		$status = (string) ( $request->get_param( 'status' ) ?? $task['status'] );
 		if ( $status !== $task['status'] ) {

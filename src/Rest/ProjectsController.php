@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Rest;
 
+use NovaWork\Access\Capabilities;
 use NovaWork\Data\Db;
 use NovaWork\Data\DecisionRepository;
 use NovaWork\Data\ProjectRepository;
@@ -101,6 +102,9 @@ final class ProjectsController extends Controller {
 		if ( ! $before ) {
 			return self::not_found();
 		}
+		if ( ! Capabilities::can_edit_own( $before, self::me() ) ) {
+			return self::not_your_work( 'project' );
+		}
 		$data = $this->columns( self::sent( $request, array( 'name', 'goal', 'color', 'status', 'start', 'target', 'deadline' ) ) );
 		if ( isset( $data['name'] ) && '' === $data['name'] ) {
 			return new WP_Error( 'novawork_required', __( 'Give the project a name.', 'novawork' ), array( 'status' => 400 ) );
@@ -131,8 +135,12 @@ final class ProjectsController extends Controller {
 	public function delete( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$repo = new ProjectRepository();
 		$id   = self::id( $request );
-		if ( ! $repo->find( $id ) ) {
+		$row  = $repo->find( $id );
+		if ( ! $row ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_own( $row, self::me() ) ) {
+			return self::not_your_work( 'project' );
 		}
 		( new TaskRepository() )->unlink_project( $id );
 		( new DecisionRepository() )->unlink_project( $id );
@@ -149,8 +157,12 @@ final class ProjectsController extends Controller {
 	public function move( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$repo = new ProjectRepository();
 		$id   = self::id( $request );
-		if ( ! $repo->find( $id ) ) {
+		$row  = $repo->find( $id );
+		if ( ! $row ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_own( $row, self::me() ) ) {
+			return self::not_your_work( 'project' );
 		}
 		$before = $request->get_param( 'beforeId' );
 		$repo->place( $id, null === $before ? null : (int) $before );

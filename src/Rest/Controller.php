@@ -140,6 +140,20 @@ abstract class Controller {
 	}
 
 	/**
+	 * 403 for work a member may not change (setting edit_rule).
+	 *
+	 * @param string $kind task, project or decision.
+	 */
+	protected static function not_your_work( string $kind ): WP_Error {
+		$messages = array(
+			'task'     => __( 'You can change tasks you created or are assigned to. Ask an administrator to change this one.', 'novawork' ),
+			'project'  => __( 'You can change projects you created. Ask an administrator to change this one.', 'novawork' ),
+			'decision' => __( 'You can change decisions you created. Ask an administrator to change this one.', 'novawork' ),
+		);
+		return new WP_Error( 'novawork_not_your_work', $messages[ $kind ] ?? $messages['task'], array( 'status' => 403 ) );
+	}
+
+	/**
 	 * A JSON response.
 	 *
 	 * @param mixed $data   Body.

@@ -67,8 +67,12 @@ final class SubtasksController extends Controller {
 	 */
 	public function create( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$task_id = self::id( $request );
-		if ( ! ( new TaskRepository() )->find( $task_id ) ) {
+		$task    = ( new TaskRepository() )->find( $task_id );
+		if ( ! $task ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_task( $task, self::me() ) ) {
+			return self::not_your_work( 'task' );
 		}
 		$title = trim( (string) $request->get_param( 'title' ) );
 		if ( '' === $title ) {
@@ -238,8 +242,17 @@ final class SubtasksController extends Controller {
 	private function subtask( WP_REST_Request $request, SubtaskRepository $repo ): array|WP_Error {
 		$row     = $repo->find( (int) $request['sid'] );
 		$task_id = self::id( $request );
-		if ( ! $row || (int) $row['task_id'] !== $task_id ) {
+		$task    = ( new TaskRepository() )->find( $task_id );
+		if ( ! $row || ! $task || (int) $row['task_id'] !== $task_id ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_task( $task, self::me() ) ) {
+			// Someone else's task: its checklist is theirs, except ticking a
+			// subtask given to you.
+			$only_done = $request->has_param( 'done' ) && ! $request->has_param( 'title' ) && ! $request->has_param( 'assigneeId' ) && 'PATCH' === $request->get_method();
+			if ( ! $only_done || self::me() !== (int) $row['assignee_id'] ) {
+				return self::not_your_work( 'task' );
+			}
 		}
 		return $row;
 	}

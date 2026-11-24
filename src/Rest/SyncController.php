@@ -159,6 +159,7 @@ final class SyncController extends Controller {
 				'doneShown'      => Settings::int( 'done_shown' ),
 				'teamOrder'      => Settings::team_order(),
 				'decideRule'     => Settings::decide_rule(),
+				'editRule'       => Settings::edit_rule(),
 				'decisionVotes'  => (bool) Settings::get( 'decision_votes' ),
 				'voteOrder'      => Settings::vote_order(),
 				'desktopAlerts'  => (bool) Settings::get( 'desktop_alerts' ),

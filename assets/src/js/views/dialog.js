@@ -155,6 +155,30 @@ export function openDialog( title, body, save ) {
 
 export const closeDialog = () => dlg && dlg.close();
 
+/**
+ * For work you can't change (edit rights, 1.2.0): a short note and Close.
+ *
+ * @param {string} note Why it is read only.
+ */
+export const closeOnly = ( note ) =>
+	`<div class="nw-dlg-actions"><span class="nw-ro-note">${ esc( note ) }</span><span class="nw-sp"></span><button class="nw-btn nw-ghost" type="submit" value="cancel" formnovalidate>${ esc( __( 'Close', 'novawork' ) ) }</button></div>`;
+
+/**
+ * Lock the open dialog's fields: comments (anyone may comment), the
+ * checklist (it locks itself), the header and the buttons stay usable.
+ *
+ * @param {string} [keep] Selector for more fields that stay usable.
+ */
+export function lockFields( keep ) {
+	form.classList.add( 'nw-ro' );
+	const free = '.nw-dlg-head, .nw-dlg-actions, .nw-comments, .nw-replying, .nw-cmt-in, .nw-subtasks-field' + ( keep ? ', ' + keep : '' );
+	form.querySelectorAll( 'input, textarea, select, button' ).forEach( ( el ) => {
+		if ( ! el.closest( free ) && ! el.matches( keep || 'x-none' ) ) {
+			el.disabled = true;
+		}
+	} );
+}
+
 /** Cancel / Save (and Delete for an existing item). */
 export const actions = ( canDelete ) =>
 	`<div class="nw-dlg-actions">${ canDelete ? `<button class="nw-btn nw-danger" type="button" data-del="1">${ ic( 'trash', 15 ) }<span>${ esc( __( 'Delete', 'novawork' ) ) }</span></button>` : '' }<span class="nw-sp"></span><button class="nw-btn nw-ghost" type="submit" value="cancel" formnovalidate>${ esc( __( 'Cancel', 'novawork' ) ) }</button><button class="nw-btn nw-primary" type="submit" value="save">${ esc( __( 'Save', 'novawork' ) ) }</button></div>`;

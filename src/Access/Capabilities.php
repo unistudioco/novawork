@@ -83,6 +83,46 @@ final class Capabilities {
 	}
 
 	/**
+	 * Whether a member may change everything: administrators, or everyone
+	 * when the edit_rule setting is "anyone".
+	 *
+	 * @param int $user_id Member.
+	 */
+	private static function edits_anything( int $user_id ): bool {
+		return user_can( $user_id, self::MANAGE ) || 'anyone' === \NovaWork\Settings::edit_rule();
+	}
+
+	/**
+	 * Whether a member may change a task (edit, move, delete, its checklist):
+	 * one they created or are assigned to (owner, 1.2.0). Anyone may still
+	 * comment on it and track time on it.
+	 *
+	 * @param array<string, mixed> $task    Task row.
+	 * @param int                  $user_id Member.
+	 */
+	public static function can_edit_task( array $task, int $user_id ): bool {
+		if ( $user_id <= 0 ) {
+			return false;
+		}
+		if ( self::edits_anything( $user_id ) || (int) $task['created_by'] === $user_id ) {
+			return true;
+		}
+		$assignees = ( new \NovaWork\Data\TaskRepository() )->assignees_of( array( (int) $task['id'] ) );
+		return in_array( $user_id, $assignees[ (int) $task['id'] ] ?? array(), true );
+	}
+
+	/**
+	 * Whether a member may change a project or a decision: one they created.
+	 * Anyone may still vote and comment; the decider records the decision.
+	 *
+	 * @param array<string, mixed> $row     Project or decision row.
+	 * @param int                  $user_id Member.
+	 */
+	public static function can_edit_own( array $row, int $user_id ): bool {
+		return $user_id > 0 && ( self::edits_anything( $user_id ) || (int) $row['created_by'] === $user_id );
+	}
+
+	/**
 	 * Whether a member may edit a chat message or comment: only their own,
 	 * under the message_edits setting. An agent's words are never edited.
 	 *

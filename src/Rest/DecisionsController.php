@@ -154,6 +154,22 @@ final class DecisionsController extends Controller {
 		}
 		$changes_outcome = ( isset( $data['status'] ) && $data['status'] !== $before['status'] )
 			|| ( 'decided' === $before['status'] && isset( $data['answer'] ) && $data['answer'] !== $before['answer'] );
+		// Someone else's decision: only its outcome, and only for the one who decides.
+		if ( ! Capabilities::can_edit_own( $before, self::me() ) ) {
+			$changed = array();
+			foreach ( $data as $column => $value ) {
+				if ( '__keys' !== $column && array_key_exists( $column, $before ) && (string) $value !== (string) $before[ $column ] ) {
+					$changed[] = $column;
+				}
+			}
+			if ( array_diff( $changed, array( 'status', 'answer' ) ) ) {
+				return self::not_your_work( 'decision' );
+			}
+			if ( ! $changed ) {
+				// Saved without a change: nothing to do.
+				return self::respond( $repo->present( $before ) );
+			}
+		}
 		if ( $changes_outcome && ! Capabilities::can_decide( $before, self::me() ) ) {
 			return self::not_yours( $before );
 		}
@@ -294,8 +310,12 @@ final class DecisionsController extends Controller {
 	public function delete( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$repo = new DecisionRepository();
 		$id   = self::id( $request );
-		if ( ! $repo->find( $id ) ) {
+		$row  = $repo->find( $id );
+		if ( ! $row ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_own( $row, self::me() ) ) {
+			return self::not_your_work( 'decision' );
 		}
 		$repo->delete( $id );
 		// Notifications about it would lead nowhere.
@@ -312,8 +332,12 @@ final class DecisionsController extends Controller {
 	public function move( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$repo = new DecisionRepository();
 		$id   = self::id( $request );
-		if ( ! $repo->find( $id ) ) {
+		$row  = $repo->find( $id );
+		if ( ! $row ) {
 			return self::not_found();
+		}
+		if ( ! Capabilities::can_edit_own( $row, self::me() ) ) {
+			return self::not_your_work( 'decision' );
 		}
 		$before = $request->get_param( 'beforeId' );
 		$repo->place( $id, null === $before ? null : (int) $before );

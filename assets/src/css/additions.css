@@ -500,3 +500,14 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
   .nw-tip.nw-tip-below { transform: translateY(-3px) scale(.97); transform-origin: var(--nw-tip-x, 50%) 0; }
   .nw-tip.nw-tip-on { transform: none; }
 }
+
+/* Edit rights (owner, 1.2.0): someone else's task, project or decision opens
+   read only. Locked fields keep their normal look, without the editing cues. */
+.nw-ro .nw-input:disabled, .nw-ro .nw-sel-btn:disabled { opacity: 1; cursor: default; color: var(--nw-fg); -webkit-text-fill-color: var(--nw-fg); }
+.nw-ro .nw-sel-btn:disabled .nw-caret { display: none; }
+.nw-ro .nw-tabs .nw-tab, .nw-ro .nw-assign label, .nw-ro .nw-checkline { cursor: default; }
+.nw-ro .nw-assign label:has(input:not(:checked)) { opacity: .5; }
+.nw-ro-note { color: var(--nw-muted); font-size: 12.5px; line-height: 1.35; max-width: 380px; }
+.nw-subtask-ro { cursor: default; }
+.nw-subtask-ro .nw-subtask-check:disabled { cursor: default; opacity: .55; }
+.nw-subtask-by { display: inline-flex; margin-left: auto; }
