@@ -276,13 +276,10 @@ final class Branding {
 	}
 
 	/**
-	 * Print the accent CSS and the browser tab icon in a NovaWork document's head.
+	 * Print the browser tab icon in a NovaWork document's head. The accent
+	 * CSS goes in through wp_add_inline_style() (Assets::head()).
 	 */
-	public static function head(): void {
-		$css = self::accent_css();
-		if ( '' !== $css ) {
-			echo '<style id="novawork-accent">' . $css . "</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from validated #rrggbb values only.
-		}
+	public static function icon_link(): void {
 		$icon = self::image( 'brand_icon', 'thumbnail' );
 		if ( '' === $icon ) {
 			$icon = (string) get_site_icon_url( 64 );

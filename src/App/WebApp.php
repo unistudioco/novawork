@@ -125,7 +125,10 @@ final class WebApp {
 				esc_attr( self::BG_DARK )
 			);
 		}
-		wp_print_inline_script_tag( 'try{var t=document.documentElement.dataset.theme;if(t){document.querySelectorAll("meta[name=theme-color]").forEach(function(m){m.removeAttribute("media");m.content=m.dataset[t]})}}catch(e){}' );
+		// The appearance saved on this device wins over the system's.
+		wp_register_script( 'novawork-webapp', false, array(), NOVAWORK_VERSION, false );
+		wp_add_inline_script( 'novawork-webapp', 'try{var t=document.documentElement.dataset.theme;if(t){document.querySelectorAll("meta[name=theme-color]").forEach(function(m){m.removeAttribute("media");m.content=m.dataset[t]})}}catch(e){}' );
+		wp_print_scripts( array( 'novawork-webapp' ) );
 		echo '<meta name="mobile-web-app-capable" content="yes">' . "\n";
 		echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
 		echo '<meta name="apple-mobile-web-app-title" content="' . esc_attr( $name ) . '">' . "\n";
@@ -236,6 +239,9 @@ final class WebApp {
 
 	/**
 	 * The page an installed app shows when it opens without a connection.
+	 * The service worker answers with it (it is never a WordPress page), so
+	 * it carries its look in style attributes (light-dark() follows the
+	 * system) and checks again every 5 seconds; Try again checks now.
 	 */
 	private static function offline_page(): string {
 		$name   = Settings::workspace_name();
@@ -246,21 +252,17 @@ final class WebApp {
 		$text  = sprintf( __( '%s needs a connection. It opens again as soon as you’re back online.', 'novawork' ), $name );
 		$retry = __( 'Try again', 'novawork' );
 		$font  = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-		$css   = ':root{color-scheme:light dark;--bg:' . self::BG_LIGHT . ';--fg:#1d1919;--muted:#6f6a66}'
-			. '@media (prefers-color-scheme: dark){:root{--bg:' . self::BG_DARK . ';--fg:#f2efec;--muted:#a49e99}}'
-			. 'html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.5 ' . $font . '}'
-			. 'main{min-height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box}'
-			. '.card{max-width:340px;text-align:center}'
-			. '.mark{width:44px;height:44px;margin:0 auto 16px;display:grid;place-items:center;border-radius:11px;background:' . $accent . ';color:' . $fg . '}'
-			. 'h1{font-size:19px;margin:0 0 6px}p{margin:0 0 20px;color:var(--muted)}'
-			. 'button{margin-top:12px;font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 18px;background:' . $accent . ';color:' . $fg . ';cursor:pointer}';
+		$page  = 'margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;color-scheme:light dark;'
+			. 'background:light-dark(' . self::BG_LIGHT . ',' . self::BG_DARK . ');color:light-dark(#1d1919,#f2efec);font:15px/1.5 ' . $font;
+		$mark  = 'width:44px;height:44px;margin:0 auto 16px;display:grid;place-items:center;border-radius:11px;background:' . $accent . ';color:' . $fg;
+		$btn   = 'margin-top:12px;font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 18px;background:' . $accent . ';color:' . $fg . ';cursor:pointer';
 		return '<!doctype html><html lang="' . esc_attr( str_replace( '_', '-', get_locale() ) ) . '"' . ( is_rtl() ? ' dir="rtl"' : '' ) . '><head><meta charset="utf-8">'
 			. '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
-			. '<title>' . esc_html( $name ) . '</title><style>' . $css . '</style></head>'
-			. '<body><main><div class="card"><div class="mark">' . str_replace( 'class="nw-ic" style="--nw-is:26px" ', 'width="26" height="26" ', Branding::flag( 26 ) ) . '</div>'
-			. '<h1>' . esc_html( $title ) . '</h1><p>' . esc_html( $text ) . '</p>'
-			. '<button type="button" onclick="location.reload()">' . esc_html( $retry ) . '</button></div></main>'
-			. '<script>addEventListener("online",function(){location.reload()})</script></body></html>';
+			. '<meta http-equiv="refresh" content="5">'
+			. '<title>' . esc_html( $name ) . '</title></head>'
+			. '<body style="' . esc_attr( $page ) . '"><main style="max-width:340px;text-align:center"><div style="' . esc_attr( $mark ) . '">' . str_replace( 'class="nw-ic" style="--nw-is:26px" ', 'width="26" height="26" ', Branding::flag( 26 ) ) . '</div>'
+			. '<h1 style="font-size:19px;margin:0 0 6px">' . esc_html( $title ) . '</h1><p style="margin:0 0 20px;color:light-dark(#6f6a66,#a49e99)">' . esc_html( $text ) . '</p>'
+			. '<button type="button" style="' . esc_attr( $btn ) . '" onclick="location.reload()">' . esc_html( $retry ) . '</button></main></body></html>';
 	}
 
 	/**

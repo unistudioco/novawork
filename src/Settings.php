@@ -21,6 +21,12 @@ final class Settings {
 	public const OPTION = 'novawork_settings';
 
 	/**
+	 * Whether the settings screen has offered NovaWork's typefaces and the
+	 * administrator answered ('done'). Fontshare loads only once they opt in.
+	 */
+	public const FONTS_OFFER_OPTION = 'novawork_fonts_offer';
+
+	/**
 	 * Every setting with its default.
 	 *
 	 * @return array<string, mixed>
@@ -42,7 +48,7 @@ final class Settings {
 			'week_start'      => (int) get_option( 'start_of_week', 1 ),
 			'upload_max_mb'   => 10,
 			'upload_types'    => array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'mp4', 'mov', 'mp3', 'm4a' ),
-			'load_fontshare'  => true,
+			'load_fontshare'  => false,
 			'delete_data'     => false,
 			'now_limit'       => 3,
 			'done_shown'      => 8,
