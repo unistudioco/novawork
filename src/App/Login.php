@@ -74,7 +74,7 @@ final class Login {
 	 * @return array<string, string>|null
 	 */
 	private static function form(): ?array {
-		if ( ! isset( $_POST['_novawork_login'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_novawork_login'] ) ), self::NONCE ) ) {
+		if ( ! isset( $_POST['_novawork_login'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_novawork_login'] ) ), self::NONCE ) ) {
 			return null;
 		}
 		return array(

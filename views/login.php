@@ -31,14 +31,14 @@ echo esc_html( sprintf( __( 'Sign in · %s', 'novawork' ), (string) $view['name'
 	<form class="nw-login-card" method="post" action="" novalidate>
 		<div class="nw-login-head">
 			<?php if ( '' !== \NovaWork\App\Branding::image( 'brand_logo' ) ) : ?>
-				<h1 class="nw-login-logo"><?php echo \NovaWork\App\Branding::mark_html( 24 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></h1>
+				<h1 class="nw-login-logo"><?php echo wp_kses( \NovaWork\App\Branding::mark_html( 24 ), \NovaWork\App\Branding::allowed_html() ); ?></h1>
 			<?php else : ?>
 				<span class="nw-login-mark" aria-hidden="true">
 					<?php $novawork_icon = \NovaWork\App\Branding::image( 'brand_icon', 'thumbnail' ); ?>
 					<?php if ( '' !== $novawork_icon ) : ?>
 						<img src="<?php echo esc_url( $novawork_icon ); ?>" alt="" width="48" height="48">
 					<?php else : ?>
-						<?php echo \NovaWork\App\Branding::flag( 24 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed SVG. ?>
+						<?php echo wp_kses( \NovaWork\App\Branding::flag( 24 ), \NovaWork\App\Branding::allowed_html() ); ?>
 					<?php endif; ?>
 				</span>
 				<h1><?php echo esc_html( (string) $view['name'] ); ?></h1>

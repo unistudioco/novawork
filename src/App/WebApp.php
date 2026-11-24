@@ -157,7 +157,7 @@ final class WebApp {
 		header( 'Cache-Control: public, max-age=' . ( $current ? '31536000, immutable' : '300' ) );
 		if ( 'manifest' === $what ) {
 			header( 'Content-Type: application/manifest+json; charset=utf-8' );
-			echo wp_json_encode( self::manifest(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON.
+			echo wp_json_encode( self::manifest() );
 			return;
 		}
 		$variant = substr( $what, 5 );
@@ -234,7 +234,7 @@ final class WebApp {
 			'offline' => self::offline_page(),
 		);
 		$code = (string) file_get_contents( NOVAWORK_PATH . 'assets/app-worker.js' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- A local file inside the plugin.
-		return 'const NOVAWORK = ' . wp_json_encode( $conf, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ";\n" . $code;
+		return 'const NOVAWORK = ' . wp_json_encode( $conf ) . ";\n" . $code;
 	}
 
 	/**
