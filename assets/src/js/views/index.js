@@ -15,13 +15,13 @@ import { bind, store, tracked, task, canEditTask } from './model.js';
 import { bindSync, toggleTask, write, keepTask } from './actions.js';
 import { enhance, openSelectBox } from './select.js';
 import { mountDialog } from './dialog.js';
-import { openTask, openProject, openDecision, vote } from './editors.js';
+import { openTask, openProject, openDecision, openSession, vote } from './editors.js';
 import { viewDecisions } from './decisions.js';
 import { viewBoard, wireBoard, toggleAllDone, place, revealTask } from './board.js';
 import { toast } from '../lib/ui.js';
 import { viewFocus } from './focus.js';
 import { viewRoadmap, wireRoadmap, scrollToToday, forgetRoadmapScroll, rememberRoadmapScroll } from './roadmap.js';
-import { viewTime, wireTime } from './time.js';
+import { viewTime, wireTime, sessionById, forgetHistory } from './time.js';
 import { mountIdle, checkIdle } from './idle.js';
 import { mountChat } from './chat.js';
 import { mountNotes } from './notes.js';
@@ -218,6 +218,13 @@ function onClick( e ) {
 		openDecision( id );
 	} else if ( act === 'new-decision' ) {
 		openDecision( null );
+	} else if ( act === 'edit-session' ) {
+		const s = sessionById( id );
+		if ( s ) {
+			openSession( s, forgetHistory );
+		}
+	} else if ( act === 'add-session' ) {
+		openSession( null, forgetHistory );
 	} else if ( act === 'decide' ) {
 		openDecision( id, true );
 	} else if ( act === 'all-done' ) {

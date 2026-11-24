@@ -7,7 +7,7 @@ import { ic } from '../lib/icons.js';
 import { __ } from '../lib/i18n.js';
 import { esc, dur } from '../lib/format.js';
 import { serverNow } from '../store.js';
-import { post, patch } from '../lib/api.js';
+import { post, patch, del } from '../lib/api.js';
 import { deleteWithUndo } from './undo.js';
 import { richText } from './rich.js';
 import { attachComposer } from './composer.js';
@@ -19,6 +19,7 @@ import { safeEffect } from '../lib/effect.js';
 import { routeUrl, currentNonce } from '../lib/api.js';
 import { openDialog, actions, closeOnly, lockFields, onDelete, onComment, dialogForm } from './dialog.js';
 import { write, keepTask, stopTracking } from './actions.js';
+import { toast } from '../lib/ui.js';
 import {
 	store, me, people, person, projects, task, project, has, commentsOf, myRun, avatar, COLORS, STATUSES, PRIORITIES, fmt, iso, todayISO, size, byOrder, votesHTML,
 	canEditTask, canEditOwn, canDecide,
@@ -475,6 +476,105 @@ export function openDecision( id, decideNow ) {
 	if ( id && ! ro ) {
 		onDelete( () => {
 			deleteWithUndo( 'decisions', id, 'decisions/' + id );
+			return true;
+		} );
+	}
+}
+
+/* ---------- a tracked session (administrators, 1.2.0) ---------- */
+
+const two = ( n ) => String( n ).padStart( 2, '0' );
+const hhmm = ( ms ) => {
+	const d = new Date( ms );
+	return two( d.getHours() ) + ':' + two( d.getMinutes() );
+};
+/** Local date + "HH:MM" to epoch ms. */
+const at = ( date, time ) => new Date( date + 'T' + ( time || '00:00' ) ).getTime();
+
+/**
+ * Add or change a session by hand: who, which task, the day, from and to.
+ * Only administrators see the buttons; the server checks it too.
+ *
+ * @param {Object|null} e     Session ({id, by, taskId, start, end, running}), or null to add one.
+ * @param {Function}    after Called after a save or delete (the Time page refreshes).
+ */
+export function openSession( e, after ) {
+	const S = store();
+	const now = serverNow();
+	const s = e || { by: S.me, taskId: 0, start: now - 3600000, end: now, running: false };
+	const L = ( x ) => esc( x );
+	const taskOpts = Object.values( S.tasks )
+		.slice()
+		.sort( ( a, b ) => a.title.localeCompare( b.title ) )
+		.map( ( t ) => `<option value="${ t.id }"${ t.id === s.taskId ? ' selected' : '' }>${ esc( t.title ) }</option>` )
+		.join( '' );
+	const who = person( s.by );
+	openDialog(
+		e ? __( 'Edit session', 'novawork' ) : __( 'Add time', 'novawork' ),
+		( e
+			? `<div class="nw-field"><span class="nw-flabel">${ L( __( 'Tracked by', 'novawork' ) ) }</span><div class="nw-sess-who">${ avatar( s.by ) }<span>${ esc( who ? who.name : '' ) }</span></div></div>`
+			: `<div class="nw-field"><label for="nw-s-by">${ L( __( 'Tracked by', 'novawork' ) ) }</label><select id="nw-s-by" data-nw-sel data-block="1" name="by">${ people()
+				.map( ( p ) => `<option data-person value="${ p.id }"${ p.id === s.by ? ' selected' : '' }>${ esc( p.name ) }</option>` )
+				.join( '' ) }</select></div>` ) +
+			`<div class="nw-field"><label for="nw-s-task">${ L( __( 'Task', 'novawork' ) ) }</label><select id="nw-s-task" data-nw-sel data-block="1" name="taskId">${
+				s.taskId && ! S.tasks[ s.taskId ] ? `<option value="${ s.taskId }" selected>${ L( __( 'Deleted task', 'novawork' ) ) }</option>` : ''
+			}${ taskOpts }</select></div>` +
+			`<div class="nw-three"><div class="nw-field"><label for="nw-s-day">${ L( __( 'Day', 'novawork' ) ) }</label><input class="nw-input" id="nw-s-day" type="date" name="day" required value="${ iso( new Date( s.start ) ) }"></div>` +
+			`<div class="nw-field"><label for="nw-s-from">${ L( __( 'From', 'novawork' ) ) }</label><input class="nw-input" id="nw-s-from" type="time" name="from" required value="${ hhmm( s.start ) }"></div>` +
+			`<div class="nw-field"><label for="nw-s-to">${ L( __( 'To', 'novawork' ) ) }</label>${
+				s.running
+					? `<input class="nw-input" id="nw-s-to" type="text" disabled value="${ L( __( 'Running', 'novawork' ) ) }">`
+					: `<input class="nw-input" id="nw-s-to" type="time" name="to" required value="${ hhmm( s.end ) }">`
+			}</div></div>` +
+			`<p class="nw-sess-note">${ L( __( 'An end earlier than the start counts as the next day. Sessions of one person can’t overlap.', 'novawork' ) ) }</p>` +
+			actions( !! e ),
+		async ( fd ) => {
+			const day = String( fd.get( 'day' ) || '' );
+			const start = at( day, String( fd.get( 'from' ) || '' ) );
+			const taskId = Number( fd.get( 'taskId' ) || 0 );
+			if ( ! day || ! taskId ) {
+				toast( __( 'Pick a task and a day.', 'novawork' ), 'x' );
+				return false;
+			}
+			const body = { taskId, start };
+			if ( ! s.running ) {
+				let end = at( day, String( fd.get( 'to' ) || '' ) );
+				if ( end <= start ) {
+					end += 86400000;
+				}
+				body.end = end;
+			}
+			const saved = await write(
+				() => ( e ? patch( 'time-entries/' + e.id, body ) : post( 'time-entries', Object.assign( body, { userId: Number( fd.get( 'by' ) || S.me ) } ) ) ),
+				e ? __( 'Session saved', 'novawork' ) : __( 'Time added', 'novawork' )
+			);
+			if ( saved && saved.id ) {
+				S.upsert( 'timeEntries', saved );
+				after();
+			}
+			return !! saved;
+		}
+	);
+	if ( e ) {
+		onDelete( () => {
+			write( () => del( 'time-entries/' + e.id ) ).then( ( gone ) => {
+				if ( ! gone ) {
+					return;
+				}
+				S.remove( 'timeEntries', e.id );
+				after();
+				const back = gone.session || e;
+				toast( __( 'Deleted.', 'novawork' ), 'trash', {
+					label: __( 'Undo', 'novawork' ),
+					run: () =>
+						write( () => post( 'time-entries', { userId: back.by, taskId: back.taskId, start: back.start, end: back.end || serverNow() } ) ).then( ( again ) => {
+							if ( again && again.id ) {
+								S.upsert( 'timeEntries', again );
+								after();
+							}
+						} ),
+				} );
+			} );
 			return true;
 		} );
 	}

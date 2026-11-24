@@ -72,3 +72,82 @@ test( "someone else's task opens read only: no drag, no Save, but comments and y
 		await sam.context().close();
 	}
 } );
+
+test( 'an administrator adds, changes and deletes a session on the Time page; members see no edit buttons', async ( { browser } ) => {
+	const context = await browser.newContext( { viewport: { width: 1366, height: 1500 } } );
+	await context.addInitScript( () => {
+		try {
+			localStorage.setItem( 'nw.range', 'week' );
+			localStorage.setItem( 'nw.tWho', 'all' );
+		} catch ( e ) {}
+	} );
+	const [ user, pass ] = ( process.env.NOVAWORK_ADMIN || 'admin:admin' ).split( ':' );
+	const base = process.env.NOVAWORK_URL || 'http://novawork.local';
+	await context.addCookies( [ { name: 'wordpress_test_cookie', value: 'WP Cookie check', url: base } ] );
+	await context.request.post( base + '/wp-login.php', { form: { log: user, pwd: pass, testcookie: '1' }, maxRedirects: 0 } );
+	const page = await context.newPage();
+	await page.goto( APP + '#time' );
+	await page.locator( '#nw-tbody .nw-kpi' ).first().waitFor();
+	const title = unique( 'fixed by hand' );
+	const task = ( await api( page, 'POST', 'tasks', { title, status: 'next' } ) ).body;
+	await page.reload();
+	try {
+		await page.locator( '[data-act="add-session"]' ).click();
+		const dlg = page.locator( '#nw-dlg[open]' );
+		// Three hours ago, for an hour.
+		const when = await page.evaluate( () => {
+			const two = ( n ) => String( n ).padStart( 2, '0' );
+			const a = new Date( Date.now() - 3 * 3600e3 );
+			const b = new Date( a.getTime() + 3600e3 );
+			return { day: `${ a.getFullYear() }-${ two( a.getMonth() + 1 ) }-${ two( a.getDate() ) }`, from: `${ two( a.getHours() ) }:${ two( a.getMinutes() ) }`, to: `${ two( b.getHours() ) }:${ two( b.getMinutes() ) }` };
+		} );
+		await dlg.locator( '#nw-s-task' ).evaluate( ( sel, id ) => {
+			sel.value = String( id );
+		}, task.id );
+		await dlg.locator( '#nw-s-day' ).fill( when.day );
+		await dlg.locator( '#nw-s-from' ).fill( when.from );
+		await dlg.locator( '#nw-s-to' ).fill( when.to );
+		await dlg.locator( 'button[value="save"]' ).click();
+		const sessions = page.locator( '#nw-tbody .nw-panel', { has: page.locator( 'h3', { hasText: 'Sessions' } ) } );
+		const row = sessions.locator( '.nw-row', { hasText: title } );
+		await expect( row ).toHaveCount( 1 );
+		await expect( row.locator( '.nw-tstat' ) ).toHaveText( '1h' );
+
+		// Half an hour longer.
+		await row.locator( '[data-act="edit-session"]' ).click();
+		const later = await page.evaluate( ( t ) => {
+			const [ h, m ] = t.split( ':' ).map( Number );
+			const d = new Date( 2000, 0, 1, h, m + 30 );
+			return String( d.getHours() ).padStart( 2, '0' ) + ':' + String( d.getMinutes() ).padStart( 2, '0' );
+		}, when.to );
+		await dlg.locator( '#nw-s-to' ).fill( later );
+		await dlg.locator( 'button[value="save"]' ).click();
+		await expect( row.locator( '.nw-tstat' ) ).toHaveText( '1h 30m' );
+
+		// Delete, then Undo brings it back.
+		await row.locator( '[data-act="edit-session"]' ).click();
+		await dlg.locator( '[data-del]' ).click();
+		await dlg.locator( '[data-del]' ).click();
+		await expect( row ).toHaveCount( 0 );
+		await page.locator( '.nw-toast .nw-toast-act', { hasText: 'Undo' } ).click();
+		await expect( row ).toHaveCount( 1 );
+		await expect( row.locator( '.nw-tstat' ) ).toHaveText( '1h 30m' );
+
+		// A member sees the sessions, not the buttons.
+		const member = await open( browser, 'A' );
+		await member.goto( APP + '#time' );
+		await member.locator( '#nw-tbody .nw-kpi' ).first().waitFor();
+		await expect( member.locator( '[data-act="add-session"], [data-act="edit-session"]' ) ).toHaveCount( 0 );
+		await member.context().close();
+	} finally {
+		const rows = await page.evaluate( async ( tid ) => {
+			const r = await fetch( window.novawork.restUrl + 'time-entries?from=' + ( Date.now() - 8 * 86400e3 ), { headers: { 'X-WP-Nonce': window.novawork.nonce } } );
+			return ( await r.json() ).filter( ( e ) => e.taskId === tid ).map( ( e ) => e.id );
+		}, task.id );
+		for ( const id of rows ) {
+			await api( page, 'DELETE', 'time-entries/' + id );
+		}
+		await api( page, 'DELETE', 'tasks/' + task.id );
+		await context.close();
+	}
+} );

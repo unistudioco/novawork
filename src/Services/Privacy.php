@@ -308,7 +308,7 @@ final class Privacy {
 		self::unlink( new NotificationRepository(), 'notifications', array( 'actor_id' ), $id );
 		self::unlink( new InviteRepository(), 'invites', array( 'created_by', 'used_by' ), $id );
 
-		foreach ( array( Members::COLOR_META, Members::SEEN_META, Members::ONLINE_SINCE_META, Members::ACTIVE_META ) as $key ) {
+		foreach ( array( Members::COLOR_META, Members::SEEN_META, Members::ONLINE_SINCE_META, Members::ACTIVE_META, TimeEdits::PENDING_META ) as $key ) {
 			delete_user_meta( $id, $key );
 		}
 

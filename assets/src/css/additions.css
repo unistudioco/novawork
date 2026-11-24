@@ -511,3 +511,13 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
 .nw-subtask-ro { cursor: default; }
 .nw-subtask-ro .nw-subtask-check:disabled { cursor: default; opacity: .55; }
 .nw-subtask-by { display: inline-flex; margin-left: auto; }
+
+/* Time: administrators fix sessions by hand (owner, 1.2.0). */
+.nw-three { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 500px) { .nw-three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .nw-three > :first-child { grid-column: 1 / -1; } }
+.nw-sess-who { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.nw-sess-note { margin: -4px 0 0; color: var(--nw-muted); font-size: 12.5px; line-height: 1.4; }
+.nw-panel h3 .nw-btn.nw-sm { margin: -6px 0 -6px auto; font: 600 12.5px/1 var(--nw-font-head); }
+.nw-log .nw-row .nw-sess-edit { flex: none; margin: -4px -4px -4px 0; color: var(--nw-muted); }
+.nw-log .nw-row .nw-sess-edit:hover { color: var(--nw-fg); }
+.nw-sess-more { margin-top: 10px; }

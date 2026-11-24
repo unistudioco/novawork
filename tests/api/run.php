@@ -184,7 +184,7 @@ try {
 	$t->ok( $p2['order'] > $p1['order'], 'new project goes last' );
 	list( $s, $p1b ) = $t->call( $alex, 'PATCH', '/projects/' . $p1['id'], array( 'status' => 'paused', 'deadline' => '' ) );
 	$t->ok( 200 === $s && 'paused' === $p1b['status'] && 'Launch site' === $p1b['name'], 'PATCH changes only what was sent' );
-	list( , $moved ) = $t->call( $alex, 'POST', '/projects/' . $p2['id'] . '/move', array( 'beforeId' => $p1['id'] ) );
+	list( , $moved ) = $t->call( $sam, 'POST', '/projects/' . $p2['id'] . '/move', array( 'beforeId' => $p1['id'] ) );
 	$t->ok( $moved['order'] < $p1['order'], 'move before another project' );
 	list( $s ) = $t->call( $alex, 'PATCH', '/projects/999999', array( 'name' => 'x' ) );
 	$t->ok( 404 === $s, 'unknown project → 404', $s );
@@ -579,6 +579,91 @@ try {
 	$backdate( $sam, 3 * HOUR_IN_SECONDS, 2 * HOUR_IN_SECONDS );
 	NovaWork\Services\Cron::run();
 	$t->ok( null === $entries->running_for( $sam ), 'the hourly job stops it when nobody is online' );
+
+	// ------------------------------------------------------------------
+	$t->section( '"Were you working?" after an automatic stop (owner, 1.2.0)' );
+	delete_user_meta( $admin, NovaWork\Services\TimeEdits::PENDING_META );
+	$t->call( $admin, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$rid           = $backdate( $admin, 50 * MINUTE_IN_SECONDS, 30 * MINUTE_IN_SECONDS );
+	list( , $pend ) = $t->call( $admin, 'GET', '/sync' );
+	$p             = $pend['pendingStop'] ?? null;
+	$t->ok( $p && 'away' === $p['reason'] && $rid === $p['entryId'] && $ta['id'] === $p['taskId'], 'an automatic stop is remembered and comes with the poll', $p );
+	list( , $pend_sam ) = $t->call( $sam, 'GET', '/sync' );
+	$t->ok( null === ( $pend_sam['pendingStop'] ?? null ) || ( $pend_sam['pendingStop']['entryId'] ?? 0 ) !== $rid, 'only to that member' );
+	$until = NovaWork\Data\Db::now_ms() - 5 * MINUTE_IN_SECONDS * 1000;
+	list( $s, $rec ) = $t->call( $admin, 'POST', '/timer/recover', array( 'until' => $until ) );
+	$t->ok( 200 === $s && $rid === $rec['id'] && abs( $rec['end'] - $until ) < 1500, 'Count it: the session now runs until the time chosen', $rec );
+	list( , $after ) = $t->call( $admin, 'GET', '/sync' );
+	$t->ok( null === $after['pendingStop'], 'asked once: the question is gone' );
+	list( $s ) = $t->call( $admin, 'POST', '/timer/recover', array( 'until' => $until ) );
+	$t->ok( 404 === $s, 'nothing left to put back → 404', $s );
+
+	// Keep tracking: counted up to now and running again.
+	$t->call( $admin, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$rid2 = $backdate( $admin, 40 * MINUTE_IN_SECONDS, 20 * MINUTE_IN_SECONDS );
+	$t->call( $admin, 'GET', '/sync' );
+	list( $s, $rec2 ) = $t->call( $admin, 'POST', '/timer/recover', array( 'until' => NovaWork\Data\Db::now_ms(), 'keep' => true ) );
+	$run = $entries->running_for( $admin );
+	$t->ok( 200 === $s && $run && $rid2 === (int) $run['id'], 'Count it and keep tracking: the same session runs on', $rec2 );
+	NovaWork\Services\Timer::stop( $admin );
+
+	// Don't count it.
+	$t->call( $admin, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$backdate( $admin, 10 * MINUTE_IN_SECONDS, 0 );
+	list( $s ) = $t->call( $admin, 'POST', '/timer/stop', array( 'reason' => 'idle' ) );
+	$t->ok( 'idle' === ( NovaWork\Services\TimeEdits::pending( $admin )['reason'] ?? '' ), 'the app\'s own stops (no answer, sleep) are asked about too' );
+	$t->call( $admin, 'POST', '/timer/dismiss' );
+	$t->ok( null === NovaWork\Services\TimeEdits::pending( $admin ), "Don't count it: forgotten" );
+	list( $s ) = $t->call( $admin, 'POST', '/timer/stop', array( 'reason' => 'nope' ) );
+	$t->ok( 400 === $s, 'only idle|sleep reasons → 400', $s );
+
+	// Never into a later session, and never kept running over it (a clean slate first).
+	$wpdb->delete( $entries->table_name(), array( 'user_id' => $admin ) );
+	$t->call( $admin, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$rid3 = $backdate( $admin, 60 * MINUTE_IN_SECONDS, 40 * MINUTE_IN_SECONDS );
+	$t->call( $admin, 'GET', '/sync' );
+	$t->call( $admin, 'POST', '/timer/start', array( 'taskId' => $t1['id'] ) );
+	$next_start = (int) NovaWork\Data\Db::to_ms( (string) $entries->running_for( $admin )['started_at'] );
+	list( $s, $rec3 ) = $t->call( $admin, 'POST', '/timer/recover', array( 'until' => NovaWork\Data\Db::now_ms(), 'keep' => true ) );
+	$t->ok( 200 === $s && $rid3 === $rec3['id'] && $rec3['end'] <= $next_start && false === $rec3['running'], 'capped at the start of the next session, and not kept running', $rec3 );
+	NovaWork\Services\Timer::stop( $admin );
+
+	// The setting off: no question.
+	$rr_set = (array) get_option( NovaWork\Settings::OPTION, array() );
+	update_option( NovaWork\Settings::OPTION, array_merge( $rr_set, array( 'recover_time' => false ) ) );
+	$t->call( $admin, 'POST', '/timer/start', array( 'taskId' => $ta['id'] ) );
+	$backdate( $admin, 50 * MINUTE_IN_SECONDS, 30 * MINUTE_IN_SECONDS );
+	list( , $off ) = $t->call( $admin, 'GET', '/sync' );
+	$t->ok( null === $off['pendingStop'], 'with "Ask after an automatic stop" off, nobody is asked' );
+	update_option( NovaWork\Settings::OPTION, $rr_set );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Administrators fix time by hand (owner, 1.2.0)' );
+	$h      = HOUR_IN_SECONDS * 1000;
+	$now_ms = intdiv( NovaWork\Data\Db::now_ms(), 1000 ) * 1000; // Stored to the second.
+	$span   = array(
+		'userId' => $sam,
+		'taskId' => $t1['id'],
+		'start'  => $now_ms - 30 * $h,
+		'end'    => $now_ms - 29 * $h,
+	);
+	list( $s ) = $t->call( $sam, 'POST', '/time-entries', $span );
+	$t->ok( 403 === $s, 'a member can\'t add time → 403', $s );
+	list( $s, $made ) = $t->call( $admin, 'POST', '/time-entries', $span );
+	$t->ok( 201 === $s && $sam === $made['by'] && $span['end'] === $made['end'], 'an administrator adds an hour for sam', $made );
+	list( $s ) = $t->call( $admin, 'POST', '/time-entries', array_merge( $span, array( 'start' => $span['start'] + 600000 ) ) );
+	$t->ok( 409 === $s, 'overlapping another session of sam\'s → 409', $s );
+	list( $s ) = $t->call( $admin, 'POST', '/time-entries', array_merge( $span, array( 'start' => $now_ms - $h, 'end' => $now_ms + $h ) ) );
+	$t->ok( 400 === $s, 'in the future → 400', $s );
+	list( $s ) = $t->call( $admin, 'POST', '/time-entries', array_merge( $span, array( 'start' => $now_ms - 20 * $h, 'end' => $now_ms - 20 * $h + 30000 ) ) );
+	$t->ok( 400 === $s, 'under a minute → 400', $s );
+	list( $s, $ch ) = $t->call( $admin, 'PATCH', '/time-entries/' . $made['id'], array( 'end' => $span['end'] + $h / 2, 'taskId' => $t2['id'] ) );
+	$t->ok( 200 === $s && $span['end'] + $h / 2 === $ch['end'] && $t2['id'] === $ch['taskId'], 'change its end and its task', $ch );
+	list( $s ) = $t->call( $sam, 'PATCH', '/time-entries/' . $made['id'], array( 'end' => $span['end'] ) );
+	$t->ok( 403 === $s, 'a member can\'t change it → 403', $s );
+	list( $s, $gone ) = $t->call( $admin, 'DELETE', '/time-entries/' . $made['id'] );
+	$t->ok( 200 === $s && $made['id'] === $gone['deleted'] && $sam === $gone['session']['by'], 'delete it; the answer carries it for Undo', $gone );
+	$t->ok( null === $entries->find( $made['id'] ), 'and it is gone' );
 
 	// ------------------------------------------------------------------
 	$t->section( 'Chat and private files' );

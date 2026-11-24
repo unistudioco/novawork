@@ -53,6 +53,7 @@ final class Settings {
 			'team_order'      => 'dynamic',
 			'decide_rule'     => 'named',
 			'edit_rule'       => 'own',
+			'recover_time'    => true,
 			'decision_votes'  => true,
 			'vote_order'      => 'votes',
 			'desktop_alerts'  => true,
@@ -159,6 +160,7 @@ final class Settings {
 			'type'    => 'choice',
 			'choices' => array( 'own', 'anyone' ),
 		),
+		'recover_time'    => array( 'type' => 'bool' ),
 		'decision_votes'  => array( 'type' => 'bool' ),
 		'vote_order'      => array(
 			'type'    => 'choice',

@@ -74,7 +74,7 @@ final class Timer {
 		if ( $now - $alive <= self::away_after() ) {
 			return null;
 		}
-		self::stop( $user_id, $alive * 1000 );
+		self::stop( $user_id, $alive * 1000, 'away' );
 		return array(
 			'endedAt' => $alive * 1000,
 			'awayMs'  => ( $now - $alive ) * 1000,
@@ -175,10 +175,12 @@ final class Timer {
 	 * @param int|null $end_ms  When it really ended (epoch ms), e.g. the last
 	 *                          activity before an idle pause. Clamped between the
 	 *                          start and now. Null means now.
+	 * @param string   $reason  Set when NovaWork stops it on its own (away, sleep,
+	 *                          idle): the member is asked about it later (1.2.0).
 	 * @return array<string, mixed>|null The saved entry, or null when nothing
 	 *                                   ran or the session was too short to keep.
 	 */
-	public static function stop( int $user_id, ?int $end_ms = null ): ?array {
+	public static function stop( int $user_id, ?int $end_ms = null, string $reason = '' ): ?array {
 		$entries = new TimeEntryRepository();
 		$running = $entries->running_for( $user_id );
 		if ( ! $running ) {
@@ -189,6 +191,12 @@ final class Timer {
 		$now   = time();
 		$end   = null === $end_ms ? $now : intdiv( $end_ms, 1000 );
 		$end   = max( $start, min( $now, $end ) );
+
+		if ( '' !== $reason ) {
+			// "Were you working?": asked the next time they're back.
+			$kept = $end - $start >= self::MIN_SECONDS ? (int) $running['id'] : 0;
+			TimeEdits::remember_stop( $user_id, $kept, (int) $running['task_id'], $start * 1000, $end * 1000, $reason );
+		}
 
 		if ( $end - $start < self::MIN_SECONDS ) {
 			$entries->delete( (int) $running['id'] );

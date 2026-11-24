@@ -36,6 +36,19 @@ const RANGES = () => [
 // Fetched history, keyed by range start: { status: 'loading'|'ready', entries }.
 const history = Alpine.reactive( {} );
 let refresh = () => {};
+// The sessions list shows the newest 8 unless "Show all" was pressed.
+let allSessions = false;
+// The sessions on screen, by id, so an administrator can edit one (1.2.0).
+const shown = new Map();
+
+/** A session on the Time page (for the editor). */
+export const sessionById = ( id ) => shown.get( Number( id ) ) || null;
+
+/** After an administrator's edit: fetch Month and Year again, and redraw. */
+export function forgetHistory() {
+	Object.keys( history ).forEach( ( k ) => delete history[ k ] );
+	refresh();
+}
 
 function rangeStart( range, now ) {
 	const d = new Date( dayStart( now ) );
@@ -213,10 +226,11 @@ function body( S, range, tWho ) {
 			} )
 			.join( '' ) }</div>`
 		: '';
-	const recent = es
-		.slice()
-		.sort( ( a, b ) => b.s - a.s )
-		.slice( 0, 8 );
+	const sorted = es.slice().sort( ( a, b ) => b.s - a.s );
+	const recent = allSessions ? sorted : sorted.slice( 0, 8 );
+	const admin = !! S.canManage;
+	shown.clear();
+	recent.forEach( ( e ) => shown.set( e.id, e ) );
 	const chartTitle = range === 'today' ? __( 'By hour', 'novawork' ) : range === 'year' ? __( 'By month', 'novawork' ) : __( 'By day', 'novawork' );
 	const emptyChart = range === 'today' ? __( 'Nothing tracked today yet.', 'novawork' ) : __( 'Nothing tracked in this period yet.', 'novawork' );
 	return (
@@ -251,7 +265,9 @@ function body( S, range, tWho ) {
 				: none
 		}</div></div></div>` +
 		team +
-		`<div class="nw-panel" style="margin-top:14px"><h3>${ esc( __( 'Recent sessions', 'novawork' ) ) }</h3><div class="nw-log">${
+		`<div class="nw-panel" style="margin-top:14px"><h3>${ esc( __( 'Sessions', 'novawork' ) ) }${
+			admin ? `<button class="nw-btn nw-sm" type="button" data-act="add-session">${ ic( 'plus', 14 ) }<span>${ esc( __( 'Add time', 'novawork' ) ) }</span></button>` : ''
+		}</h3><div class="nw-log">${
 			recent.length
 				? recent
 					.map( ( e ) => {
@@ -260,11 +276,19 @@ function body( S, range, tWho ) {
 						const when = iso( d ) === todayISO() ? d.toLocaleTimeString( L, { hour: '2-digit', minute: '2-digit' } ) : fmt( iso( d ) );
 						return `<div class="nw-row">${ avatar( e.by ) }<span class="nw-grow" data-act="edit-task" data-id="${ e.taskId }">${ esc( t ? t.title : __( 'Deleted task', 'novawork' ) ) }</span><span class="nw-due">${ esc(
 							when
-						) }</span><span class="nw-tstat">${ e.live ? `<span data-since="${ e.start }"></span>` : esc( dur( e.ms ) ) }</span></div>`;
+						) }</span><span class="nw-tstat">${ e.live ? `<span data-since="${ e.start }"></span>` : esc( dur( e.ms ) ) }</span>${
+							admin ? `<button class="nw-iconbtn nw-xs nw-sess-edit" type="button" data-act="edit-session" data-id="${ e.id }" aria-label="${ esc( __( 'Edit session', 'novawork' ) ) }">${ ic( 'pencil-simple', 14 ) }</button>` : ''
+						}</div>`;
 					} )
 					.join( '' )
 				: `<div style="color:var(--nw-faint)">${ esc( __( 'No sessions yet.', 'novawork' ) ) }</div>`
-		}</div></div>`
+		}</div>${
+			sorted.length > 8
+				? `<button class="nw-btn nw-ghost nw-sm nw-sess-more" type="button" data-sessions="${ allSessions ? 'less' : 'all' }">${ esc(
+					allSessions ? __( 'Show fewer', 'novawork' ) : sprintf( /* translators: %d: number of sessions. */ _n( 'Show all %d session', 'Show all %d sessions', sorted.length, 'novawork' ), sorted.length )
+				) }</button>`
+				: ''
+		}</div>`
 	);
 }
 
@@ -278,6 +302,13 @@ function paintBody( main ) {
 
 export function wireTime( main, rerender ) {
 	refresh = rerender;
+	main.querySelector( '#nw-tbody' ).addEventListener( 'click', ( e ) => {
+		const b = e.target.closest( '[data-sessions]' );
+		if ( b ) {
+			allSessions = b.dataset.sessions === 'all';
+			paintBody( main );
+		}
+	} );
 	const nav = main.querySelector( '#nw-range-tabs' );
 	placeInd( nav, true );
 	nav.addEventListener( 'click', ( e ) => {

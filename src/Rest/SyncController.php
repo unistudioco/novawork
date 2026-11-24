@@ -139,19 +139,21 @@ final class SyncController extends Controller {
 
 		$read_id = ReadState::get( $me );
 		$body   += array(
-			'now'       => Db::now_ms(),
-			'me'        => $me,
+			'now'         => Db::now_ms(),
+			'me'          => $me,
 			// The latest activity on any of this member's devices (idle rule).
-			'activeAt'  => Members::active_at( $me ),
-			'canManage' => current_user_can( \NovaWork\Access\Capabilities::MANAGE ),
-			'nonce'     => wp_create_nonce( 'wp_rest' ),
-			'members'   => Members::all(),
-			'agents'    => Members::agents(),
-			'chat'      => array(
+			'activeAt'    => Members::active_at( $me ),
+			// "Were you working?" after an automatic stop (1.2.0), or null.
+			'pendingStop' => \NovaWork\Services\TimeEdits::pending( $me ),
+			'canManage'   => current_user_can( \NovaWork\Access\Capabilities::MANAGE ),
+			'nonce'       => wp_create_nonce( 'wp_rest' ),
+			'members'     => Members::all(),
+			'agents'      => Members::agents(),
+			'chat'        => array(
 				'readId' => $read_id,
 				'unread' => ( new MessageRepository() )->count_unread( $read_id, $me ),
 			),
-			'settings'  => array(
+			'settings'    => array(
 				'pollSeconds'    => Settings::int( 'poll_seconds', 2 ),
 				'idleMinutes'    => Settings::int( 'idle_minutes' ),
 				'idleGrace'      => Settings::int( 'idle_grace', 10 ),

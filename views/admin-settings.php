@@ -225,6 +225,9 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<?php $novawork_row_start( 'idle_grace', __( 'Time to answer', 'novawork' ), __( 'Without an answer, the timer stops at the moment activity stopped.', 'novawork' ), 'nw-f-grace' ); ?>
 			<div class="nw-unit"><input class="nw-input" id="nw-f-grace" type="number" min="15" max="600" x-model.number="values.idle_grace"><span><?php esc_html_e( 'seconds', 'novawork' ); ?></span></div>
 		<?php $novawork_row_end( 'idle_grace' ); ?>
+		<?php $novawork_row_start( 'recover_time', __( 'Ask after an automatic stop', 'novawork' ), __( 'When NovaWork stops a timer on its own (a sleeping laptop, a closed window, no internet, no answer), ask the member “Were you working?” next time, so they can count that time. Off: only administrators can put time back.', 'novawork' ) ); ?>
+			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-recover_time" :aria-checked="String(!!values.recover_time)" @click="values.recover_time = !values.recover_time"><span></span></button>
+		<?php $novawork_row_end( 'recover_time' ); ?>
 		<?php $novawork_row_start( 'week_start', __( 'Week starts on', 'novawork' ), __( 'For “This week” in Time.', 'novawork' ), 'nw-f-week' ); ?>
 			<select id="nw-f-week" data-nw-sel data-block="1" x-model.number="values.week_start">
 				<?php foreach ( $novawork_days as $novawork_n => $novawork_day ) : ?>
