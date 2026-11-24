@@ -1,6 +1,6 @@
 {
   "name": "novawork",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "NovaWork front-end source (Alpine.js, bundled by Vite).",
   "license": "GPL-2.0-or-later",
