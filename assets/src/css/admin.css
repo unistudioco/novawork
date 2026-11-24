@@ -192,3 +192,7 @@
 
 /* Links to a section (#nw-s-members) stop clear of the admin bar. */
 .nw-admin .nw-scard { scroll-margin-top: 48px; }
+
+/* The one-time offer of NovaWork's typefaces (review 1.0.0: Fontshare is off
+   until an administrator opts in). */
+.nw-admin .nw-offer-acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }

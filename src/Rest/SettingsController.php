@@ -41,6 +41,15 @@ final class SettingsController extends Controller {
 				),
 			)
 		);
+		$this->admin_route( '/settings/fonts-offer', WP_REST_Server::DELETABLE, array( $this, 'dismiss_fonts_offer' ) );
+	}
+
+	/**
+	 * "No thanks" on the settings screen's offer of NovaWork's typefaces.
+	 */
+	public function dismiss_fonts_offer(): WP_REST_Response {
+		update_option( Settings::FONTS_OFFER_OPTION, 'done', false );
+		return self::respond( self::state() );
 	}
 
 	/**
@@ -87,6 +96,11 @@ final class SettingsController extends Controller {
 		$stored = get_option( Settings::OPTION, array() );
 		update_option( Settings::OPTION, array_merge( is_array( $stored ) ? $stored : array(), $clean ) );
 
+		// Choosing either way about Fontshare answers the offer for good.
+		if ( isset( $clean['load_fontshare'] ) && $clean['load_fontshare'] !== $before['load_fontshare'] ) {
+			update_option( Settings::FONTS_OFFER_OPTION, 'done', false );
+		}
+
 		// A new address: refresh WordPress's rewrite rules, and keep the old
 		// address working (it forwards to the new one).
 		if ( ( $clean['app_slug'] ?? $before['app_slug'] ) !== $before['app_slug'] || ( $clean['location'] ?? $before['location'] ) !== $before['location'] ) {
@@ -124,6 +138,7 @@ final class SettingsController extends Controller {
 				'serverMaxMb'   => (int) floor( wp_max_upload_size() / MB_IN_BYTES ),
 				'workspaceName' => Settings::workspace_name(),
 				'samples'       => \NovaWork\Services\Samples::count(),
+				'fontsOffer'    => ! Settings::get( 'load_fontshare' ) && 'done' !== get_option( Settings::FONTS_OFFER_OPTION ),
 			),
 			// Previews of the uploaded branding images.
 			'media'    => array(

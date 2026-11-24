@@ -15,11 +15,7 @@ defined( 'ABSPATH' ) || exit;
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title><?php echo esc_html( \NovaWork\Settings::workspace_name() ); ?></title>
-<?php
-wp_print_inline_script_tag( 'try{var t=localStorage.getItem("nw.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}' );
-wp_print_styles( Assets::styles() );
-?>
-<?php \NovaWork\App\Branding::head(); ?>
+<?php Assets::head(); ?>
 </head>
 <body class="nw-body">
 <main class="nw-wrap nw-gate">

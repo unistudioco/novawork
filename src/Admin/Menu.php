@@ -15,8 +15,9 @@ use NovaWork\App\Route;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * A top-level "NovaWork" menu for members that opens the app. Phase 5 adds
- * the Settings screen under it.
+ * A top-level "NovaWork" menu, below WordPress's own items. For an
+ * administrator it opens Settings, with "Visit Workspace" under it (owner,
+ * 2026-11-24); a member without settings rights goes straight to the app.
  */
 final class Menu {
 
@@ -34,23 +35,32 @@ final class Menu {
 	 */
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'add' ) );
-		add_action( 'load-toplevel_page_' . self::SLUG, array( self::class, 'open_app' ) );
+		add_action( 'admin_menu', array( self::class, 'add_open' ), 30 );
 	}
 
 	/**
-	 * Add the menu.
+	 * The top-level item: Settings for administrators, the app for members.
 	 */
 	public static function add(): void {
-		add_menu_page(
-			__( 'NovaWork', 'novawork' ),
-			__( 'NovaWork', 'novawork' ),
-			Capabilities::ACCESS,
-			self::SLUG,
-			'__return_null',
-			self::ICON,
-			3
-		);
-		add_submenu_page( self::SLUG, __( 'Open NovaWork', 'novawork' ), __( 'Open NovaWork', 'novawork' ), Capabilities::ACCESS, self::SLUG, '__return_null' );
+		if ( current_user_can( Capabilities::MANAGE ) ) {
+			add_menu_page( __( 'NovaWork settings', 'novawork' ), __( 'NovaWork', 'novawork' ), Capabilities::MANAGE, SettingsPage::SLUG, array( SettingsPage::class, 'render' ), self::ICON );
+			return;
+		}
+		$hook = add_menu_page( __( 'NovaWork', 'novawork' ), __( 'NovaWork', 'novawork' ), Capabilities::ACCESS, self::SLUG, '__return_null', self::ICON );
+		add_action( 'load-' . $hook, array( self::class, 'open_app' ) );
+	}
+
+	/**
+	 * "Visit Workspace", after Settings in an administrator's menu.
+	 */
+	public static function add_open(): void {
+		if ( ! current_user_can( Capabilities::MANAGE ) ) {
+			return;
+		}
+		$hook = add_submenu_page( SettingsPage::SLUG, __( 'Visit Workspace', 'novawork' ), __( 'Visit Workspace', 'novawork' ), Capabilities::ACCESS, self::SLUG, '__return_null' );
+		if ( is_string( $hook ) ) {
+			add_action( 'load-' . $hook, array( self::class, 'open_app' ) );
+		}
 	}
 
 	/**

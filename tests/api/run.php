@@ -744,6 +744,21 @@ try {
 	$t->ok( 403 === $s, '… or change them', $s );
 	list( $s, $st ) = $t->call( $admin, 'GET', '/settings' );
 	$t->ok( 200 === $s && 'path' === $st['values']['location'] && isset( $st['site']['appUrl'], $st['defaults']['idle_minutes'] ), 'an administrator gets values, defaults and site facts', $st['site'] ?? $st );
+	// Fontshare (WordPress.org review): off until an administrator opts in, offered once.
+	$fs = (array) get_option( NovaWork\Settings::OPTION, array() );
+	unset( $fs['load_fontshare'] );
+	update_option( NovaWork\Settings::OPTION, $fs );
+	delete_option( NovaWork\Settings::FONTS_OFFER_OPTION );
+	list( , $st ) = $t->call( $admin, 'GET', '/settings' );
+	$t->ok( false === $st['values']['load_fontshare'] && false === $st['defaults']['load_fontshare'] && true === $st['site']['fontsOffer'], 'Fontshare is off by default, and the screen offers it', $st['site'] );
+	$t->ok( ! in_array( NovaWork\App\Assets::FONTS, NovaWork\App\Assets::styles(), true ), 'nothing loads from Fontshare until then' );
+	list( $s ) = $t->call( $alex, 'DELETE', '/settings/fonts-offer' );
+	$t->ok( 403 === $s, 'a member cannot answer the offer', $s );
+	list( $s, $st ) = $t->call( $admin, 'DELETE', '/settings/fonts-offer' );
+	$t->ok( 200 === $s && false === $st['site']['fontsOffer'] && false === $st['values']['load_fontshare'], '"No thanks" keeps it off and ends the offer', $st['site'] ?? $st );
+	delete_option( NovaWork\Settings::FONTS_OFFER_OPTION );
+	list( $s, $st ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'load_fontshare' => true ) ) );
+	$t->ok( 200 === $s && true === $st['values']['load_fontshare'] && false === $st['site']['fontsOffer'] && in_array( NovaWork\App\Assets::FONTS, NovaWork\App\Assets::styles(), true ), '"Turn them on" loads the typefaces and ends the offer', $st['site'] ?? $st );
 	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'location' => 'moon', 'app_slug' => 'wp-admin', 'upload_types' => 'php, svg', 'idle_minutes' => 'soon', 'poll_seconds' => 9 ) ) );
 	$errs = $bad['data']['errors'] ?? array();
 	$t->ok( 400 === $s && isset( $errs['location'], $errs['app_slug'], $errs['upload_types'], $errs['idle_minutes'] ), 'wrong values come back by field', $errs );
