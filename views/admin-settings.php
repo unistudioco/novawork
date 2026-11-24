@@ -55,6 +55,16 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 		<a class="nw-btn nw-primary" :href="site.appUrl" target="_blank" rel="noopener"><?php esc_html_e( 'Open the workspace', 'novawork' ); ?></a>
 	</header>
 
+	<section class="nw-scard nw-offer" aria-labelledby="nw-s-offer" x-show="site.fontsOffer">
+		<h3 id="nw-s-offer"><?php esc_html_e( 'Use NovaWork’s typefaces?', 'novawork' ); ?></h3>
+		<?php $novawork_row_start( 'fonts_offer', __( 'Satoshi and Supreme', 'novawork' ), __( 'NovaWork is designed with these two typefaces. Fontshare (Indian Type Foundry) serves them from its own servers, so each visitor’s browser would share its IP address with Fontshare. Until you turn them on, the workspace uses each device’s own fonts and loads nothing from outside your site. You can change this later under Fonts and privacy.', 'novawork' ) ); ?>
+			<div class="nw-offer-acts">
+				<button type="button" class="nw-btn nw-primary" :disabled="offerBusy" @click="answerFonts( true )"><?php esc_html_e( 'Turn them on', 'novawork' ); ?></button>
+				<button type="button" class="nw-btn nw-ghost" :disabled="offerBusy" @click="answerFonts( false )"><?php esc_html_e( 'No thanks', 'novawork' ); ?></button>
+			</div>
+		<?php $novawork_row_end( 'fonts_offer' ); ?>
+	</section>
+
 	<section class="nw-scard" aria-labelledby="nw-s-workspace">
 		<h3 id="nw-s-workspace"><?php esc_html_e( 'Workspace', 'novawork' ); ?></h3>
 		<?php $novawork_row_start( 'workspace_name', __( 'Name', 'novawork' ), __( 'Shown in the header, the browser tab and on the sign-in page. Leave it empty to use your site’s title.', 'novawork' ), 'nw-f-name' ); ?>
@@ -274,7 +284,7 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 
 	<section class="nw-scard" aria-labelledby="nw-s-privacy">
 		<h3 id="nw-s-privacy"><?php esc_html_e( 'Fonts and privacy', 'novawork' ); ?></h3>
-		<?php $novawork_row_start( 'load_fontshare', __( 'Load Satoshi and Supreme from Fontshare', 'novawork' ), __( 'NovaWork’s typefaces come from Fontshare (Indian Type Foundry) each time the workspace opens, which shares the visitor’s IP address with Fontshare. Turn this off to use the device’s own fonts and load nothing from outside your site.', 'novawork' ) ); ?>
+		<?php $novawork_row_start( 'load_fontshare', __( 'Load Satoshi and Supreme from Fontshare', 'novawork' ), __( 'Off by default. When on, NovaWork’s typefaces come from Fontshare (Indian Type Foundry) each time the workspace opens, which shares the visitor’s IP address with Fontshare. When off, the workspace uses the device’s own fonts and loads nothing from outside your site.', 'novawork' ) ); ?>
 			<button type="button" class="nw-switch" role="switch" aria-labelledby="nw-l-load_fontshare" :aria-checked="String(!!values.load_fontshare)" @click="values.load_fontshare = !values.load_fontshare"><span></span></button>
 		<?php $novawork_row_end( 'load_fontshare' ); ?>
 	</section>

@@ -109,6 +109,12 @@ test( 'an administrator adds, changes and deletes a session on the Time page; me
 		await dlg.locator( '#nw-s-to' ).fill( when.to );
 		await dlg.locator( 'button[value="save"]' ).click();
 		const sessions = page.locator( '#nw-tbody .nw-panel', { has: page.locator( 'h3', { hasText: 'Sessions' } ) } );
+		// The list shows the newest 8; other tests' sessions may be newer than this one.
+		await expect( dlg ).toHaveCount( 0 );
+		const all = sessions.locator( '[data-sessions="all"]' );
+		if ( await all.count() ) {
+			await all.click();
+		}
 		const row = sessions.locator( '.nw-row', { hasText: title } );
 		await expect( row ).toHaveCount( 1 );
 		await expect( row.locator( '.nw-tstat' ) ).toHaveText( '1h' );

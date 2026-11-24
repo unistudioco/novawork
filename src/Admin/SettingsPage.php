@@ -40,25 +40,17 @@ final class SettingsPage {
 		add_action( 'admin_menu', array( self::class, 'add' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ) );
 		add_filter( 'admin_body_class', array( self::class, 'body_class' ) );
-		add_action( 'admin_head', array( self::class, 'light_only' ) );
 	}
 
 	/**
-	 * The cards stay light like the rest of wp-admin, whatever the device's
-	 * appearance (the tokens follow the system unless told otherwise).
-	 */
-	public static function light_only(): void {
-		$screen = get_current_screen();
-		if ( $screen && self::$hook === $screen->id ) {
-			wp_print_inline_script_tag( 'document.documentElement.dataset.theme="light";' );
-		}
-	}
-
-	/**
-	 * Add the submenu item.
+	 * The Settings item, first under the top-level NovaWork item (which opens
+	 * this screen for administrators; see Menu).
 	 */
 	public static function add(): void {
-		$hook = add_submenu_page( Menu::SLUG, __( 'NovaWork settings', 'novawork' ), __( 'Settings', 'novawork' ), Capabilities::MANAGE, self::SLUG, array( self::class, 'render' ) );
+		if ( ! current_user_can( Capabilities::MANAGE ) ) {
+			return;
+		}
+		$hook = add_submenu_page( self::SLUG, __( 'NovaWork settings', 'novawork' ), __( 'Settings', 'novawork' ), Capabilities::MANAGE, self::SLUG, array( self::class, 'render' ) );
 		if ( is_string( $hook ) ) {
 			self::$hook = $hook;
 		}
@@ -96,6 +88,11 @@ final class SettingsPage {
 			return;
 		}
 		Assets::register_admin();
+		// The cards stay light like the rest of wp-admin, whatever the device's
+		// appearance (the tokens follow the system unless told otherwise).
+		wp_register_script( Assets::THEME, false, array(), NOVAWORK_VERSION, false );
+		wp_add_inline_script( Assets::THEME, 'document.documentElement.dataset.theme="light";' );
+		wp_enqueue_script( Assets::THEME );
 		wp_enqueue_media(); // Branding images come from the media library.
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/novawork/v1/settings' ) );
 		$boot     = array(

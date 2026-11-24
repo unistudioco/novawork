@@ -93,8 +93,8 @@ test( 'opened without a connection, the installed app shows its offline page', a
 	} finally {
 		await context.setOffline( false );
 	}
-	// Back online, the page reloads by itself into the workspace.
-	await expect( page.locator( '.nw-hdr' ) ).toBeVisible();
+	// Back online, the page reloads by itself into the workspace (it checks every 5 seconds).
+	await expect( page.locator( '.nw-hdr' ) ).toBeVisible( { timeout: 15000 } );
 } );
 
 test( '"Install app" appears when the browser offers it and opens its dialog', async ( { page } ) => {

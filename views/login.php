@@ -23,14 +23,7 @@ defined( 'ABSPATH' ) || exit;
 echo esc_html( sprintf( __( 'Sign in · %s', 'novawork' ), (string) $view['name'] ) );
 ?>
 </title>
-<?php
-wp_print_inline_script_tag( 'try{var t=localStorage.getItem("nw.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}' );
-if ( in_array( Assets::FONTS, Assets::styles(), true ) ) {
-	echo '<link rel="preconnect" href="https://api.fontshare.com" crossorigin>' . "\n";
-}
-wp_print_styles( Assets::styles() );
-?>
-<?php \NovaWork\App\Branding::head(); ?>
+<?php Assets::head(); ?>
 <?php \NovaWork\App\WebApp::head(); ?>
 </head>
 <body class="nw-body">
@@ -166,7 +159,8 @@ wp_print_styles( Assets::styles() );
 </main>
 <?php
 // Keep the app view you were heading to (#board…), and Show/Hide the password.
-wp_print_inline_script_tag(
+Assets::footer_script(
+	Assets::LOGIN,
 	'(function(){var h=document.getElementById("nw-login-hash");if(h)h.value=(location.hash||"").replace(/[^a-z0-9_-]/gi,"");' .
 	'var b=document.getElementById("nw-login-eye"),p=document.getElementById("nw-login-pass");if(!b||!p)return;' .
 	'b.addEventListener("click",function(){var s=p.type==="password";p.type=s?"text":"password";b.setAttribute("aria-pressed",String(s));b.textContent=s?' . wp_json_encode( __( 'Hide', 'novawork' ) ) . ':' . wp_json_encode( __( 'Show', 'novawork' ) ) . ';p.focus();});})();'

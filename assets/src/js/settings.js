@@ -144,6 +144,25 @@ Alpine.data( 'nwSettings', () => ( {
 			} catch ( err ) {}
 		}
 	},
+	offerBusy: false,
+	// The one-time offer of NovaWork's typefaces (Fontshare is off until an
+	// administrator opts in).
+	async answerFonts( yes ) {
+		this.offerBusy = true;
+		try {
+			const res = yes ? await post( 'settings', { values: { load_fontshare: true } } ) : await del( 'settings/fonts-offer' );
+			this.site = res.site || Object.assign( {}, this.site, { fontsOffer: false } );
+			if ( yes ) {
+				this.values.load_fontshare = true;
+				this.saved.load_fontshare = true;
+			}
+			toast( yes ? __( 'Turned on. The workspace now uses Satoshi and Supreme.', 'novawork' ) : __( 'Kept off. The workspace uses each device’s own fonts.', 'novawork' ), 'check' );
+		} catch ( e ) {
+			toast( ( e && e.message ) || __( 'Could not save. Check your connection and try again.', 'novawork' ), 'x' );
+		} finally {
+			this.offerBusy = false;
+		}
+	},
 	samplesBusy: false,
 	samplesLabel() {
 		return sprintf( /* translators: %d: number of sample items. */ _n( 'Remove %d sample item', 'Remove %d sample items', this.site.samples, 'novawork' ), this.site.samples );

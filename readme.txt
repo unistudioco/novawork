@@ -89,7 +89,7 @@ Go to NovaWork → Settings → Members and create an invite link (anyone with t
 
 = Does it need an outside service or an account somewhere? =
 
-No. Everything is stored in your WordPress database and your uploads folder, and the app talks only to your own site. Two optional things load from outside by default: the Satoshi and Supreme typefaces from Fontshare, and members' Gravatar pictures. Both can be turned off; see "External services" below.
+No. Everything is stored in your WordPress database and your uploads folder, and the app talks only to your own site. Two things can load from outside, and both follow your settings: the Satoshi and Supreme typefaces from Fontshare (off until an administrator turns them on) and members' Gravatar pictures (only when Settings → Discussion → "Show Avatars" is on). See "External services" below.
 
 = How do changes reach the rest of the team? =
 
@@ -155,7 +155,7 @@ NovaWork stores everything on your own site. It contacts outside services only f
 
 = Fontshare (typefaces) =
 
-The workspace uses the Satoshi and Supreme typefaces, which Fontshare (by Indian Type Foundry) provides only from its own servers. When the setting "Load Satoshi and Supreme from Fontshare" is on (the default), each time someone opens the workspace or its sign-in page their browser requests the stylesheet from api.fontshare.com and the font files from cdn.fontshare.com. Fontshare receives the visitor's IP address and browser details, as with any web request. No other data is sent. Turn the setting off in NovaWork → Settings → Fonts and privacy and the workspace uses the device's own fonts and loads nothing from outside.
+The workspace uses the Satoshi and Supreme typefaces, which Fontshare (by Indian Type Foundry) provides only from its own servers. The setting "Load Satoshi and Supreme from Fontshare" is off until an administrator turns it on (NovaWork → Settings offers it once). When it is on, each time someone opens the workspace or its sign-in page their browser requests the stylesheet from api.fontshare.com and the font files from cdn.fontshare.com. Fontshare receives the visitor's IP address and browser details, as with any web request. No other data is sent. While it is off (the default), the workspace uses the device's own fonts and loads nothing from Fontshare. The setting is in NovaWork → Settings → Fonts and privacy.
 
 Fontshare's license for Satoshi and Supreme (ITF Free Font License): https://www.fontshare.com/licenses/itf-ffl
 

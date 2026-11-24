@@ -106,6 +106,6 @@ test( 'administrators reach the settings screen from the workspace menu', async 
 	const link = page.locator( '.nw-pmenu-item', { hasText: 'Workspace settings' } );
 	await expect( link ).toHaveAttribute( 'href', /wp-admin\/admin\.php\?page=novawork-settings/ );
 	await link.click();
-	await page.locator( '.nw-admin .nw-scard' ).first().waitFor();
+	await page.locator( '.nw-admin #nw-s-workspace' ).waitFor();
 	await context.close();
 } );

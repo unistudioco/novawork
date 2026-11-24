@@ -41,11 +41,13 @@ final class Login {
 	public static function handle(): void {
 		nocache_headers();
 		send_frame_options_header();
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Which form to show.
+		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only picks which form to show; nothing is changed.
 		$post   = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'];
+		// A sent form is read only once its nonce checks out (form()).
+		$form = $post ? self::form() : null;
 		if ( 'join' === $action ) {
 			header( 'Referrer-Policy: no-referrer' ); // The invite is in the address.
-			self::render( 'join', $post ? self::join() : self::check_invite() );
+			self::render( 'join', $post ? ( $form ? self::join( $form ) : self::expired() ) : self::check_invite(), $form );
 			return;
 		}
 		if ( is_user_logged_in() ) {
@@ -53,15 +55,59 @@ final class Login {
 			exit;
 		}
 		if ( 'lost' === $action ) {
-			self::render( 'lost', $post ? self::lost() : null );
+			self::render( 'lost', $post ? ( $form ? self::lost( $form ) : self::expired() ) : null, $form );
 			return;
 		}
 		if ( 'rp' === $action ) {
 			header( 'Referrer-Policy: no-referrer' ); // The key is in the address.
-			self::render( 'reset', $post ? self::reset() : self::check_key() );
+			self::render( 'reset', $post ? ( $form ? self::reset( $form ) : self::expired() ) : self::check_key(), $form );
 			return;
 		}
-		self::render( 'login', $post ? self::sign_in() : null );
+		self::render( 'login', $post ? ( $form ? self::sign_in( $form ) : self::expired() ) : null, $form );
+	}
+
+	/**
+	 * The sent form's fields, or null when its nonce is missing or stale (the
+	 * form was open too long, or the request didn't come from it). No field
+	 * is read before the nonce is verified.
+	 *
+	 * @return array<string, string>|null
+	 */
+	private static function form(): ?array {
+		if ( ! isset( $_POST['_novawork_login'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_novawork_login'] ) ), self::NONCE ) ) {
+			return null;
+		}
+		return array(
+			'log'        => isset( $_POST['log'] ) ? sanitize_user( wp_unslash( $_POST['log'] ) ) : '',
+			// Passwords are used exactly as typed, as wp-login.php does.
+			'pwd'        => isset( $_POST['pwd'] ) ? (string) wp_unslash( $_POST['pwd'] ) : '', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- A password is used as typed.
+			'pass1'      => isset( $_POST['pass1'] ) ? (string) wp_unslash( $_POST['pass1'] ) : '', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- A password is used as typed.
+			'rememberme' => empty( $_POST['rememberme'] ) ? '' : '1',
+			'user_login' => isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : '',
+			'name'       => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+			'email'      => isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '',
+			'hash'       => isset( $_POST['hash'] ) ? sanitize_key( wp_unslash( $_POST['hash'] ) ) : '',
+			'key'        => isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : '',
+			'login'      => isset( $_POST['login'] ) ? sanitize_user( wp_unslash( $_POST['login'] ) ) : '',
+		);
+	}
+
+	/**
+	 * The answer to a form sent without a good nonce.
+	 */
+	private static function expired(): WP_Error {
+		return new WP_Error( 'novawork_expired', __( 'This page was open for a while. Please try again.', 'novawork' ) );
+	}
+
+	/**
+	 * A value from the address (an invite token, a reset key and login).
+	 * These links are their own proof: the token or key is checked against
+	 * the database before anything happens.
+	 *
+	 * @param string $name Query argument.
+	 */
+	private static function from_link( string $name ): string {
+		return isset( $_GET[ $name ] ) ? sanitize_text_field( wp_unslash( $_GET[ $name ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- A link from an email; the token itself is verified.
 	}
 
 	/**
@@ -70,7 +116,7 @@ final class Login {
 	 * @return array<string, mixed>|null
 	 */
 	private static function invite(): ?array {
-		$token = isset( $_REQUEST['invite'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['invite'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The invite token is the proof.
+		$token = self::from_link( 'invite' );
 		return '' === $token ? null : ( new \NovaWork\Data\InviteRepository() )->find_open( $token );
 	}
 
@@ -91,26 +137,20 @@ final class Login {
 	/**
 	 * Join: a signed-in person accepts; a new person creates their account.
 	 * Redirects to the workspace on success.
+	 *
+	 * @param array<string, string> $form The sent form (nonce verified).
 	 */
-	private static function join(): WP_Error {
+	private static function join( array $form ): WP_Error {
 		$invite = self::invite();
 		if ( ! $invite ) {
 			return new WP_Error( 'novawork_bad_invite', __( 'This invite has expired or was already used. Ask whoever invited you for a new one.', 'novawork' ) );
-		}
-		if ( ! self::fresh() ) {
-			return new WP_Error( 'novawork_expired', __( 'This page was open for a while. Please try again.', 'novawork' ) );
 		}
 		if ( is_user_logged_in() ) {
 			\NovaWork\Services\Invites::accept( $invite, wp_get_current_user() );
 			wp_safe_redirect( Route::url() );
 			exit;
 		}
-		$user = \NovaWork\Services\Invites::join_new(
-			$invite,
-			isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked by fresh() above.
-			isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked by fresh() above.
-			isset( $_POST['pass1'] ) ? (string) wp_unslash( $_POST['pass1'] ) : '' // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Checked by fresh() above; a password is used as typed.
-		);
+		$user = \NovaWork\Services\Invites::join_new( $invite, $form['name'], $form['email'], $form['pass1'] );
 		if ( is_wp_error( $user ) ) {
 			return $user;
 		}
@@ -123,21 +163,13 @@ final class Login {
 	}
 
 	/**
-	 * Whether the sent form carries a fresh nonce.
-	 */
-	private static function fresh(): bool {
-		return isset( $_POST['_novawork_login'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_novawork_login'] ) ), self::NONCE );
-	}
-
-	/**
 	 * "Forgot password?": send WordPress's reset email. The answer is the same
 	 * whether or not the account exists.
+	 *
+	 * @param array<string, string> $form The sent form (nonce verified).
 	 */
-	private static function lost(): WP_Error {
-		if ( ! self::fresh() ) {
-			return new WP_Error( 'novawork_expired', __( 'This page was open for a while. Please try again.', 'novawork' ) );
-		}
-		$login = isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked by fresh() above.
+	private static function lost( array $form ): WP_Error {
+		$login = $form['user_login'];
 		if ( '' === $login ) {
 			return new WP_Error( 'novawork_empty', __( 'Enter your email or username.', 'novawork' ) );
 		}
@@ -153,19 +185,19 @@ final class Login {
 	 * The reset link: is it still good?
 	 */
 	private static function check_key(): ?WP_Error {
-		$user = self::key_user();
+		$user = self::key_user( self::from_link( 'key' ), sanitize_user( self::from_link( 'login' ) ) );
 		return is_wp_error( $user ) ? $user : null;
 	}
 
 	/**
 	 * The user a reset link belongs to, or why it can't be used.
 	 *
+	 * @param string $key   Reset key.
+	 * @param string $login Username.
 	 * @return \WP_User|WP_Error
 	 */
-	private static function key_user(): \WP_User|WP_Error {
-		$key   = isset( $_REQUEST['key'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The reset key is the proof.
-		$login = isset( $_REQUEST['login'] ) ? sanitize_user( wp_unslash( $_REQUEST['login'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The reset key is the proof.
-		$user  = check_password_reset_key( $key, $login );
+	private static function key_user( string $key, string $login ): \WP_User|WP_Error {
+		$user = check_password_reset_key( $key, $login );
 		if ( is_wp_error( $user ) ) {
 			return new WP_Error( 'novawork_bad_key', __( 'This link has expired or was already used. Ask for a new one.', 'novawork' ) );
 		}
@@ -174,16 +206,15 @@ final class Login {
 
 	/**
 	 * "Set a new password": save it with WordPress's reset_password().
+	 *
+	 * @param array<string, string> $form The sent form (nonce verified).
 	 */
-	private static function reset(): WP_Error {
-		$user = self::key_user();
+	private static function reset( array $form ): WP_Error {
+		$user = self::key_user( $form['key'], $form['login'] );
 		if ( is_wp_error( $user ) ) {
 			return $user;
 		}
-		if ( ! self::fresh() ) {
-			return new WP_Error( 'novawork_expired', __( 'This page was open for a while. Please try again.', 'novawork' ) );
-		}
-		$password = isset( $_POST['pass1'] ) ? (string) wp_unslash( $_POST['pass1'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- A password is used as typed; the nonce is checked by fresh() above.
+		$password = $form['pass1'];
 		$errors   = new WP_Error();
 		if ( '' === trim( $password ) ) {
 			$errors->add( 'novawork_empty', __( 'Enter a new password.', 'novawork' ) );
@@ -226,13 +257,12 @@ final class Login {
 
 	/**
 	 * Sign in with the sent details; redirects and exits on success.
+	 *
+	 * @param array<string, string> $form The sent form (nonce verified).
 	 */
-	private static function sign_in(): WP_Error {
-		if ( ! self::fresh() ) {
-			return new WP_Error( 'novawork_expired', __( 'This page was open for a while. Please try again.', 'novawork' ) );
-		}
-		$login    = isset( $_POST['log'] ) ? sanitize_user( wp_unslash( $_POST['log'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked by fresh() above.
-		$password = isset( $_POST['pwd'] ) ? (string) wp_unslash( $_POST['pwd'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- A password is used as typed; the nonce is checked by fresh() above.
+	private static function sign_in( array $form ): WP_Error {
+		$login    = $form['log'];
+		$password = $form['pwd'];
 		if ( '' === $login || '' === $password ) {
 			return new WP_Error( 'novawork_empty', __( 'Enter your email or username and your password.', 'novawork' ) );
 		}
@@ -240,7 +270,7 @@ final class Login {
 			array(
 				'user_login'    => $login,
 				'user_password' => $password,
-				'remember'      => ! empty( $_POST['rememberme'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked by fresh() above.
+				'remember'      => '' !== $form['rememberme'],
 			),
 			is_ssl()
 		);
@@ -258,7 +288,7 @@ final class Login {
 		if ( $invite ) {
 			\NovaWork\Services\Invites::accept( $invite, $user );
 		}
-		$hash = isset( $_POST['hash'] ) ? sanitize_key( wp_unslash( $_POST['hash'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Checked by fresh() above.
+		$hash = $form['hash'];
 		wp_safe_redirect( Route::url() . ( '' !== $hash ? '#' . $hash : '' ) );
 		exit;
 	}
@@ -266,10 +296,11 @@ final class Login {
 	/**
 	 * Print the page.
 	 *
-	 * @param string        $mode  "login", "lost" or "reset".
-	 * @param WP_Error|null $error What went wrong (or, for "lost", the answer).
+	 * @param string                     $mode  "login", "lost" or "reset".
+	 * @param WP_Error|null              $error What went wrong (or, for "lost", the answer).
+	 * @param array<string, string>|null $form  The sent form (nonce verified), to fill the fields again.
 	 */
-	private static function render( string $mode, ?WP_Error $error ): void {
+	private static function render( string $mode, ?WP_Error $error, ?array $form = null ): void {
 		Assets::register();
 		$done = $error && 'novawork_sent' === $error->get_error_code();
 		$view = array(
@@ -279,18 +310,18 @@ final class Login {
 			'sent'      => $done ? $error->get_error_message() : '',
 			'badKey'    => $error && 'novawork_bad_key' === $error->get_error_code(),
 			'badInvite' => $error && 'novawork_bad_invite' === $error->get_error_code(),
-			'key'       => isset( $_REQUEST['key'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['key'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Carried into the form.
-			'user'      => isset( $_REQUEST['login'] ) ? sanitize_user( wp_unslash( $_REQUEST['login'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Carried into the form.
-			'wasReset'  => isset( $_GET['reset'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- A message only.
+			'key'       => $form ? $form['key'] : self::from_link( 'key' ),
+			'user'      => $form ? $form['login'] : sanitize_user( self::from_link( 'login' ) ),
+			'wasReset'  => '' !== self::from_link( 'reset' ),
 			'loginUrl'  => Route::login_url(),
 			'invite'    => self::invite(),
-			'token'     => isset( $_REQUEST['invite'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['invite'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Carried into the form.
+			'token'     => self::from_link( 'invite' ),
 			'me'        => is_user_logged_in() ? wp_get_current_user()->display_name : '',
-			'joinName'  => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Only echoed back into the field.
-			'joinEmail' => isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Only echoed back into the field.
-			'login'     => isset( $_POST['log'] ) ? sanitize_user( wp_unslash( $_POST['log'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Only echoed back into the field.
-			'remember'  => ! empty( $_POST['rememberme'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Only echoed back into the field.
-			'signedOut' => isset( $_GET['signed-out'] ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- A message only.
+			'joinName'  => $form ? $form['name'] : '',
+			'joinEmail' => $form ? $form['email'] : '',
+			'login'     => $form ? $form['log'] : '',
+			'remember'  => $form && '' !== $form['rememberme'],
+			'signedOut' => '' !== self::from_link( 'signed-out' ),
 			'nonce'     => self::NONCE,
 			'lost'      => add_query_arg( 'action', 'lost', Route::login_url() ),
 		);

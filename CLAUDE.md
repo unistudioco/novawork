@@ -91,12 +91,17 @@ one); the app document must have it.
   Every font reference goes through `--nw-font-head` / `--nw-font-body` with the
   fallback `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
   "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`. Setting "Load
-  Satoshi & Supreme from Fontshare", on by default; off = nothing remote.
+  Satoshi & Supreme from Fontshare", **off by default** (WordPress.org review, 2026-11-24: no outside calls until an admin opts in; the settings screen offers it once, `site.fontsOffer`, option `novawork_fonts_offer`); off = nothing remote.
   Load it only on the app route. Disclose in readme "External services" and the
   privacy text. The owner handles the WordPress.org review conversation.
 - **First run:** 3 sample items that show where to start, removable in one step.
   The prototype's seed data is the owner's real business and never ships.
-- **Settings screen** in wp-admin, under a real "NovaWork" menu. **Owner
+- **Settings screen** in wp-admin, under a real "NovaWork" menu. The menu
+  sits below WordPress's own items (no position; review 2026-11-24). For an
+  administrator NovaWork opens Settings with "Visit Workspace" under it
+  (owner, 2026-11-24); a member without settings rights goes to the app.
+  Inline JS/CSS goes through `wp_add_inline_script/style` (`Assets::head()`,
+  `Assets::footer_script()`), never a printed `<script>`/`<style>` tag. **Owner
   decision 2026-11-21 (replaces the brief's "native look"):** it renders
   inside the normal wp-admin shell (admin menu and admin bar stay, never a
   full-page takeover) the way WordPress 7's Settings → Connectors page does,
@@ -409,7 +414,7 @@ it, and shown on the Phase 5 settings screen. Never a literal in code.
 
 Already settings: `idle_minutes` (10, the "Still working?" threshold),
 `poll_seconds` (4), `week_start` (WordPress's), `upload_max_mb` (10),
-`upload_types`, `load_fontshare` (on), `app_slug`, `delete_data` (off); plus
+`upload_types`, `load_fontshare` (off), `app_slug`, `delete_data` (off); plus
 the owner's marks above (`workspace_name`, `location`).
 Also settings now (2026-11-21): `now_limit` (3 per person; with 3 the
 prototype's "three" wording is kept word for word, other values use wording

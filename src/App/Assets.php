@@ -28,6 +28,19 @@ final class Assets {
 	public const FONTS  = 'novawork-fonts';
 
 	/**
+	 * Inline-only handles (no file): the saved light/dark choice, applied
+	 * before anything paints, and the sign-in page's small helper.
+	 */
+	public const THEME = 'novawork-theme';
+	public const LOGIN = 'novawork-login';
+
+	/**
+	 * Applies the appearance saved on this device before the page paints, so
+	 * dark mode never flashes light.
+	 */
+	private const THEME_JS = 'try{var t=localStorage.getItem("nw.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}';
+
+	/**
 	 * The settings screen's bundle (wp-admin → NovaWork → Settings).
 	 */
 	public const ADMIN_SCRIPT = 'novawork-admin';
@@ -107,6 +120,35 @@ final class Assets {
 			array_unshift( $handles, self::FONTS );
 		}
 		return $handles;
+	}
+
+	/**
+	 * The head of a NovaWork document (app, sign-in, no access): the saved
+	 * appearance, the styles with the workspace's accent added inline, and
+	 * the tab icon. Everything goes through WordPress's script and style APIs.
+	 */
+	public static function head(): void {
+		wp_register_script( self::THEME, false, array(), NOVAWORK_VERSION, false );
+		wp_add_inline_script( self::THEME, self::THEME_JS );
+		$css = Branding::accent_css();
+		if ( '' !== $css ) {
+			wp_add_inline_style( self::STYLE, $css );
+		}
+		wp_print_scripts( array( self::THEME ) );
+		wp_print_styles( self::styles() );
+		Branding::icon_link();
+	}
+
+	/**
+	 * Print an inline-only script at the end of a NovaWork document.
+	 *
+	 * @param string $handle Handle (self::LOGIN).
+	 * @param string $js     The script.
+	 */
+	public static function footer_script( string $handle, string $js ): void {
+		wp_register_script( $handle, false, array(), NOVAWORK_VERSION, true );
+		wp_add_inline_script( $handle, $js );
+		wp_print_scripts( array( $handle ) );
 	}
 
 	/**
