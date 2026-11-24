@@ -99,7 +99,7 @@ final class Profile {
 	 * @param int $user_id The user being saved.
 	 */
 	public static function save( int $user_id ): void {
-		if ( ! isset( $_POST['_novawork_member_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_novawork_member_nonce'] ) ), self::NONCE ) ) {
+		if ( ! isset( $_POST['_novawork_member_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_novawork_member_nonce'] ) ), self::NONCE ) ) {
 			return;
 		}
 		if ( ! current_user_can( Capabilities::MANAGE ) || ! current_user_can( 'edit_user', $user_id ) ) {

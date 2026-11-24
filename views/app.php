@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
 <header class="nw-hdr" id="nw-hdr" :class="{ 'nw-stuck': stuck, 'nw-compact': compact }">
 	<div class="nw-hdr-in">
 		<div class="nw-row1">
-			<a class="nw-logo" href="#focus" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the workspace's name. */ __( '%s, Focus', 'novawork' ), \NovaWork\Settings::workspace_name() ) ); ?>"><?php echo \NovaWork\App\Branding::mark_html( 24 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped inside. ?></a>
+			<a class="nw-logo" href="#focus" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the workspace's name. */ __( '%s, Focus', 'novawork' ), \NovaWork\Settings::workspace_name() ) ); ?>"><?php echo wp_kses( \NovaWork\App\Branding::mark_html( 24 ), \NovaWork\App\Branding::allowed_html() ); ?></a>
 			<div class="nw-qs" id="nw-qs" role="search" x-ref="qs" :class="{ 'nw-open': qs.open, 'nw-closing': qs.closing, 'nw-has-q': qs.q.trim() !== '' }">
 				<div class="nw-qs-row"><label class="nw-qs-field"><span x-html="ic('magnifying-glass')"></span><input id="nw-qs-in" x-ref="qsIn" type="search" autocomplete="off" placeholder="<?php esc_attr_e( 'Quick search…', 'novawork' ); ?>" aria-label="<?php esc_attr_e( 'Search tasks, projects, decisions and messages', 'novawork' ); ?>" aria-controls="nw-qs-res" x-model="qs.q" @input="qsRun()" @focus="qsFocus()" @keydown="qsKey($event)"><kbd>/</kbd></label><button type="button" id="nw-qs-cancel" class="nw-btn nw-ghost" @click="qsCancel()"><?php esc_html_e( 'Cancel', 'novawork' ); ?></button></div>
 				<div class="nw-qs-res" id="nw-qs-res" x-ref="qsRes" x-show="qs.showRes" x-html="qs.html" @click="qsClick($event)"></div>
@@ -149,11 +149,14 @@ defined( 'ABSPATH' ) || exit;
 
 <dialog id="nw-idle-dlg" aria-labelledby="nw-idle-title" aria-describedby="nw-idle-text"><div class="nw-idle-in"><span class="nw-nic" id="nw-idle-icon" style="--nw-c:var(--nw-c-amber);--nw-ci:var(--nw-ci-amber)"></span><h2 id="nw-idle-title"><?php esc_html_e( 'Still working?', 'novawork' ); ?></h2><p id="nw-idle-text">
 <?php
-printf(
-	/* translators: 1: time without activity, e.g. "10m"; 2: seconds left. */
-	esc_html__( 'No activity for %1$s. The timer pauses in %2$ss, and the time you were away won’t be counted.', 'novawork' ),
-	'<b id="nw-idle-for">10m</b>',
-	'<b id="nw-idle-left">60</b>'
+echo wp_kses(
+	sprintf(
+		/* translators: 1: time without activity, e.g. "10m"; 2: seconds left. */
+		esc_html__( 'No activity for %1$s. The timer pauses in %2$ss, and the time you were away won’t be counted.', 'novawork' ),
+		'<b id="nw-idle-for">10m</b>',
+		'<b id="nw-idle-left">60</b>'
+	),
+	array( 'b' => array( 'id' => true ) )
 );
 ?>
 </p><div class="nw-idle-acts"><button class="nw-btn" type="button" data-idle="pause"><?php esc_html_e( 'Pause now', 'novawork' ); ?></button><button class="nw-btn nw-primary" type="button" data-idle="resume"><?php esc_html_e( 'I’m still working', 'novawork' ); ?></button></div></div></dialog>
