@@ -276,6 +276,35 @@ final class Branding {
 	}
 
 	/**
+	 * The tags the workspace mark may contain, for wp_kses() where it is
+	 * printed (the icon or logo images, or the NovaWork flag SVG).
+	 *
+	 * @return array<string, array<string, bool>>
+	 */
+	public static function allowed_html(): array {
+		return array(
+			'span' => array( 'class' => true ),
+			'img'  => array(
+				'class'  => true,
+				'src'    => true,
+				'alt'    => true,
+				'width'  => true,
+				'height' => true,
+			),
+			'svg'  => array(
+				'class'       => true,
+				'style'       => true,
+				'viewbox'     => true,
+				'fill'        => true,
+				'aria-hidden' => true,
+				'width'       => true,
+				'height'      => true,
+			),
+			'path' => array( 'd' => true ),
+		);
+	}
+
+	/**
 	 * Print the browser tab icon in a NovaWork document's head. The accent
 	 * CSS goes in through wp_add_inline_style() (Assets::head()).
 	 */

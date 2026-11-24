@@ -147,7 +147,7 @@ NovaWork stores everything on your own site. It contacts outside services only f
 
 The workspace uses the Satoshi and Supreme typefaces, which Fontshare (by Indian Type Foundry) provides only from its own servers. The setting "Load Satoshi and Supreme from Fontshare" is off until an administrator turns it on (NovaWork → Settings offers it once). When it is on, each time someone opens the workspace or its sign-in page their browser requests the stylesheet from api.fontshare.com and the font files from cdn.fontshare.com. Fontshare receives the visitor's IP address and browser details, as with any web request. No other data is sent. While it is off (the default), the workspace uses the device's own fonts and loads nothing from Fontshare. The setting is in NovaWork → Settings → Fonts and privacy.
 
-Fontshare's license for Satoshi and Supreme (ITF Free Font License): https://www.fontshare.com/licenses/itf-ffl
+Fontshare: https://www.fontshare.com/ – a free font service by Indian Type Foundry: https://www.indiantypefoundry.com/ – Neither publishes separate terms of use or a privacy policy; the terms for these typefaces are the ITF Free Font License: https://www.fontshare.com/licenses/itf-ffl
 
 = Gravatar (profile pictures) =
 
