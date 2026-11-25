@@ -8,8 +8,9 @@
  * - .wordpress-org/blueprints/blueprint.json: the plugin directory's Live
  *   Preview (SVN assets/blueprints/). Installs NovaWork from WordPress.org.
  * - demo/blueprint.json: the "Try the live demo" link for the website
- *   (owner, 2026-11-23). Installs the newest GitHub Release's novawork.zip,
- *   so it works before WordPress.org approval and the link never changes:
+ *   (owner, 2026-11-23). Since the WordPress.org release (2026-11-25) it
+ *   installs from WordPress.org too, so the demo is always the published
+ *   version and the link never changes:
  *   https://playground.wordpress.net/?mode=seamless&blueprint-url=https://raw.githubusercontent.com/unistudioco/novawork/main/demo/blueprint.json
  *   Playground runs in each visitor's browser: everyone gets a private copy,
  *   nothing they do reaches anyone else, and a reload starts fresh.
@@ -33,8 +34,6 @@ if ( /WP_CLI/.test( seed ) ) {
 }
 
 const php = ( code ) => '<?php\nrequire_once \'/wordpress/wp-load.php\';\n' + code.trim() + '\n';
-
-const RELEASE_ZIP = 'https://github.com/unistudioco/novawork/releases/latest/download/novawork.zip';
 
 const blueprint = ( plugin ) => ( {
 	$schema: 'https://playground.wordpress.net/blueprint-schema.json',
@@ -74,4 +73,4 @@ const write = ( path, data ) => {
 	console.log( 'Wrote ' + path );
 };
 write( '.wordpress-org/blueprints/blueprint.json', blueprint( { resource: 'wordpress.org/plugins', slug: 'novawork' } ) );
-write( 'demo/blueprint.json', blueprint( { resource: 'url', url: RELEASE_ZIP } ) );
+write( 'demo/blueprint.json', blueprint( { resource: 'wordpress.org/plugins', slug: 'novawork' } ) );
