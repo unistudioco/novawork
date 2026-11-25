@@ -35,7 +35,7 @@ if ( /WP_CLI/.test( seed ) ) {
 
 const php = ( code ) => '<?php\nrequire_once \'/wordpress/wp-load.php\';\n' + code.trim() + '\n';
 
-const blueprint = ( plugin ) => ( {
+const blueprint = ( plugin, extra = '' ) => ( {
 	$schema: 'https://playground.wordpress.net/blueprint-schema.json',
 	meta: {
 		title: 'NovaWork demo workspace',
@@ -59,7 +59,7 @@ if ( ! get_user_by( 'login', 'sam' ) ) {
 }
 // The demo has its own content, so no first-run sample items.
 update_option( 'novawork_samples', 'made', false );
-` ),
+${ extra }` ),
 		},
 		{ step: 'writeFile', path: '/tmp/novawork-demo.php', data: seed },
 		{ step: 'runPHP', code: php( "require '/tmp/novawork-demo.php';\nflush_rewrite_rules();" ) },
@@ -73,4 +73,13 @@ const write = ( path, data ) => {
 	console.log( 'Wrote ' + path );
 };
 write( '.wordpress-org/blueprints/blueprint.json', blueprint( { resource: 'wordpress.org/plugins', slug: 'novawork' } ) );
-write( 'demo/blueprint.json', blueprint( { resource: 'wordpress.org/plugins', slug: 'novawork' } ) );
+// The website's demo shows NovaWork's own typefaces (owner, 2026-11-25): Fontshare
+// is off by default in the plugin, so the demo turns it on and marks the
+// one-time offer as answered. The directory's Live Preview keeps the default.
+const FONTS_ON = `
+$novawork_s = (array) get_option( 'novawork_settings', array() );
+$novawork_s['load_fontshare'] = true;
+update_option( 'novawork_settings', $novawork_s );
+update_option( 'novawork_fonts_offer', 'done', false );
+`;
+write( 'demo/blueprint.json', blueprint( { resource: 'wordpress.org/plugins', slug: 'novawork' }, FONTS_ON ) );
