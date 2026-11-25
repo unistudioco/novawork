@@ -219,7 +219,7 @@ html:has(.nw-pro-dlg[open]) { overflow: hidden; }
 .nw-admin .nw-pro-hero h2 { display: block; }
 .nw-admin .nw-pro-dlg h2 { margin: 0 0 6px; padding: 0; font: 700 20px/1.25 var(--nw-font-head); letter-spacing: -.02em; color: var(--nw-fg); }
 .nw-admin .nw-pro-lead { margin: 0 0 14px; color: var(--nw-muted); font-size: 13.5px; line-height: 1.5; }
-.nw-admin .nw-pro-list { display: grid; gap: 16px; margin: 0 0 20px; padding: 0; list-style: none; }
+.nw-admin .nw-pro-list { display: grid; gap: 26px; margin: 0 0 20px; padding: 0; list-style: none; }
 .nw-admin .nw-pro-list li { display: flex; align-items: flex-start; gap: 12px; margin: 0; color: var(--nw-fg); font-size: 13.5px; line-height: 1.45; }
 .nw-admin .nw-pro-list li > .nw-pro-ic { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 9px; color: #fff; }
 /* One colour per Pro feature, as on the landing page (owner, 2026-11-25). */
@@ -229,11 +229,13 @@ html:has(.nw-pro-dlg[open]) { overflow: hidden; }
 .nw-admin .nw-pro-blue { background: #2065f5; }
 .nw-admin .nw-pro-violet { background: #8b6cf0; }
 .nw-admin .nw-pro-red { background: #e8735f; }
-/* Exactly two lines per feature, top-aligned with its icon (owner,
-   2026-11-25): the name, then one line about it. */
-.nw-admin .nw-pro-txt { display: grid; min-width: 0; }
-.nw-admin .nw-pro-txt > * { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.nw-admin .nw-pro-txt > span { color: var(--nw-muted); }
+/* Each feature: its name and what it does on one run of text, always two
+   lines (owner, 2026-11-25), top-aligned with its icon. The icons are joined
+   by a short line, like the timeline on the confirmation page. */
+.nw-admin .nw-pro-txt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: calc(2 * 1.45em); color: var(--nw-muted); }
+.nw-admin .nw-pro-txt b { color: var(--nw-fg); }
+.nw-admin .nw-pro-list li { position: relative; }
+.nw-admin .nw-pro-list li:not(:last-child)::after { content: ""; position: absolute; left: 18px; top: 44px; bottom: -20px; width: 2px; border-radius: 1px; background: var(--nw-line); }
 @media (max-width: 359px) { .nw-admin .nw-pro-in { padding: 24px 16px 18px; } .nw-admin .nw-pro-hero { margin: -24px -16px 6px; padding: 26px 16px 4px; } .nw-admin .nw-pro-list li { gap: 10px; } }
 .nw-admin .nw-pro-list b { font-weight: 600; }
 .nw-admin .nw-pro-note { margin: 0 0 18px; color: var(--nw-muted); font-size: 12.5px; line-height: 1.5; }

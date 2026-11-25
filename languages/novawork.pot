@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-25T23:29:57+00:00\n"
+"POT-Creation-Date: 2026-11-25T23:33:07+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -684,7 +684,7 @@ msgid "Spike, the AI teammate"
 msgstr ""
 
 #: views/admin-settings.php:74
-msgid "Check-ins and summaries"
+msgid "checks in and sums up long threads."
 msgstr ""
 
 #: views/admin-settings.php:75
@@ -692,7 +692,7 @@ msgid "Alerts with the app closed"
 msgstr ""
 
 #: views/admin-settings.php:75
-msgid "On phones and computers"
+msgid "on phones and computers."
 msgstr ""
 
 #: views/admin-settings.php:76
@@ -700,7 +700,7 @@ msgid "Daily or weekly digests"
 msgstr ""
 
 #: views/admin-settings.php:76
-msgid "What changed and what’s due"
+msgid "of what changed and what’s due."
 msgstr ""
 
 #: views/admin-settings.php:77
@@ -708,7 +708,7 @@ msgid "Recurring tasks"
 msgstr ""
 
 #: views/admin-settings.php:77
-msgid "The weekly report creates itself"
+msgid "so the weekly report creates itself."
 msgstr ""
 
 #: views/admin-settings.php:78
@@ -716,15 +716,15 @@ msgid "Reports for clients"
 msgstr ""
 
 #: views/admin-settings.php:78
-msgid "Time by client, ready to invoice"
+msgid "with time by client, ready to invoice."
 msgstr ""
 
 #: views/admin-settings.php:79
-msgid "Slack, Calendar and GitHub"
+msgid "Slack, Google Calendar and GitHub"
 msgstr ""
 
 #: views/admin-settings.php:79
-msgid "Where your team already looks"
+msgid "where your team looks."
 msgstr ""
 
 #: views/admin-settings.php:81
