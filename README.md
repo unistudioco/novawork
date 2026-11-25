@@ -138,7 +138,7 @@ flowchart LR
 - **Reads** come from `GET /sync`: a full snapshot the first time, then only what changed since the last cursor, plus members, presence, unread counts, settings and a fresh nonce.
 - The **timer** lives on the server: its start time is stored, and each poll is a sign of life. A timer whose app goes quiet stops at the last sign of life.
 
-Code map: `src/` (PHP: `App`, `Rest`, `Data`, `Services`, `Install`, `Access`, `Admin`), `assets/src/` (JS and CSS source), `views/` (the app, sign-in and settings documents), `tests/` (API, HTTP and browser tests). [`CLAUDE.md`](CLAUDE.md) records every design decision and convention.
+Code map: `src/` (PHP: `App`, `Rest`, `Data`, `Services`, `Install`, `Access`, `Admin`), `assets/src/` (JS and CSS source), `views/` (the app, sign-in and settings documents), `tests/` (API, HTTP and browser tests).
 
 ---
 
@@ -196,7 +196,6 @@ composer run plugin-check  # Plugin Check on the release zip
 - `bash bin/build-zip.sh` builds `build/novawork-<version>.zip` from `.distignore`, with a production-only autoloader, and refuses to build when the version differs between its four places or a dev file slipped in.
 - `composer run plugin-check` checks exactly that zip.
 - `node bin/blueprint.mjs` writes the WordPress Playground blueprint for the directory's Live Preview from the same demo data.
-- [`RELEASE.md`](RELEASE.md) has the submission steps, the SVN layout and a guideline-by-guideline check.
 
 ---
 

@@ -20,3 +20,8 @@
 # Browser test output.
 /test-results/
 /playwright-report/
+
+# The maintainers' working notes stay private (owner, 2026-11-25).
+/CLAUDE.md
+/HANDOFF.md
+/RELEASE.md
