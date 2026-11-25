@@ -36,7 +36,7 @@
 		},
 		{
 			"step": "runPHP",
-			"code": "<?php\nrequire_once '/wordpress/wp-load.php';\nwp_update_user( array( 'ID' => 1, 'display_name' => 'Alex', 'first_name' => 'Alex' ) );\nif ( ! get_user_by( 'login', 'sam' ) ) {\n\twp_insert_user( array( 'user_login' => 'sam', 'user_pass' => wp_generate_password(), 'user_email' => 'sam@example.com', 'display_name' => 'Sam', 'first_name' => 'Sam', 'role' => 'novawork_member' ) );\n}\n// The demo has its own content, so no first-run sample items.\nupdate_option( 'novawork_samples', 'made', false );\n"
+			"code": "<?php\nrequire_once '/wordpress/wp-load.php';\nwp_update_user( array( 'ID' => 1, 'display_name' => 'Alex', 'first_name' => 'Alex' ) );\nif ( ! get_user_by( 'login', 'sam' ) ) {\n\twp_insert_user( array( 'user_login' => 'sam', 'user_pass' => wp_generate_password(), 'user_email' => 'sam@example.com', 'display_name' => 'Sam', 'first_name' => 'Sam', 'role' => 'novawork_member' ) );\n}\n// The demo has its own content, so no first-run sample items.\nupdate_option( 'novawork_samples', 'made', false );\n\n$novawork_s = (array) get_option( 'novawork_settings', array() );\n$novawork_s['load_fontshare'] = true;\nupdate_option( 'novawork_settings', $novawork_s );\nupdate_option( 'novawork_fonts_offer', 'done', false );\n"
 		},
 		{
 			"step": "writeFile",
