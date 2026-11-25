@@ -242,6 +242,15 @@ button.nw-quote:hover { color: var(--nw-fg); border-left-color: var(--nw-accent)
 .nw-msg.nw-flash { animation: nw-flash 1.6s ease-out; }
 .nw-msg-acts .nw-iconbtn { border: 0; box-shadow: none; background: transparent; }
 .nw-msg-acts .nw-iconbtn:hover, .nw-msg-acts .nw-iconbtn:focus-visible { background: var(--nw-field); }
+/* The message toolbar sits in the gap above a message and over its name line,
+   never over the words below (owner, 2026-11-25: it covered the end of a /task
+   link on the first line). 26px buttons make it 32px tall: from 14px above the
+   message to 18px into it, where the text starts at 19px. Messages are 16px
+   apart, comments 14px; the comment list gets the same room above its first
+   comment so that toolbar isn't cut off. */
+.nw-msg-acts { top: -14px; }
+.nw-msg-acts .nw-iconbtn { width: 26px; height: 26px; }
+.nw-comments { padding-top: 14px; }
 @media (hover: none) { .nw-edit-foot span { visibility: hidden; } }
 
 /* Notifications: the owner's Mine | Workspace filter under the panel title. */
