@@ -1,5 +1,6 @@
 === NovaWork ===
 Contributors: unistudio
+Donate link: https://ko-fi.com/unistudioco
 Tags: project management, kanban, time tracking, team chat, roadmap
 Requires at least: 6.4
 Tested up to: 7.1
