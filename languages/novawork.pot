@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-25T23:28:23+00:00\n"
+"POT-Creation-Date: 2026-11-25T23:29:57+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -498,7 +498,7 @@ msgid "What"
 msgstr ""
 
 #: src/Services/Privacy.php:228
-#: views/admin-settings.php:95
+#: views/admin-settings.php:100
 #: assets/src/js/views/notes.js:249
 msgid "Workspace"
 msgstr ""
@@ -662,565 +662,569 @@ msgstr ""
 msgid "Open the workspace"
 msgstr ""
 
-#: views/admin-settings.php:64
+#: views/admin-settings.php:66
 #: assets/src/js/views/dialog.js:142
 msgid "Close"
 msgstr ""
 
-#: views/admin-settings.php:66
+#: views/admin-settings.php:69
+msgid "Coming soon"
+msgstr ""
+
+#: views/admin-settings.php:70
 msgid "NovaWork Pro is on its way"
 msgstr ""
 
-#: views/admin-settings.php:67
+#: views/admin-settings.php:72
 msgid "Everything in NovaWork is free and stays free. Pro will add more for growing teams:"
 msgstr ""
 
-#: views/admin-settings.php:69
+#: views/admin-settings.php:74
 msgid "Spike, the AI teammate"
 msgstr ""
 
-#: views/admin-settings.php:69
+#: views/admin-settings.php:74
 msgid "Check-ins and summaries"
 msgstr ""
 
-#: views/admin-settings.php:70
+#: views/admin-settings.php:75
 msgid "Alerts with the app closed"
 msgstr ""
 
-#: views/admin-settings.php:70
+#: views/admin-settings.php:75
 msgid "On phones and computers"
 msgstr ""
 
-#: views/admin-settings.php:71
+#: views/admin-settings.php:76
 msgid "Daily or weekly digests"
 msgstr ""
 
-#: views/admin-settings.php:71
+#: views/admin-settings.php:76
 msgid "What changed and what’s due"
 msgstr ""
 
-#: views/admin-settings.php:72
+#: views/admin-settings.php:77
 msgid "Recurring tasks"
 msgstr ""
 
-#: views/admin-settings.php:72
+#: views/admin-settings.php:77
 msgid "The weekly report creates itself"
 msgstr ""
 
-#: views/admin-settings.php:73
+#: views/admin-settings.php:78
 msgid "Reports for clients"
 msgstr ""
 
-#: views/admin-settings.php:73
+#: views/admin-settings.php:78
 msgid "Time by client, ready to invoice"
 msgstr ""
 
-#: views/admin-settings.php:74
+#: views/admin-settings.php:79
 msgid "Slack, Calendar and GitHub"
 msgstr ""
 
-#: views/admin-settings.php:74
+#: views/admin-settings.php:79
 msgid "Where your team already looks"
 msgstr ""
 
-#: views/admin-settings.php:76
+#: views/admin-settings.php:81
 msgid "Join the waitlist for the launch price, kept for life. One email when Pro is ready, nothing else."
 msgstr ""
 
-#: views/admin-settings.php:78
+#: views/admin-settings.php:83
 msgid "Not now"
 msgstr ""
 
-#: views/admin-settings.php:79
+#: views/admin-settings.php:84
 msgid "Join the waitlist"
 msgstr ""
 
-#: views/admin-settings.php:85
+#: views/admin-settings.php:90
 msgid "Use NovaWork’s typefaces?"
 msgstr ""
 
-#: views/admin-settings.php:86
+#: views/admin-settings.php:91
 msgid "Satoshi and Supreme"
 msgstr ""
 
-#: views/admin-settings.php:86
+#: views/admin-settings.php:91
 msgid "NovaWork is designed with these two typefaces. Fontshare (Indian Type Foundry) serves them from its own servers, so each visitor’s browser would share its IP address with Fontshare. Until you turn them on, the workspace uses each device’s own fonts and loads nothing from outside your site. You can change this later under Fonts and privacy."
 msgstr ""
 
-#: views/admin-settings.php:88
+#: views/admin-settings.php:93
 msgid "Turn them on"
 msgstr ""
 
-#: views/admin-settings.php:89
+#: views/admin-settings.php:94
 msgid "No thanks"
 msgstr ""
 
-#: views/admin-settings.php:96
+#: views/admin-settings.php:101
 #: assets/src/js/views/editors.js:261
 msgid "Name"
 msgstr ""
 
-#: views/admin-settings.php:96
+#: views/admin-settings.php:101
 msgid "Shown in the header, the browser tab and on the sign-in page. Leave it empty to use your site’s title."
 msgstr ""
 
-#: views/admin-settings.php:99
+#: views/admin-settings.php:104
 msgid "Where it lives"
 msgstr ""
 
-#: views/admin-settings.php:99
+#: views/admin-settings.php:104
 msgid "Use the home page for a site that is only the workspace, such as work.example.com: visitors see the workspace instead of your theme. wp-admin stays where it is."
 msgstr ""
 
-#: views/admin-settings.php:101
+#: views/admin-settings.php:106
 msgid "A page of this site"
 msgstr ""
 
-#: views/admin-settings.php:102
+#: views/admin-settings.php:107
 msgid "The site’s home page"
 msgstr ""
 
-#: views/admin-settings.php:105
+#: views/admin-settings.php:110
 msgid "Show only the workspace"
 msgstr ""
 
-#: views/admin-settings.php:105
+#: views/admin-settings.php:110
 msgid "Every other page of the site (posts, pages, archives, search, error pages) opens the workspace instead, and search engines are asked to stay out. wp-admin keeps working."
 msgstr ""
 
-#: views/admin-settings.php:109
+#: views/admin-settings.php:114
 msgid "Address"
 msgstr ""
 
-#: views/admin-settings.php:109
+#: views/admin-settings.php:114
 msgid "Letters, numbers and dashes. The old address keeps working and forwards here."
 msgstr ""
 
-#: views/admin-settings.php:111
+#: views/admin-settings.php:116
 msgid "Your site uses plain links, so the workspace opens at ?novawork=1 until you choose another structure under Settings → Permalinks."
 msgstr ""
 
-#: views/admin-settings.php:117
+#: views/admin-settings.php:122
 msgid "Branding"
 msgstr ""
 
-#: views/admin-settings.php:120
+#: views/admin-settings.php:125
 msgid "Icon"
 msgstr ""
 
-#: views/admin-settings.php:120
+#: views/admin-settings.php:125
 msgid "Square, shown beside the workspace name and as the browser tab icon. Without one, the NovaWork flag is shown."
 msgstr ""
 
-#: views/admin-settings.php:121
+#: views/admin-settings.php:126
 msgid "Full logo"
 msgstr ""
 
-#: views/admin-settings.php:121
+#: views/admin-settings.php:126
 msgid "Optional. A wide logo that replaces the icon and name in the header and on the sign-in page."
 msgstr ""
 
-#: views/admin-settings.php:122
+#: views/admin-settings.php:127
 msgid "Full logo for dark mode"
 msgstr ""
 
-#: views/admin-settings.php:122
+#: views/admin-settings.php:127
 msgid "Optional. Used in dark mode, when your logo needs a light version."
 msgstr ""
 
-#: views/admin-settings.php:133
+#: views/admin-settings.php:138
 msgid "Remove"
 msgstr ""
 
-#: views/admin-settings.php:139
+#: views/admin-settings.php:144
 msgid "Accent colour"
 msgstr ""
 
-#: views/admin-settings.php:139
+#: views/admin-settings.php:144
 msgid "Buttons, links, the selected tab and highlights. Lighter and darker shades for light and dark mode are made from it and kept readable."
 msgstr ""
 
-#: views/admin-settings.php:144
+#: views/admin-settings.php:149
 msgid "Custom colour"
 msgstr ""
 
-#: views/admin-settings.php:145
+#: views/admin-settings.php:150
 msgid "Pick a custom colour"
 msgstr ""
 
-#: views/admin-settings.php:149
+#: views/admin-settings.php:154
 msgid "Colour as hex or RGB"
 msgstr ""
 
-#: views/admin-settings.php:152
+#: views/admin-settings.php:157
 msgid "Text on accent"
 msgstr ""
 
-#: views/admin-settings.php:152
+#: views/admin-settings.php:157
 msgid "The colour of words and icons on accent buttons and badges. Auto uses white when it reads well, and dark on light colours."
 msgstr ""
 
-#: views/admin-settings.php:154
+#: views/admin-settings.php:159
 #: assets/src/js/shell.js:54
 msgid "Auto"
 msgstr ""
 
-#: views/admin-settings.php:155
+#: views/admin-settings.php:160
 msgid "White"
 msgstr ""
 
-#: views/admin-settings.php:156
+#: views/admin-settings.php:161
 #: assets/src/js/shell.js:53
 msgid "Dark"
 msgstr ""
 
-#: views/admin-settings.php:162
+#: views/admin-settings.php:167
 msgid "Members"
 msgstr ""
 
 #. translators: %d: number of members.
-#: views/admin-settings.php:168
+#: views/admin-settings.php:173
 #, php-format
 msgid "%d member"
 msgid_plural "%d members"
 msgstr[0] ""
 msgstr[1] ""
 
-#: views/admin-settings.php:171
+#: views/admin-settings.php:176
 msgid "Members are WordPress users. Give someone the NovaWork Member role, or tick “NovaWork member” on their profile to keep the role they have. Administrators are always members."
 msgstr ""
 
-#: views/admin-settings.php:173
+#: views/admin-settings.php:178
 msgid "Manage members in Users"
 msgstr ""
 
-#: views/admin-settings.php:177
+#: views/admin-settings.php:182
 msgid "Invite people"
 msgstr ""
 
-#: views/admin-settings.php:178
+#: views/admin-settings.php:183
 msgid "Create a link for someone to join. Add their email to send it for you, or leave it empty and share the link yourself. Each link works once."
 msgstr ""
 
-#: views/admin-settings.php:181
+#: views/admin-settings.php:186
 msgid "name@example.com (optional)"
 msgstr ""
 
-#: views/admin-settings.php:182
+#: views/admin-settings.php:187
 msgid "Email the invite"
 msgstr ""
 
-#: views/admin-settings.php:183
+#: views/admin-settings.php:188
 msgid "Create invite"
 msgstr ""
 
-#: views/admin-settings.php:189
+#: views/admin-settings.php:194
 msgid "Invite link"
 msgstr ""
 
-#: views/admin-settings.php:196
+#: views/admin-settings.php:201
 msgid "Revoke"
 msgstr ""
 
-#: views/admin-settings.php:200
+#: views/admin-settings.php:205
 msgid "Invites last"
 msgstr ""
 
-#: views/admin-settings.php:200
+#: views/admin-settings.php:205
 msgid "After this, an unused link stops working."
 msgstr ""
 
-#: views/admin-settings.php:201
-#: views/admin-settings.php:292
-#: views/admin-settings.php:295
-#: views/admin-settings.php:298
+#: views/admin-settings.php:206
+#: views/admin-settings.php:297
+#: views/admin-settings.php:300
+#: views/admin-settings.php:303
 msgid "days"
 msgstr ""
 
-#: views/admin-settings.php:206
+#: views/admin-settings.php:211
 msgid "Team and work"
 msgstr ""
 
-#: views/admin-settings.php:207
+#: views/admin-settings.php:212
 msgid "Tasks in Now"
 msgstr ""
 
-#: views/admin-settings.php:207
+#: views/admin-settings.php:212
 msgid "How many tasks each person keeps in Now before the board warns them."
 msgstr ""
 
-#: views/admin-settings.php:208
+#: views/admin-settings.php:213
 msgid "per person"
 msgstr ""
 
-#: views/admin-settings.php:210
+#: views/admin-settings.php:215
 msgid "Done on the board"
 msgstr ""
 
-#: views/admin-settings.php:210
+#: views/admin-settings.php:215
 msgid "How many recently finished tasks the Done column shows. The rest stay one click away under “Show all”."
 msgstr ""
 
-#: views/admin-settings.php:211
+#: views/admin-settings.php:216
 msgid "tasks"
 msgstr ""
 
-#: views/admin-settings.php:213
+#: views/admin-settings.php:218
 msgid "Team today order"
 msgstr ""
 
-#: views/admin-settings.php:213
+#: views/admin-settings.php:218
 msgid "How members are ordered on Focus, in the team list and in the header."
 msgstr ""
 
-#: views/admin-settings.php:215
+#: views/admin-settings.php:220
 msgid "Who’s here first, most tracked first"
 msgstr ""
 
-#: views/admin-settings.php:216
+#: views/admin-settings.php:221
 msgid "Most time tracked today"
 msgstr ""
 
-#: views/admin-settings.php:217
+#: views/admin-settings.php:222
 msgid "First online today"
 msgstr ""
 
-#: views/admin-settings.php:218
+#: views/admin-settings.php:223
 msgid "Always the same order"
 msgstr ""
 
-#: views/admin-settings.php:221
+#: views/admin-settings.php:226
 msgid "Who records a decision"
 msgstr ""
 
-#: views/admin-settings.php:221
+#: views/admin-settings.php:226
 msgid "Administrators always can."
 msgstr ""
 
-#: views/admin-settings.php:223
+#: views/admin-settings.php:228
 msgid "The person named"
 msgstr ""
 
-#: views/admin-settings.php:224
+#: views/admin-settings.php:229
 msgid "Any member"
 msgstr ""
 
-#: views/admin-settings.php:227
+#: views/admin-settings.php:232
 #: assets/src/js/views/editors.js:390
 msgid "Team votes"
 msgstr ""
 
-#: views/admin-settings.php:227
+#: views/admin-settings.php:232
 msgid "Let a decision ask the team to vote on options. The vote advises; the decider still decides."
 msgstr ""
 
-#: views/admin-settings.php:230
+#: views/admin-settings.php:235
 msgid "Order of vote options"
 msgstr ""
 
-#: views/admin-settings.php:230
+#: views/admin-settings.php:235
 msgid "Most votes first lifts the leading option to the top as votes come in; ties keep the order they were written in."
 msgstr ""
 
-#: views/admin-settings.php:232
+#: views/admin-settings.php:237
 msgid "Most votes first"
 msgstr ""
 
-#: views/admin-settings.php:233
+#: views/admin-settings.php:238
 msgid "As written"
 msgstr ""
 
-#: views/admin-settings.php:236
+#: views/admin-settings.php:241
 msgid "Due date reminders"
 msgstr ""
 
-#: views/admin-settings.php:236
+#: views/admin-settings.php:241
 msgid "Tell assignees and deciders this many days ahead. 0 tells them on the day."
 msgstr ""
 
-#: views/admin-settings.php:237
+#: views/admin-settings.php:242
 msgid "days before"
 msgstr ""
 
-#: views/admin-settings.php:239
+#: views/admin-settings.php:244
 msgid "Desktop alerts"
 msgstr ""
 
-#: views/admin-settings.php:239
+#: views/admin-settings.php:244
 msgid "Members can choose to get a browser alert for their notifications while the workspace is open in a background tab. Each member turns it on for their own device, from the bell."
 msgstr ""
 
-#: views/admin-settings.php:242
+#: views/admin-settings.php:247
 msgid "Welcome tour"
 msgstr ""
 
-#: views/admin-settings.php:242
+#: views/admin-settings.php:247
 msgid "Show each member a short tour of the workspace the first time they open it. Anyone can take it again from their menu."
 msgstr ""
 
-#: views/admin-settings.php:245
+#: views/admin-settings.php:250
 msgid "Installable app"
 msgstr ""
 
-#: views/admin-settings.php:245
+#: views/admin-settings.php:250
 msgid "Members can install the workspace as an app on their phone or computer, with its own icon and window. The icon is the workspace icon from Branding."
 msgstr ""
 
-#: views/admin-settings.php:251
+#: views/admin-settings.php:256
 msgid "Time tracking"
 msgstr ""
 
-#: views/admin-settings.php:252
+#: views/admin-settings.php:257
 msgid "Inactivity reminder"
 msgstr ""
 
-#: views/admin-settings.php:252
+#: views/admin-settings.php:257
 msgid "While a timer runs, ask “Still working?” after this long without activity."
 msgstr ""
 
-#: views/admin-settings.php:253
+#: views/admin-settings.php:258
 msgid "minutes"
 msgstr ""
 
-#: views/admin-settings.php:255
+#: views/admin-settings.php:260
 msgid "Time to answer"
 msgstr ""
 
-#: views/admin-settings.php:255
+#: views/admin-settings.php:260
 msgid "Without an answer, the timer stops at the moment activity stopped."
 msgstr ""
 
-#: views/admin-settings.php:256
-#: views/admin-settings.php:289
+#: views/admin-settings.php:261
+#: views/admin-settings.php:294
 msgid "seconds"
 msgstr ""
 
-#: views/admin-settings.php:258
+#: views/admin-settings.php:263
 msgid "Week starts on"
 msgstr ""
 
-#: views/admin-settings.php:258
+#: views/admin-settings.php:263
 msgid "For “This week” in Time."
 msgstr ""
 
-#: views/admin-settings.php:268
+#: views/admin-settings.php:273
 msgid "Chat, comments and files"
 msgstr ""
 
-#: views/admin-settings.php:269
+#: views/admin-settings.php:274
 msgid "Editing and deleting"
 msgstr ""
 
-#: views/admin-settings.php:269
+#: views/admin-settings.php:274
 msgid "Whether members can change or remove their own messages and comments. Administrators can always delete."
 msgstr ""
 
-#: views/admin-settings.php:271
+#: views/admin-settings.php:276
 msgid "Always"
 msgstr ""
 
-#: views/admin-settings.php:272
+#: views/admin-settings.php:277
 msgid "For a while"
 msgstr ""
 
-#: views/admin-settings.php:273
+#: views/admin-settings.php:278
 msgid "Never"
 msgstr ""
 
-#: views/admin-settings.php:275
+#: views/admin-settings.php:280
 msgid "For"
 msgstr ""
 
-#: views/admin-settings.php:275
+#: views/admin-settings.php:280
 msgid "minutes after posting"
 msgstr ""
 
-#: views/admin-settings.php:277
+#: views/admin-settings.php:282
 msgid "File upload max size"
 msgstr ""
 
-#: views/admin-settings.php:281
+#: views/admin-settings.php:286
 msgid "File types"
 msgstr ""
 
-#: views/admin-settings.php:281
+#: views/admin-settings.php:286
 msgid "Extensions members can share, separated by commas. Scripts and web pages are never allowed."
 msgstr ""
 
-#: views/admin-settings.php:287
+#: views/admin-settings.php:292
 msgid "Housekeeping"
 msgstr ""
 
-#: views/admin-settings.php:288
+#: views/admin-settings.php:293
 msgid "Check for changes every"
 msgstr ""
 
-#: views/admin-settings.php:288
+#: views/admin-settings.php:293
 msgid "How often an open app asks for news. Lower feels more live; higher is lighter on the server."
 msgstr ""
 
-#: views/admin-settings.php:291
+#: views/admin-settings.php:296
 msgid "Keep the team feed"
 msgstr ""
 
-#: views/admin-settings.php:291
+#: views/admin-settings.php:296
 msgid "Notifications → Workspace."
 msgstr ""
 
-#: views/admin-settings.php:294
+#: views/admin-settings.php:299
 msgid "Keep read notifications"
 msgstr ""
 
-#: views/admin-settings.php:294
+#: views/admin-settings.php:299
 msgid "Unread ones always stay."
 msgstr ""
 
-#: views/admin-settings.php:297
+#: views/admin-settings.php:302
 msgid "Keep the change history"
 msgstr ""
 
-#: views/admin-settings.php:297
+#: views/admin-settings.php:302
 msgid "A device away for longer than this reloads everything when it comes back."
 msgstr ""
 
-#: views/admin-settings.php:303
+#: views/admin-settings.php:308
 msgid "Fonts and privacy"
 msgstr ""
 
-#: views/admin-settings.php:304
+#: views/admin-settings.php:309
 msgid "Load Satoshi and Supreme from Fontshare"
 msgstr ""
 
-#: views/admin-settings.php:304
+#: views/admin-settings.php:309
 msgid "Off by default. When on, NovaWork’s typefaces come from Fontshare (Indian Type Foundry) each time the workspace opens, which shares the visitor’s IP address with Fontshare. When off, the workspace uses the device’s own fonts and loads nothing from outside your site."
 msgstr ""
 
-#: views/admin-settings.php:310
+#: views/admin-settings.php:315
 msgid "Data"
 msgstr ""
 
-#: views/admin-settings.php:312
+#: views/admin-settings.php:317
 msgid "Sample items"
 msgstr ""
 
-#: views/admin-settings.php:312
+#: views/admin-settings.php:317
 msgid "The project, task and decision NovaWork made on its first run to show where to start. Removing them also removes their comments and votes."
 msgstr ""
 
-#: views/admin-settings.php:316
+#: views/admin-settings.php:321
 msgid "Delete everything when NovaWork is deleted"
 msgstr ""
 
-#: views/admin-settings.php:316
+#: views/admin-settings.php:321
 msgid "Tasks, projects, decisions, chat, time, files and settings are removed for good when you delete the plugin. Off: deactivating or deleting keeps them."
 msgstr ""
 
-#: views/admin-settings.php:321
+#: views/admin-settings.php:326
 #: assets/src/js/settings.js:320
 msgid "Save changes"
 msgstr ""
 
-#: views/admin-settings.php:323
+#: views/admin-settings.php:328
 msgid "Discard"
 msgstr ""
 

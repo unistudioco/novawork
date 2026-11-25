@@ -53,17 +53,22 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 			</div>
 		</div>
 		<div class="nw-shead-acts">
-			<button type="button" class="nw-btn nw-pro-btn" x-show="site.pro" @click="openPro()"><span x-html="icon('sparkle', 15, true)"></span><span x-text="site.pro ? site.pro.label : ''"></span></button>
+			<button type="button" class="nw-btn nw-pro-btn" x-show="site.pro" @click="openPro()"><span class="nw-pro-spark" x-html="icon('sparkle', 16, true)"></span><span x-text="site.pro ? site.pro.label : ''"></span></button>
 			<a class="nw-btn nw-primary" :href="site.appUrl" target="_blank" rel="noopener"><?php esc_html_e( 'Open the workspace', 'novawork' ); ?></a>
 		</div>
 	</header>
 
 	<?php // NovaWork Pro (1.1.0): opens only when the Pro waitlist button is clicked. ?>
+	<?php // The Pro gradient (orange, pink, violet, blue), for the sparkle icons below. ?>
+	<svg class="nw-pro-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><linearGradient id="nw-pro-grad" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f08a3c"/><stop offset=".4" stop-color="#e0559a"/><stop offset=".72" stop-color="#8b6cf0"/><stop offset="1" stop-color="#2065f5"/></linearGradient></defs></svg>
 	<dialog class="nw-pro-dlg" x-ref="proDlg" aria-labelledby="nw-pro-title" @pointerdown="proDown = $event.target === $el" @click="if ( proDown && $event.target === $el ) { $el.close(); }">
 		<div class="nw-pro-in">
 			<button type="button" class="nw-pro-x" aria-label="<?php esc_attr_e( 'Close', 'novawork' ); ?>" x-html="icon('x', 18)" @click="$refs.proDlg.close()"></button>
-			<span class="nw-pro-mark" aria-hidden="true" x-html="icon('sparkle', 22, true)"></span>
-			<h2 id="nw-pro-title"><?php esc_html_e( 'NovaWork Pro is on its way', 'novawork' ); ?></h2>
+			<div class="nw-pro-hero">
+				<span class="nw-pro-mark nw-pro-spark" aria-hidden="true" x-html="icon('sparkle', 28, true)"></span>
+				<span class="nw-pro-soon"><?php esc_html_e( 'Coming soon', 'novawork' ); ?></span>
+				<h2 id="nw-pro-title"><?php esc_html_e( 'NovaWork Pro is on its way', 'novawork' ); ?></h2>
+			</div>
 			<p class="nw-pro-lead"><?php esc_html_e( 'Everything in NovaWork is free and stays free. Pro will add more for growing teams:', 'novawork' ); ?></p>
 			<ul class="nw-pro-list">
 				<li><span class="nw-pro-ic nw-pro-pink" x-html="icon('chat-teardrop-dots', 18, true)"></span><span class="nw-pro-txt"><b><?php esc_html_e( 'Spike, the AI teammate', 'novawork' ); ?></b><span><?php esc_html_e( 'Check-ins and summaries', 'novawork' ); ?></span></span></li>
