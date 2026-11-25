@@ -204,6 +204,20 @@ Alpine.data( 'nwSettings', () => ( {
 		} );
 	},
 
+	// NovaWork Pro (1.1.0): the waitlist dialog, or a plain link once the
+	// add-on changes the button (filter novawork_pro_link).
+	proDown: false,
+	openPro() {
+		const pro = this.site.pro;
+		if ( ! pro ) {
+			return;
+		}
+		if ( 'waitlist' === pro.kind ) {
+			this.$refs.proDlg.showModal();
+		} else {
+			window.open( pro.url, '_blank', 'noopener' );
+		}
+	},
 	icon( name, size, fill ) {
 		return fill ? icf( name, size ) : ic( name, size );
 	},

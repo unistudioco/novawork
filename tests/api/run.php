@@ -912,6 +912,20 @@ try {
 	delete_option( NovaWork\Settings::FONTS_OFFER_OPTION );
 	list( $s, $st ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'load_fontshare' => true ) ) );
 	$t->ok( 200 === $s && true === $st['values']['load_fontshare'] && false === $st['site']['fontsOffer'] && in_array( NovaWork\App\Assets::FONTS, NovaWork\App\Assets::styles(), true ), '"Turn them on" loads the typefaces and ends the offer', $st['site'] ?? $st );
+	// NovaWork Pro button (1.1.0): administrators only; the filter can change or hide it.
+	list( , $st ) = $t->call( $admin, 'GET', '/settings' );
+	$t->ok( 'waitlist' === ( $st['site']['pro']['kind'] ?? '' ) && NovaWork\Admin\ProLink::WAITLIST_URL === $st['site']['pro']['url'] && '' !== $st['site']['pro']['label'], 'the settings screen gets the Pro waitlist button', $st['site']['pro'] ?? null );
+	$novawork_pro = static function () {
+		return array( 'label' => 'Upgrade to Pro', 'url' => 'https://example.com/upgrade', 'kind' => 'upgrade' );
+	};
+	add_filter( 'novawork_pro_link', $novawork_pro );
+	list( , $st ) = $t->call( $admin, 'GET', '/settings' );
+	$t->ok( array( 'label' => 'Upgrade to Pro', 'url' => 'https://example.com/upgrade', 'kind' => 'link' ) === $st['site']['pro'], 'an add-on can turn it into a plain "Upgrade to Pro" link', $st['site']['pro'] );
+	remove_filter( 'novawork_pro_link', $novawork_pro );
+	add_filter( 'novawork_pro_link', '__return_false' );
+	list( , $st ) = $t->call( $admin, 'GET', '/settings' );
+	$t->ok( null === $st['site']['pro'], '... or hide it', $st['site']['pro'] );
+	remove_filter( 'novawork_pro_link', '__return_false' );
 	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'location' => 'moon', 'app_slug' => 'wp-admin', 'upload_types' => 'php, svg', 'idle_minutes' => 'soon', 'poll_seconds' => 9 ) ) );
 	$errs = $bad['data']['errors'] ?? array();
 	$t->ok( 400 === $s && isset( $errs['location'], $errs['app_slug'], $errs['upload_types'], $errs['idle_minutes'] ), 'wrong values come back by field', $errs );

@@ -139,6 +139,7 @@ final class SettingsController extends Controller {
 				'workspaceName' => Settings::workspace_name(),
 				'samples'       => \NovaWork\Services\Samples::count(),
 				'fontsOffer'    => ! Settings::get( 'load_fontshare' ) && 'done' !== get_option( Settings::FONTS_OFFER_OPTION ),
+				'pro'           => \NovaWork\Admin\ProLink::get(),
 			),
 			// Previews of the uploaded branding images.
 			'media'    => array(

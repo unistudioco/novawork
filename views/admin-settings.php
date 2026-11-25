@@ -52,8 +52,32 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 				<p><?php esc_html_e( 'Settings for your team’s workspace. Changes apply the next time each member’s app checks in, within seconds.', 'novawork' ); ?></p>
 			</div>
 		</div>
-		<a class="nw-btn nw-primary" :href="site.appUrl" target="_blank" rel="noopener"><?php esc_html_e( 'Open the workspace', 'novawork' ); ?></a>
+		<div class="nw-shead-acts">
+			<button type="button" class="nw-btn nw-pro-btn" x-show="site.pro" @click="openPro()"><span x-html="icon('sparkle', 15, true)"></span><span x-text="site.pro ? site.pro.label : ''"></span></button>
+			<a class="nw-btn nw-primary" :href="site.appUrl" target="_blank" rel="noopener"><?php esc_html_e( 'Open the workspace', 'novawork' ); ?></a>
+		</div>
 	</header>
+
+	<?php // NovaWork Pro (1.1.0): opens only when the Pro waitlist button is clicked. ?>
+	<dialog class="nw-pro-dlg" x-ref="proDlg" aria-labelledby="nw-pro-title" @pointerdown="proDown = $event.target === $el" @click="if ( proDown && $event.target === $el ) { $el.close(); }">
+		<div class="nw-pro-in">
+			<button type="button" class="nw-pro-x" aria-label="<?php esc_attr_e( 'Close', 'novawork' ); ?>" x-html="icon('x', 18)" @click="$refs.proDlg.close()"></button>
+			<span class="nw-pro-mark" aria-hidden="true" x-html="icon('sparkle', 22, true)"></span>
+			<h2 id="nw-pro-title"><?php esc_html_e( 'NovaWork Pro is on its way', 'novawork' ); ?></h2>
+			<p class="nw-pro-lead"><?php esc_html_e( 'Everything in NovaWork is free and stays free. Pro will add more for growing teams:', 'novawork' ); ?></p>
+			<ul class="nw-pro-list">
+				<li><span x-html="icon('sparkle', 16)"></span><span><b><?php esc_html_e( 'Spike, an AI teammate', 'novawork' ); ?></b> <?php esc_html_e( 'that checks in on what’s stuck, sums up long threads and weighs in on decisions.', 'novawork' ); ?></span></li>
+				<li><span x-html="icon('bell-ringing', 16)"></span><span><b><?php esc_html_e( 'Alerts with the app closed', 'novawork' ); ?></b> <?php esc_html_e( 'and daily or weekly digests by email.', 'novawork' ); ?></span></li>
+				<li><span x-html="icon('list-checks', 16)"></span><span><b><?php esc_html_e( 'Recurring tasks', 'novawork' ); ?></b> <?php esc_html_e( 'and time reports for clients.', 'novawork' ); ?></span></li>
+				<li><span x-html="icon('calendar-blank', 16)"></span><span><b><?php esc_html_e( 'Slack, Google Calendar and GitHub', 'novawork' ); ?></b> <?php esc_html_e( 'where your team already looks.', 'novawork' ); ?></span></li>
+			</ul>
+			<p class="nw-pro-note"><?php esc_html_e( 'Join the waitlist for the launch price, kept for life. One email when Pro is ready, nothing else.', 'novawork' ); ?></p>
+			<div class="nw-pro-acts">
+				<button type="button" class="nw-btn nw-ghost" @click="$refs.proDlg.close()"><?php esc_html_e( 'Not now', 'novawork' ); ?></button>
+				<a class="nw-btn nw-primary" :href="site.pro ? site.pro.url : '#'" target="_blank" rel="noopener" @click="$refs.proDlg.close()"><?php esc_html_e( 'Join the waitlist', 'novawork' ); ?> <span x-html="icon('arrow-right', 15)"></span></a>
+			</div>
+		</div>
+	</dialog>
 
 	<section class="nw-scard nw-offer" aria-labelledby="nw-s-offer" x-show="site.fontsOffer">
 		<h3 id="nw-s-offer"><?php esc_html_e( 'Use NovaWork’s typefaces?', 'novawork' ); ?></h3>
