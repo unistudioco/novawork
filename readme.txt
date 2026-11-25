@@ -130,7 +130,7 @@ Nothing is removed unless you turn on NovaWork → Settings → Data → "Delete
 
 = Is there a Pro version? =
 
-NovaWork is free and complete. Nothing is locked.
+Not yet. Everything in NovaWork is free, with nothing locked, and it stays free: no feature will move behind Pro. A Pro add-on with an AI teammate is planned. Administrators can join its waitlist from NovaWork → Settings; the button opens a page on our website and nothing is sent from your site.
 
 == Screenshots ==
 
@@ -177,6 +177,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * Fix: with the workspace open on two devices, "Still working?" no longer appears on one while you work on the other, and never pauses the timer then; it closes by itself when you're active elsewhere. "I'm still working" no longer reopens on Android.
 * Fix: the Time page's Today chart now covers the whole day, 00:00 to 23:59; time tracked after midnight was counted but not drawn.
 * Fix: the personal data export showed the wrong "Last seen" date.
+* New: a "Pro waitlist" button on the settings screen, for administrators only. It opens a short note about the planned Pro add-on with a link to its waitlist; nothing is sent from your site.
 
 = 1.0.0 =
 * First release: Focus with a server-side timer, the board with subtasks, projects and the roadmap, decisions with team votes, time analytics, team chat with mentions, links and private files, notifications with desktop alerts, quick search, invites, branding, privacy tools and translations.
