@@ -144,7 +144,7 @@ Code map: `src/` (PHP: `App`, `Rest`, `Data`, `Services`, `Install`, `Access`, `
 
 ## Extending NovaWork
 
-NovaWork is built so an add-on can listen and act, including authors that are not people (a planned AI teammate, "Spike", will post in chat and comment like a team member).
+NovaWork is built so an add-on can listen and act, including authors that are not people: an add-on can post in chat and comment under its own name, like a team member.
 
 - **Agents:** register a non-human author with the `novawork_agents` filter; messages and comments can be written by an agent instead of a user.
 - **Actions:** `novawork_task_created|updated`, `novawork_subtask_created|updated|deleted`, `novawork_project_created|updated`, `novawork_decision_created|updated|decided`, `novawork_comment_created|updated|deleted`, `novawork_message_created|updated|deleted`, `novawork_timer_started|stopped`, `novawork_member_joined`, `novawork_settings_saved`, `novawork_loaded`.
@@ -204,14 +204,16 @@ composer run plugin-check  # Plugin Check on the release zip
 **1.1** (next)
 - **Tooltips**: one smooth, animated tooltip for every icon button and the time tracker.
 - **Vote order**: the leading option rises to the top (a setting: most votes first, or as written).
-- **Installable app**: a web app manifest, so the workspace installs on Android, iPhone and desktop with its own icon and window (and alerts on iPhone).
+- **Installable app**: a web app manifest, icons and an offline page, so the workspace installs on Android, iPhone, iPad and desktop with its own icon and window.
 
-**Ideas we are considering**
-- Alerts with the workspace closed (Web Push), and a daily or weekly email digest.
-- Recurring tasks and task templates.
-- A calendar feed of due dates and decision dates.
-- A command palette for everything, from the keyboard.
-- "Spike", the AI teammate, as a separate add-on.
+**1.2**
+- **A smarter timer**: "Were you working?" after an automatic stop, "Still working?" as an alert with its answers, and Stop that works offline.
+- **Time editing** for administrators on the Time page.
+- **Edit rights**: members change their own work; administrators everything (a setting).
+
+**After that**
+
+New features follow what teams ask for: some come to the free plugin, others to a future add-on. Ideas and requests are welcome in [GitHub issues](https://github.com/unistudioco/novawork/issues) or the [support forum](https://wordpress.org/support/plugin/novawork/).
 
 ---
 
