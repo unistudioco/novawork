@@ -138,10 +138,10 @@ NovaWork is free and complete. Nothing is locked.
 3. A task with its checklist, comments and tracked time.
 4. The roadmap by months.
 5. Decisions, with the team's vote.
-6. Team chat with mentions and links, docked beside the work.
-7. Notifications: yours and the team's.
-8. Time: who tracked what, by day, week, month or year.
-9. Dark mode.
+6. The board with team chat docked beside it and your notifications open.
+7. Time: where the hours went, by day, project and task, for a day, week, month or year.
+8. The board in dark mode.
+9. The members' own sign-in page, with your workspace's name.
 10. Settings, in wp-admin.
 11. On a phone, with the timer running: the same workspace, ready to install as an app.
 
