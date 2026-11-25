@@ -66,10 +66,12 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 			<h2 id="nw-pro-title"><?php esc_html_e( 'NovaWork Pro is on its way', 'novawork' ); ?></h2>
 			<p class="nw-pro-lead"><?php esc_html_e( 'Everything in NovaWork is free and stays free. Pro will add more for growing teams:', 'novawork' ); ?></p>
 			<ul class="nw-pro-list">
-				<li><span x-html="icon('sparkle', 16)"></span><span><b><?php esc_html_e( 'Spike, an AI teammate', 'novawork' ); ?></b> <?php esc_html_e( 'that checks in on what’s stuck, sums up long threads and weighs in on decisions.', 'novawork' ); ?></span></li>
-				<li><span x-html="icon('bell-ringing', 16)"></span><span><b><?php esc_html_e( 'Alerts with the app closed', 'novawork' ); ?></b> <?php esc_html_e( 'and daily or weekly digests by email.', 'novawork' ); ?></span></li>
-				<li><span x-html="icon('list-checks', 16)"></span><span><b><?php esc_html_e( 'Recurring tasks', 'novawork' ); ?></b> <?php esc_html_e( 'and time reports for clients.', 'novawork' ); ?></span></li>
-				<li><span x-html="icon('calendar-blank', 16)"></span><span><b><?php esc_html_e( 'Slack, Google Calendar and GitHub', 'novawork' ); ?></b> <?php esc_html_e( 'where your team already looks.', 'novawork' ); ?></span></li>
+				<li><span class="nw-pro-ic nw-pro-pink" x-html="icon('chat-teardrop-dots', 18, true)"></span><span><b><?php esc_html_e( 'Spike, an AI teammate', 'novawork' ); ?></b> <?php esc_html_e( 'checks in on what’s stuck, sums up long threads and weighs in on decisions, with your own AI key.', 'novawork' ); ?></span></li>
+				<li><span class="nw-pro-ic nw-pro-orange" x-html="icon('bell-simple-ringing', 18, true)"></span><span><b><?php esc_html_e( 'Alerts with the app closed', 'novawork' ); ?></b> <?php esc_html_e( 'on phones and computers, even when no tab is open.', 'novawork' ); ?></span></li>
+				<li><span class="nw-pro-ic nw-pro-green" x-html="icon('calendar-dots', 18, true)"></span><span><b><?php esc_html_e( 'Daily or weekly digests', 'novawork' ); ?></b> <?php esc_html_e( 'one email with what changed and what’s due.', 'novawork' ); ?></span></li>
+				<li><span class="nw-pro-ic nw-pro-blue" x-html="icon('list-checks', 18, true)"></span><span><b><?php esc_html_e( 'Recurring tasks', 'novawork' ); ?></b> <?php esc_html_e( 'so the weekly report creates itself.', 'novawork' ); ?></span></li>
+				<li><span class="nw-pro-ic nw-pro-violet" x-html="icon('chart-pie-slice', 18, true)"></span><span><b><?php esc_html_e( 'Reports for clients', 'novawork' ); ?></b> <?php esc_html_e( 'time by project and client, ready to invoice.', 'novawork' ); ?></span></li>
+				<li><span class="nw-pro-ic nw-pro-red" x-html="icon('plug', 18, true)"></span><span><b><?php esc_html_e( 'Slack, Google Calendar and GitHub', 'novawork' ); ?></b> <?php esc_html_e( 'NovaWork news where your team already looks.', 'novawork' ); ?></span></li>
 			</ul>
 			<p class="nw-pro-note"><?php esc_html_e( 'Join the waitlist for the launch price, kept for life. One email when Pro is ready, nothing else.', 'novawork' ); ?></p>
 			<div class="nw-pro-acts">

@@ -204,7 +204,7 @@
 .nw-admin .nw-pro-btn { background: var(--nw-surface); box-shadow: inset 0 0 0 1px var(--nw-line), 0 1px 2px rgb(29 25 25 / .05); }
 .nw-admin .nw-pro-btn .nw-ic { color: var(--nw-accent-ink); }
 html:has(.nw-pro-dlg[open]) { overflow: hidden; }
-.nw-admin .nw-pro-dlg { width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 0; border-radius: 18px; background: var(--nw-surface); color: var(--nw-fg); box-shadow: 0 24px 60px -20px rgb(29 25 25 / .35); }
+.nw-admin .nw-pro-dlg { width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 0; border: 0; border-radius: 18px; background: var(--nw-surface); color: var(--nw-fg); box-shadow: 0 24px 60px -20px rgb(29 25 25 / .35); }
 .nw-admin .nw-pro-dlg::backdrop { background: rgb(29 25 25 / .38); }
 .nw-admin .nw-pro-in { position: relative; padding: 28px 28px 22px; }
 .nw-admin .nw-pro-x { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 9px; background: transparent; color: var(--nw-muted); cursor: pointer; }
@@ -214,8 +214,15 @@ html:has(.nw-pro-dlg[open]) { overflow: hidden; }
 .nw-admin .nw-pro-lead { margin: 0 0 14px; color: var(--nw-muted); font-size: 13.5px; line-height: 1.5; }
 .nw-admin .nw-pro-list { display: grid; gap: 10px; margin: 0 0 16px; padding: 0; list-style: none; }
 .nw-admin .nw-pro-list li { display: flex; align-items: flex-start; gap: 10px; margin: 0; color: var(--nw-fg); font-size: 13.5px; line-height: 1.45; }
-.nw-admin .nw-pro-list li > span:first-child { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: var(--nw-field); color: var(--nw-accent-ink); }
-.nw-admin .nw-pro-list li > span:last-child { padding-top: 4px; }
+.nw-admin .nw-pro-list li > .nw-pro-ic { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px; color: #fff; }
+/* One colour per Pro feature, as on the landing page (owner, 2026-11-25). */
+.nw-admin .nw-pro-pink { background: #dc6aa3; }
+.nw-admin .nw-pro-orange { background: #e8914a; }
+.nw-admin .nw-pro-green { background: #5fbf6b; }
+.nw-admin .nw-pro-blue { background: #2065f5; }
+.nw-admin .nw-pro-violet { background: #8b6cf0; }
+.nw-admin .nw-pro-red { background: #e8735f; }
+.nw-admin .nw-pro-list li > span:last-child { padding-top: 6px; }
 .nw-admin .nw-pro-list b { font-weight: 600; }
 .nw-admin .nw-pro-note { margin: 0 0 18px; color: var(--nw-muted); font-size: 12.5px; line-height: 1.5; }
 .nw-admin .nw-pro-acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
