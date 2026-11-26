@@ -4,7 +4,7 @@
  * T shortcut, it sits above open dialogs, and touch never shows it.
  */
 import { test, expect } from '@playwright/test';
-import { APP, signIn } from './helpers.js';
+import { APP, signIn, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {
 	await signIn( context );
@@ -22,6 +22,21 @@ test( 'hovering an icon button shows its tooltip, leaving hides it', async ( { p
 	await page.mouse.move( 5, 600 );
 	await expect( tip ).not.toHaveClass( /nw-tip-on/ );
 	await expect( page.locator( '#nw-bell-btn' ) ).not.toHaveAttribute( 'aria-describedby', 'nw-tip' );
+} );
+
+test( 'the bell keeps its tooltip while it shows an unread count', async ( { page } ) => {
+	// Regression (1.2.0): the count made the bell look like a button with words.
+	const id = wpEval( "echo ( new NovaWork\\Data\\NotificationRepository() )->insert( array( 'user_id' => get_user_by( 'login', 'alex' )->ID, 'type' => 'chat', 'object_type' => 'message', 'data' => wp_json_encode( array( 'excerpt' => 'E2E tooltip' ) ) ) );" ).trim();
+	try {
+		await page.reload();
+		await expect( page.locator( '#nw-bell-btn .nw-nbadge' ) ).toBeVisible();
+		await page.hover( '#nw-bell-btn' );
+		const tip = page.locator( '#nw-tip' );
+		await expect( tip ).toHaveClass( /nw-tip-on/ );
+		await expect( tip.locator( 'span' ).first() ).toHaveText( /unread notification/ );
+	} finally {
+		wpEval( `( new NovaWork\\Data\\NotificationRepository() )->delete( ${ Number( id ) } );` );
+	}
 } );
 
 test( 'the timer: its title moves into the tooltip with the T chip, then comes back', async ( { page } ) => {

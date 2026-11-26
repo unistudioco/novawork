@@ -295,7 +295,7 @@ export default () => ( {
 	},
 	bellHtml() {
 		const n = this.unreadNotes();
-		return ( this.notesOpen ? icf( 'bell', 17 ) : ic( 'bell', 17 ) ) + ( n ? `<span class="nw-nbadge">${ n > 9 ? '9+' : n }</span>` : '' );
+		return ( this.notesOpen ? icf( 'bell', 17 ) : ic( 'bell', 17 ) ) + ( n ? `<span class="nw-nbadge" aria-hidden="true">${ n > 9 ? '9+' : n }</span>` : '' );
 	},
 	bellLabel() {
 		const n = this.unreadNotes();

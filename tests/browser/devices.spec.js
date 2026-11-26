@@ -29,15 +29,19 @@ async function open( browser, viewport, init ) {
 	return page;
 }
 
-/** Start the timer on a new task in Now. */
+/** Start the timer on a new task in Now. Returns the time just before the click on Play. */
 async function track( page, title ) {
 	const id = await page.evaluate( async ( t ) => {
 		const h = { 'X-WP-Nonce': window.novawork.nonce, 'Content-Type': 'application/json' };
 		return ( await ( await fetch( window.novawork.restUrl + 'tasks', { method: 'POST', headers: h, body: JSON.stringify( { title: t, status: 'now' } ) } ) ).json() ).id;
 	}, title );
 	await page.reload();
-	await page.locator( `.nw-slot[data-id="${ id }"] [data-act="track"]` ).click();
+	const play = page.locator( `.nw-slot[data-id="${ id }"] [data-act="track"]` );
+	await play.waitFor();
+	const at = await page.evaluate( () => Date.now() );
+	await play.click();
 	await expect( page.locator( '.nw-now-card.nw-run' ) ).toBeVisible();
+	return at;
 }
 
 async function finish( page ) {
@@ -107,7 +111,13 @@ const IDLE_DETECTOR = () => {
 test( '"I\'m still working" answers once, even when the system says idle (Android)', async ( { browser } ) => {
 	const page = await open( browser, { width: 390, height: 844 }, IDLE_DETECTOR );
 	try {
-		await track( page, unique( 'idle detector' ) );
+		const clicked = await track( page, unique( 'idle detector' ) );
+		// The click on Play is activity: let it reach the server first. Moving
+		// only the browser's clock is not real time passing; a poll that lands
+		// after the move re-syncs with the server's clock and undoes it, so the
+		// minute below must start after the report, not before.
+		await expect.poll( () => page.evaluate( () => window.Alpine.store( 'nw' ).activeAt ), { timeout: 15000 } ).toBeGreaterThanOrEqual( clicked - 250 );
+		await page.waitForResponse( ( r ) => /sync/.test( r.url() ) && r.ok() );
 		// A minute and a bit without touching it (less than a sleep).
 		await page.evaluate( () => {
 			const real = Date.now.bind( Date );

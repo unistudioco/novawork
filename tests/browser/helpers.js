@@ -102,6 +102,21 @@ export function wpEval( php ) {
 	return execFileSync( 'php', [ ...args, wp, '--path=' + resolve( process.env.NOVAWORK_WP_PATH || '' ), 'eval', php ] ).toString();
 }
 
+let workspacePath = null;
+
+/**
+ * The path the workspace really lives at on the dev site: "/novawork/" (or
+ * the chosen address), or "/" when Settings → "Where it lives" is the home
+ * page. APP still works for visiting it (an old address forwards), but
+ * checks of the address itself (the app's manifest and worker) use this.
+ */
+export function appPath() {
+	if ( null === workspacePath ) {
+		workspacePath = wpEval( "echo wp_parse_url( NovaWork\\App\\Route::url(), PHP_URL_PATH ) ?: '/';" ).trim();
+	}
+	return workspacePath;
+}
+
 /** Remove chat messages a test sent (text containing "E2E "), with their files and notifications. */
 export const cleanChat = () =>
 	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); $n = new NovaWork\\Data\\NotificationRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "%E2E %" ) ) as $id ) { $r->delete( (int) $id ); $n->delete_for_object( "message", (int) $id ); }` );

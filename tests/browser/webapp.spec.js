@@ -8,7 +8,7 @@
  * treats it as secure (as in alerts.spec.js).
  */
 import { test, expect } from '@playwright/test';
-import { APP, signIn, wpEval } from './helpers.js';
+import { APP, appPath, signIn, wpEval } from './helpers.js';
 
 const BASE = process.env.NOVAWORK_URL || 'http://novawork.local';
 
@@ -52,7 +52,7 @@ test( 'the manifest names the workspace and its icons are the header mark', asyn
 	const manifest = await page.evaluate( async ( url ) => ( await fetch( url, { credentials: 'omit' } ) ).json(), href );
 	expect( manifest.name ).toBe( await page.evaluate( () => document.title ) );
 	expect( manifest.display ).toBe( 'standalone' );
-	expect( new URL( manifest.start_url ).pathname ).toBe( APP );
+	expect( new URL( manifest.start_url ).pathname ).toBe( appPath() );
 	expect( manifest.start_url.startsWith( manifest.scope ) ).toBe( true );
 	expect( manifest.icons.map( ( i ) => i.sizes + ' ' + i.purpose ) ).toEqual( [ '192x192 any', '512x512 any', '512x512 maskable' ] );
 
@@ -83,11 +83,11 @@ test( 'the icon follows the accent colour', async ( { page } ) => {
 test( 'opened without a connection, the installed app shows its offline page', async ( { page, context } ) => {
 	await expect.poll( () => page.evaluate( async () => !! ( await navigator.serviceWorker.getRegistration( location.href ) )?.active ) ).toBe( true );
 	const scope = await page.evaluate( async () => ( await navigator.serviceWorker.getRegistration( location.href ) ).scope );
-	expect( new URL( scope ).pathname ).toBe( APP );
+	expect( new URL( scope ).pathname ).toBe( appPath() );
 
 	await context.setOffline( true );
 	try {
-		await page.goto( APP );
+		await page.goto( appPath() );
 		await expect( page.locator( 'h1' ) ).toHaveText( 'You’re offline' );
 		await expect( page.locator( 'button' ) ).toHaveText( 'Try again' );
 	} finally {

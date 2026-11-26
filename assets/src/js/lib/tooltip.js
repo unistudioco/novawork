@@ -7,7 +7,8 @@
  *   the browser's own popup never shows, and comes back after) or a
  *   `data-tip`;
  * - icon-only buttons and links, from their aria-label (the chat and bell
- *   buttons, the timer, a card's play button).
+ *   buttons, the timer, a card's play button). A badge hidden from screen
+ *   readers (the bell's unread count) doesn't count as words.
  * `data-tip-key` adds a keyboard shortcut chip (the timer's T).
  *
  * Shown on mouse hover after a short delay (none while moving between
@@ -38,7 +39,23 @@ function owner( node ) {
 		return el;
 	}
 	// aria-label only: tooltips for icon-only controls, not for ones that show their words.
-	return el.textContent.trim() === '' ? el : null;
+	return words( el ) === '' ? el : null;
+}
+
+/**
+ * The words a control shows, leaving out what is hidden from screen readers
+ * (a badge such as the bell's unread count: its aria-label already says it).
+ */
+function words( el ) {
+	let text = '';
+	for ( const child of el.childNodes ) {
+		if ( child.nodeType === Node.TEXT_NODE ) {
+			text += child.nodeValue;
+		} else if ( child.nodeType === Node.ELEMENT_NODE && child.getAttribute( 'aria-hidden' ) !== 'true' ) {
+			text += words( child );
+		}
+	}
+	return text.trim();
 }
 
 function textOf( el ) {

@@ -13,6 +13,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 [[ -f "$ROOT/.dev.env" ]] && source "$ROOT/.dev.env"
 : "${NOVAWORK_URL:?Set NOVAWORK_URL in .dev.env}" "${NOVAWORK_USER_A:?}" "${NOVAWORK_USER_B:?}"
 API="$NOVAWORK_URL/wp-json/novawork/v1"
+# Run PHP in the dev site through WP-CLI (when .dev.env names the site).
+wpcli() { php ${NOVAWORK_MYSQL_SOCKET:+-d mysqli.default_socket="$NOVAWORK_MYSQL_SOCKET"} "$(command -v wp)" --path="$NOVAWORK_WP_PATH" eval "$1"; }
+# Where the workspace really lives: /novawork/ (or the chosen address), or the
+# home page when Settings → "Where it lives" is the home page.
+APP="$NOVAWORK_URL/novawork/"
+if [[ -n "${NOVAWORK_WP_PATH:-}" ]]; then
+	APP="$(wpcli 'echo NovaWork\App\Route::url();' 2>/dev/null || echo "$APP")"
+fi
 TMP="$(mktemp -d)"
 trap 'rm -r "$TMP"' EXIT
 pass=0; fail=0
@@ -73,10 +81,10 @@ ok "$(echo "$HDR" | grep -ic '^cache-control: public, max-age=31536000')" 1 "cac
 ok "$(head -c 8 "$TMP/icon.png" | od -An -c | tr -d ' ')" '211PNG\r\n032\n' "real PNG bytes"
 ok "$(curl -s "$NOVAWORK_URL/?novawork=app-worker" | grep -c 'const NOVAWORK = ')" 1 "the app worker comes with its settings"
 ok "$(curl -s -o /dev/null -w '%{http_code}' "$NOVAWORK_URL/?novawork=icon-nope")" 404 "an unknown icon is a 404"
-ok "$(curl -s -b "$TMP/a.jar" "$NOVAWORK_URL/novawork/" | grep -c 'rel="manifest"')" 1 "the workspace links its manifest"
+ok "$(curl -s -b "$TMP/a.jar" "$APP" | grep -c 'rel="manifest"')" 1 "the workspace links its manifest"
 
 if [[ -n "${NOVAWORK_WP_PATH:-}" && -n "${TASK:-}" ]]; then
-	php ${NOVAWORK_MYSQL_SOCKET:+-d mysqli.default_socket="$NOVAWORK_MYSQL_SOCKET"} "$(command -v wp)" --path="$NOVAWORK_WP_PATH" eval \
+	wpcli \
 		"global \$wpdb; \$r = new NovaWork\\Data\\ActivityRepository(); foreach ( \$wpdb->get_col( \$wpdb->prepare( 'SELECT id FROM %i WHERE object_type = %s AND object_id = %d', \$r->table_name(), 'task', (int) '$TASK' ) ) as \$id ) { \$r->delete( (int) \$id ); }" >/dev/null 2>&1
 fi
 echo; echo "$pass passed, $fail failed."

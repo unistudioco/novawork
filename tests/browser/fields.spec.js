@@ -110,7 +110,12 @@ test( 'the header keeps its glass background while a panel is open on a scrolled
 	// Regression (owner, 2026-11-23): the scroll lock pinned the page, scrollY
 	// read 0 and the header dropped its background under every open panel.
 	await page.setViewportSize( { width: 1366, height: 700 } );
-	await page.evaluate( () => window.scrollTo( 0, 400 ) );
+	// Room to scroll 400px whatever the site holds (a small board is shorter).
+	await page.evaluate( () => {
+		document.querySelector( 'main' ).style.minHeight = '2000px';
+		window.scrollTo( 0, 400 );
+	} );
+	await expect.poll( () => page.evaluate( () => window.scrollY ) ).toBe( 400 );
 	await expect( page.locator( '.nw-hdr.nw-stuck' ) ).toHaveCount( 1 );
 	await page.click( '#nw-bell-btn' );
 	await expect( page.locator( '.nw-pop.nw-notes' ) ).toBeVisible();
