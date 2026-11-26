@@ -926,6 +926,20 @@ try {
 	list( , $st ) = $t->call( $admin, 'GET', '/settings' );
 	$t->ok( null === $st['site']['pro'], '... or hide it', $st['site']['pro'] );
 	remove_filter( 'novawork_pro_link', '__return_false' );
+	// The same link on NovaWork's row in Plugins (1.2.0), for administrators only.
+	$row_hook = 'plugin_action_links_' . plugin_basename( NOVAWORK_FILE );
+	wp_set_current_user( $admin );
+	$row = apply_filters( $row_hook, array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
+	$pro = $row['novawork_pro'] ?? '';
+	$t->ok( 'deactivate' === array_key_first( $row ) && str_contains( $pro, 'href="' . NovaWork\Admin\ProLink::WAITLIST_URL . '"' ) && str_contains( $pro, 'target="_blank"' ) && str_contains( $pro, '>Pro waitlist<' ), 'Plugins shows a Pro waitlist link on NovaWork\'s row, after Deactivate', $row );
+	add_filter( 'novawork_pro_link', '__return_false' );
+	$row = apply_filters( $row_hook, array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
+	$t->ok( ! isset( $row['novawork_pro'] ), '... hidden with the button', $row );
+	remove_filter( 'novawork_pro_link', '__return_false' );
+	wp_set_current_user( $alex );
+	$row = apply_filters( $row_hook, array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
+	$t->ok( ! isset( $row['novawork_pro'] ), '... and never for someone who cannot manage NovaWork', $row );
+	wp_set_current_user( $admin );
 	list( $s, $bad ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'location' => 'moon', 'app_slug' => 'wp-admin', 'upload_types' => 'php, svg', 'idle_minutes' => 'soon', 'poll_seconds' => 9 ) ) );
 	$errs = $bad['data']['errors'] ?? array();
 	$t->ok( 400 === $s && isset( $errs['location'], $errs['app_slug'], $errs['upload_types'], $errs['idle_minutes'] ), 'wrong values come back by field', $errs );

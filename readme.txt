@@ -180,6 +180,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * New: the timer works offline: it keeps counting, Stop is remembered and saved when the connection returns.
 * New: administrators fix time by hand on the Time page: add a session, change its task, start and end, or delete it with Undo.
 * New: members change their own work: tasks they created or are assigned to, and projects and decisions they created. Anyone can still comment, vote and track time. Administrators can change everything. Setting: Who can change work.
+* New: a "Pro waitlist" link on NovaWork's row in Plugins, for administrators, next to Deactivate. It opens the waitlist page; nothing is sent from your site.
 * Improved: the Time page lists every session in the period, not only the newest eight.
 * Fix: activity from a moment offline now reaches your other devices once you're back.
 * Fix: in chat and comments, the Reply, Edit and Delete buttons no longer cover the end of a message's first line, so a /link there can always be clicked.

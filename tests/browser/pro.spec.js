@@ -47,3 +47,20 @@ test( 'the Pro waitlist dialog opens only on a click, links out, and closes', as
 		await context.close();
 	}
 } );
+
+test( 'the Plugins screen shows the Pro waitlist link on NovaWork\'s row', async ( { browser } ) => {
+	const context = await browser.newContext( { viewport: { width: 1366, height: 900 } } );
+	const [ user, pass ] = ( process.env.NOVAWORK_ADMIN || 'admin:admin' ).split( ':' );
+	await context.addCookies( [ { name: 'wordpress_test_cookie', value: 'WP Cookie check', url: BASE } ] );
+	await context.request.post( BASE + '/wp-login.php', { form: { log: user, pwd: pass, testcookie: '1' }, maxRedirects: 0 } );
+	const page = await context.newPage();
+	try {
+		await page.goto( BASE + '/wp-admin/plugins.php' );
+		const link = page.locator( 'tr[data-slug="novawork"] .row-actions .novawork_pro a' );
+		await expect( link ).toHaveAttribute( 'href', 'https://novawork.unistudio.co/pro-waitlist/' );
+		await expect( link ).toHaveAttribute( 'target', '_blank' );
+		await expect( link ).toContainText( 'Pro waitlist' );
+	} finally {
+		await context.close();
+	}
+} );

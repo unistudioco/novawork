@@ -77,6 +77,7 @@ final class Plugin {
 		App\Translations::register();
 		Admin\Menu::register();
 		Admin\SettingsPage::register();
+		Admin\ProLink::register();
 		Access\Profile::register();
 
 		add_action( 'rest_api_init', array( self::class, 'register_routes' ) );

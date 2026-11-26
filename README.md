@@ -155,7 +155,7 @@ Code map: `src/` (PHP: `App`, `Rest`, `Data`, `Services`, `Install`, `Access`, `
 NovaWork is built so an add-on can listen and act, including authors that are not people: an add-on can post in chat and comment under its own name, like a team member.
 
 - **Agents:** register a non-human author with the `novawork_agents` filter; messages and comments can be written by an agent instead of a user.
-- **Pro button:** `novawork_pro_link` changes the settings screen's Pro waitlist button (label, address, a dialog or a plain link) or hides it, so an add-on can turn it into "Upgrade to Pro".
+- **Pro button:** `novawork_pro_link` changes the Pro waitlist button on the settings screen and the link on NovaWork's row in Plugins (label, address, a dialog or a plain link) or hides both, so an add-on can turn it into "Upgrade to Pro".
 - **Actions:** `novawork_task_created|updated`, `novawork_subtask_created|updated|deleted`, `novawork_project_created|updated`, `novawork_decision_created|updated|decided`, `novawork_comment_created|updated|deleted`, `novawork_message_created|updated|deleted`, `novawork_timer_started|stopped`, `novawork_time_entry_saved|deleted`, `novawork_member_joined`, `novawork_settings_saved`, `novawork_loaded`.
 - **Team feed:** add rows with `NovaWork\Services\Activity::record()`.
 

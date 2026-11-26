@@ -9,6 +9,8 @@ declare( strict_types = 1 );
 
 namespace NovaWork\Admin;
 
+use NovaWork\Access\Capabilities;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -19,6 +21,10 @@ defined( 'ABSPATH' ) || exit;
  * only on the plugin's own settings page, never opens by itself, and says
  * that everything free stays free. When Pro ships, the add-on turns it into
  * "Upgrade to Pro" (or hides it) through the `novawork_pro_link` filter.
+ *
+ * The same link sits on NovaWork's row in Plugins (owner, 2026-11-26), for
+ * those who can manage NovaWork, as plugins on WordPress.org commonly do
+ * (guideline 11: an upgrade prompt where it belongs, used sparingly).
  */
 final class ProLink {
 
@@ -26,6 +32,35 @@ final class ProLink {
 	 * The waitlist page on NovaWork's website.
 	 */
 	public const WAITLIST_URL = 'https://novawork.unistudio.co/pro-waitlist/';
+
+	/**
+	 * Register hooks.
+	 */
+	public static function register(): void {
+		add_filter( 'plugin_action_links_' . plugin_basename( NOVAWORK_FILE ), array( self::class, 'action_links' ) );
+	}
+
+	/**
+	 * The link on NovaWork's row in Plugins, after WordPress's own (Deactivate).
+	 * It opens the page in a new tab; nothing is sent from the site.
+	 *
+	 * @param array<int|string, string> $links The row's links.
+	 * @return array<int|string, string>
+	 */
+	public static function action_links( array $links ): array {
+		$link = current_user_can( Capabilities::MANAGE ) ? self::get() : null;
+		if ( null === $link ) {
+			return $links;
+		}
+		$links['novawork_pro'] = sprintf(
+			'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s<span class="screen-reader-text"> %3$s</span></a>',
+			esc_url( $link['url'] ),
+			esc_html( $link['label'] ),
+			/* translators: Accessibility text after a link that opens in a new browser tab. */
+			esc_html__( '(opens in a new tab)', 'novawork' )
+		);
+		return $links;
+	}
 
 	/**
 	 * The button, or null when it is hidden.
