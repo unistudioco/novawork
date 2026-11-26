@@ -162,6 +162,6 @@ echo wp_kses(
 </p><div class="nw-idle-acts"><button class="nw-btn" type="button" data-idle="pause"><?php esc_html_e( 'Pause now', 'novawork' ); ?></button><button class="nw-btn nw-primary" type="button" data-idle="resume"><?php esc_html_e( 'I’m still working', 'novawork' ); ?></button></div></div></dialog>
 <dialog id="nw-dlg" aria-labelledby="nw-dlg-title"><form class="nw-dlg" id="nw-dlg-form" method="dialog"></form></dialog>
 
-<?php wp_print_scripts( array( Assets::SCRIPT ) ); ?>
+<?php wp_print_scripts( Assets::scripts() ); ?>
 </body>
 </html>

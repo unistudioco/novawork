@@ -77,7 +77,7 @@ $novawork_row_end   = static function ( string $novawork_key ): void {
 				<li><span class="nw-pro-ic nw-pro-violet" x-html="icon('chart-pie-slice', 18, true)"></span><span class="nw-pro-txt"><b><?php esc_html_e( 'Reports for clients', 'novawork' ); ?></b> <?php esc_html_e( 'with time by project and client, ready to invoice.', 'novawork' ); ?></span></li>
 				<li><span class="nw-pro-ic nw-pro-red" x-html="icon('plug', 18, true)"></span><span class="nw-pro-txt"><b><?php esc_html_e( 'Slack, Google Calendar and GitHub', 'novawork' ); ?></b> <?php esc_html_e( 'where your team already looks.', 'novawork' ); ?></span></li>
 			</ul>
-			<p class="nw-pro-note"><?php esc_html_e( 'Join the waitlist for the launch price, kept for life. One email when Pro is ready, nothing else.', 'novawork' ); ?></p>
+			<p class="nw-pro-note"><?php esc_html_e( 'Join the waitlist for the launch price, kept for life. Two emails at most: a quick vote on what ships first, and one when Pro is ready.', 'novawork' ); ?></p>
 			<div class="nw-pro-acts">
 				<button type="button" class="nw-btn nw-ghost" @click="$refs.proDlg.close()"><?php esc_html_e( 'Not now', 'novawork' ); ?></button>
 				<a class="nw-btn nw-primary" :href="site.pro ? site.pro.url : '#'" target="_blank" rel="noopener" @click="$refs.proDlg.close()"><?php esc_html_e( 'Join the waitlist', 'novawork' ); ?> <span x-html="icon('arrow-right', 15)"></span></a>

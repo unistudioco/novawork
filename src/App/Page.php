@@ -35,6 +35,7 @@ final class Page {
 			\NovaWork\Services\Samples::maybe_create( get_current_user_id() );
 		}
 		wp_add_inline_script( Assets::SCRIPT, 'window.novawork = ' . wp_json_encode( self::boot() ) . ';', 'before' );
+		Assets::enqueue_addons();
 		self::view( 'app', array() );
 	}
 
@@ -44,7 +45,7 @@ final class Page {
 	 *
 	 * @return array<string, mixed>
 	 */
-	private static function boot(): array {
+	public static function boot(): array {
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/novawork/v1/sync' ) );
 		return array(
 			'restUrl'     => esc_url_raw( rest_url( 'novawork/v1/' ) ),
@@ -70,8 +71,26 @@ final class Page {
 			),
 			// The installable app's worker (1.1.0); '' while the setting is off.
 			'webapp'      => WebApp::boot(),
+			'addons'      => self::addons(),
 			'sync'        => $response->is_error() ? null : $response->get_data(),
 		);
+	}
+
+	/**
+	 * What add-ons start with, each under its own key.
+	 */
+	private static function addons(): object {
+		/**
+		 * Filters the data add-ons give their scripts when the workspace
+		 * opens: window.novawork.addons. Put yours under your add-on's key;
+		 * never anything secret, since it is printed in the page.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array<string, mixed> $addons  Data by add-on key.
+		 * @param int                  $user_id The member opening the workspace.
+		 */
+		return (object) (array) apply_filters( 'novawork_boot', array(), get_current_user_id() );
 	}
 
 	/**

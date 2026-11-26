@@ -5,11 +5,11 @@
 import { ic } from '../lib/icons.js';
 import { __, sprintf } from '../lib/i18n.js';
 import { esc } from '../lib/format.js';
-import { decisions, commentsOf, avatar, person, projChip, dueHTML, fmt, iso, canDecide, votesHTML } from './model.js';
+import { decisions, commentsOf, avatar, agentAvatar, agentOf, person, projChip, dueHTML, fmt, iso, canDecide, votesHTML } from './model.js';
 
 /** "Waiting on Sam": shown instead of Decide to everyone who can't decide. */
 function waiting( d ) {
-	const p = person( d.ownerId );
+	const p = agentOf( d.ownerAgent ) || person( d.ownerId );
 	return `<span class="nw-waiting">${ esc( sprintf( /* translators: %s: name of the person who decides. */ __( 'Waiting on %s', 'novawork' ), p ? p.name : __( 'someone', 'novawork' ) ) ) }</span>`;
 }
 
@@ -21,7 +21,7 @@ function card( d ) {
 		( d.context ? `<div class="nw-opts">${ esc( d.context ) }</div>` : '' ) +
 		( d.voting && ( d.options || [] ).length ? votesHTML( d, 'vote', ! decided ) : '' ) +
 		( decided && d.answer ? `<div class="nw-ans">${ esc( d.answer ) }</div>` : '' ) +
-		`<div class="nw-foot">${ d.ownerId ? avatar( d.ownerId ) : '' }${
+		`<div class="nw-foot">${ d.ownerId ? avatar( d.ownerId ) : agentOf( d.ownerAgent ) ? agentAvatar( d.ownerAgent ) : '' }${
 			decided
 				? `<span class="nw-due">${ ic( 'check' ) }${ esc( sprintf( /* translators: %s: date. */ __( 'Decided %s', 'novawork' ), d.decidedAt ? fmt( iso( new Date( d.decidedAt ) ), true ) : '' ) ) }</span>`
 				: d.decideBy

@@ -26,6 +26,8 @@ test( 'the Pro waitlist dialog opens only on a click, links out, and closes', as
 		await btn.click();
 		await expect( dlg ).toHaveAttribute( 'open', '' );
 		await expect( dlg.locator( 'h2' ) ).toHaveText( 'NovaWork Pro is on its way' );
+		// What the waitlist promises (1.3.0): two emails at most.
+		await expect( dlg.locator( '.nw-pro-note' ) ).toHaveText( 'Join the waitlist for the launch price, kept for life. Two emails at most: a quick vote on what ships first, and one when Pro is ready.' );
 		// The Pro mark is the filled crown (crown-simple), in the button and the dialog.
 		const crown = 'path[d^="M239.75,90.81"]';
 		await expect( btn.locator( '.nw-pro-spark ' + crown ) ).toHaveCount( 1 );

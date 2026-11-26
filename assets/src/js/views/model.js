@@ -127,6 +127,16 @@ export function avatar( id, lg ) {
 	return `<span class="nw-avatar${ lg ? ' nw-lg' : '' }" title="${ esc( p.name ) }" style="${ cpair( p.color ) }">${ esc( initials( p.name ) ) }${ photo( p ) }</span>`;
 }
 
+/** An agent an add-on registered (1.3.0), or null. */
+export const agentOf = ( key ) => ( key && S.agents.find( ( a ) => a.key === key ) ) || null;
+
+/** An agent's avatar: its colour and a sparkle (agents have no photo). */
+export function agentAvatar( key, lg ) {
+	const a = agentOf( key );
+	const name = a ? a.name : __( 'Someone', 'novawork' );
+	return `<span class="nw-avatar${ lg ? ' nw-lg' : '' }" title="${ esc( name ) }" style="${ cpair( a ? a.color : 'slate' ) }">${ ic( 'sparkle', 13 ) }</span>`;
+}
+
 export function avatars( t ) {
 	const a = assignees( t ).filter( person );
 	return a.length ? `<span class="nw-avs">${ a.map( ( id ) => avatar( id ) ).join( '' ) }</span>` : avatar( 0 );
@@ -221,11 +231,22 @@ export const canEditOwn = ( row ) => !! row && ( ! row.id || editsAnything() || 
 /**
  * Whether you may record (or reopen) a decision: administrators always;
  * otherwise the person named in "Who decides", or anyone when no one is
- * named (or when the decide_rule setting is "anyone"). The server enforces
- * the same rule.
+ * named (or when the decide_rule setting is "anyone"). When an agent is
+ * named, the person who opened the decision records it (owner, 1.3.0); an
+ * agent no longer registered counts as no one. The server enforces the same
+ * rule (Capabilities::can_decide()).
  */
 export function canDecide( d ) {
-	return !! ( S.canManage || S.settings.decideRule === 'anyone' || ! d.ownerId || d.ownerId === S.me );
+	if ( S.canManage || S.settings.decideRule === 'anyone' ) {
+		return true;
+	}
+	if ( d.ownerId ) {
+		return d.ownerId === S.me;
+	}
+	if ( agentOf( d.ownerAgent ) ) {
+		return d.createdBy === S.me;
+	}
+	return true;
 }
 
 /**

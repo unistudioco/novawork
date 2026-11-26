@@ -28,8 +28,9 @@ defined( 'ABSPATH' ) || exit;
  *             "mention" instead.
  * - due:      assignees of an open task due soon (the due_soon_days setting,
  *             3 by default) or late; once per due date.
- * - decision: who decides (everyone if no one is named) when the decide-by
- *             date is that close; once per date.
+ * - decision: who decides (everyone if no one is named; see deciders() when
+ *             an agent is named) when the decide-by date is that close; once
+ *             per date.
  */
 final class Notifier {
 
@@ -149,7 +150,7 @@ final class Notifier {
 				return array();
 			}
 			$title  = (string) $decision['question'];
-			$people = array( (int) $decision['owner_id'], (int) $decision['created_by'] );
+			$people = array_merge( self::deciders( $decision, false ), array( (int) $decision['created_by'] ) );
 		}
 
 		foreach ( ( new CommentRepository() )->for_object( $type, $id ) as $earlier ) {
@@ -282,11 +283,8 @@ final class Notifier {
 		foreach ( $tasks->open_due_by( $limit ) as $task ) {
 			self::task_due( $task, $tasks );
 		}
-		$members = Members::ids();
 		foreach ( ( new DecisionRepository() )->open_due_by( $limit ) as $decision ) {
-			$owner      = (int) $decision['owner_id'];
-			$recipients = $owner > 0 ? array( $owner ) : $members;
-			foreach ( $recipients as $user_id ) {
+			foreach ( self::deciders( $decision, true ) as $user_id ) {
 				self::send(
 					$user_id,
 					array(
@@ -352,23 +350,65 @@ final class Notifier {
 	}
 
 	/**
-	 * Store one notification for a member.
+	 * Store one notification for a member. Every bell row is written here
+	 * (add-ons reach it through NovaWork\Api::notify()).
 	 *
 	 * @param int                  $user_id Recipient.
 	 * @param array<string, mixed> $fields  Columns; data is an array.
+	 * @return int The new row's id, or 0 when nothing was written (not a
+	 *             member, a repeat of a dedupe key, or a failed insert).
 	 */
-	private static function send( int $user_id, array $fields ): void {
+	public static function send( int $user_id, array $fields ): int {
 		if ( ! Capabilities::is_member( $user_id ) ) {
-			return;
+			return 0;
 		}
 		$fields['user_id'] = $user_id;
 		$fields['data']    = (string) wp_json_encode( $fields['data'] ?? array() );
 		$repo              = new NotificationRepository();
-		if ( isset( $fields['dedupe_key'] ) ) {
-			$repo->insert_once( $fields );
-		} else {
-			$repo->insert( $fields );
+		$id                = isset( $fields['dedupe_key'] ) ? $repo->insert_once( $fields ) : $repo->insert( $fields );
+		$row               = $id ? $repo->find( $id ) : null;
+		if ( ! $row ) {
+			return 0;
 		}
+
+		/**
+		 * Fires after a notification is written for a member (one row in their
+		 * bell). Not for a repeat that a dedupe key stopped.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array<string, mixed> $note    The notification as the API presents it.
+		 * @param int                  $user_id Who it is for.
+		 */
+		do_action( 'novawork_notification_created', $repo->present( $row ), $user_id );
+
+		return $id;
+	}
+
+	/**
+	 * The members who record a decision and hear about it: the person named
+	 * in "Who decides"; when an agent is named (1.3.0), the person who opened
+	 * it, or the administrators once that person is no longer a member (owner,
+	 * 2026-11-26); when no one is named, every member, or nobody when
+	 * $everyone is false.
+	 *
+	 * @param array<string, mixed> $decision Decision row.
+	 * @param bool                 $everyone Whether "no one named" means every member.
+	 * @return int[]
+	 */
+	public static function deciders( array $decision, bool $everyone ): array {
+		$owner = (int) $decision['owner_id'];
+		if ( $owner > 0 ) {
+			return array( $owner );
+		}
+		if ( Capabilities::names_agent( $decision ) ) {
+			$opener = (int) $decision['created_by'];
+			if ( Capabilities::is_member( $opener ) ) {
+				return array( $opener );
+			}
+			return array_values( array_filter( Members::ids(), static fn( int $id ): bool => user_can( $id, Capabilities::MANAGE ) ) );
+		}
+		return $everyone ? Members::ids() : array();
 	}
 
 	/**

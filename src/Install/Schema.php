@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Schema {
 
-	public const VERSION = 8;
+	public const VERSION = 9;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -117,6 +117,7 @@ project_id bigint(20) unsigned NOT NULL DEFAULT 0,
 question varchar(255) NOT NULL DEFAULT '',
 context text NOT NULL,
 owner_id bigint(20) unsigned NOT NULL DEFAULT 0,
+owner_agent varchar(64) NOT NULL DEFAULT '',
 decide_by date DEFAULT NULL,
 status varchar(10) NOT NULL DEFAULT 'open',
 answer text NOT NULL,

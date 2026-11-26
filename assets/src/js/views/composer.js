@@ -9,7 +9,7 @@
 import { ic } from '../lib/icons.js';
 import { __ } from '../lib/i18n.js';
 import { esc } from '../lib/format.js';
-import { store, people, avatar, byOrder } from './model.js';
+import { store, people, avatar, agentAvatar, byOrder } from './model.js';
 import { REF_ICONS } from './rich.js';
 
 const KINDS = () => ( { task: __( 'Task', 'novawork' ), decision: __( 'Decision', 'novawork' ), project: __( 'Project', 'novawork' ) } );
@@ -45,7 +45,9 @@ function items( type, q ) {
  * @param {Object}           [options.seed] Mentions and links already in the text (editing).
  */
 export function attachComposer( input, { parent, id, seed } ) {
-	const mentions = new Set( ( ( seed && seed.mentions ) || [] ).map( ( m ) => m.id ) );
+	const mentions = new Set( ( ( seed && seed.mentions ) || [] ).filter( ( m ) => m.id ).map( ( m ) => m.id ) );
+	// Agents add-ons registered (1.3.0) are mentioned by key.
+	const agents = new Set( ( ( seed && seed.mentions ) || [] ).filter( ( m ) => m.agent ).map( ( m ) => m.agent ) );
 	const refs = new Map( ( ( seed && seed.refs ) || [] ).map( ( r ) => [ r.type + ':' + r.id, { type: r.type, id: r.id, label: r.label } ] ) );
 	let state = null;
 
@@ -90,10 +92,14 @@ export function attachComposer( input, { parent, id, seed } ) {
 		const S = store();
 		const list =
 			found.kind === 'at'
-				? people()
-					.filter( ( p ) => p.id !== S.me && [ p.name.toLowerCase(), ...p.name.toLowerCase().split( /\s+/ ) ].some( ( w ) => w.startsWith( found.q ) ) )
-					.slice( 0, 6 )
-					.map( ( p ) => ( { kind: 'at', id: p.id, label: p.name } ) )
+				? [
+						...people()
+							.filter( ( p ) => p.id !== S.me )
+							.map( ( p ) => ( { kind: 'at', id: p.id, label: p.name } ) ),
+						...S.agents.map( ( a ) => ( { kind: 'at', agent: a.key, label: a.name } ) ),
+				  ]
+						.filter( ( x ) => [ x.label.toLowerCase(), ...x.label.toLowerCase().split( /\s+/ ) ].some( ( w ) => w.startsWith( found.q ) ) )
+						.slice( 0, 6 )
 				: items( found.type, found.q ).map( ( x ) => Object.assign( { kind: 'slash' }, x ) );
 		if ( ! list.length ) {
 			close();
@@ -121,7 +127,7 @@ export function attachComposer( input, { parent, id, seed } ) {
 			.map(
 				( x, i ) =>
 					`<li role="option" id="${ id }-${ i }" data-i="${ i }" aria-selected="${ i === state.act }" class="${ i === state.act ? 'nw-active' : '' }">${
-						x.kind === 'at' ? avatar( x.id ) : ic( REF_ICONS[ x.type ], 16 )
+						x.kind === 'at' ? ( x.agent ? agentAvatar( x.agent ) : avatar( x.id ) ) : ic( REF_ICONS[ x.type ], 16 )
 					}<span class="nw-opt-lbl">${ esc( x.label ) }</span>${ x.kind === 'slash' ? `<small class="nw-ref-kind">${ esc( kinds[ x.type ] ) }</small>` : '' }</li>`
 			)
 			.join( '' );
@@ -142,7 +148,9 @@ export function attachComposer( input, { parent, id, seed } ) {
 		input.value = input.value.slice( 0, state.start ) + insert + input.value.slice( caret );
 		const at = state.start + insert.length;
 		input.setSelectionRange( at, at );
-		if ( x.kind === 'at' ) {
+		if ( x.kind === 'at' && x.agent ) {
+			agents.add( x.agent );
+		} else if ( x.kind === 'at' ) {
 			mentions.add( x.id );
 		} else {
 			refs.set( x.type + ':' + x.id, { type: x.type, id: x.id, label: x.label } );
@@ -180,6 +188,10 @@ export function attachComposer( input, { parent, id, seed } ) {
 		mention( mid ) {
 			mentions.add( mid );
 		},
+		/** Remember an agent mentioned without the list (a reply to an agent). */
+		mentionAgent( key ) {
+			agents.add( key );
+		},
 		/** What to send with the text: only what is still in it. */
 		payload() {
 			const text = input.value.toLowerCase();
@@ -190,10 +202,15 @@ export function attachComposer( input, { parent, id, seed } ) {
 					return p && text.includes( '@' + p.name.toLowerCase() );
 				} ),
 				refs: [ ...refs.values() ].filter( ( r ) => text.includes( '/' + r.label.toLowerCase() ) ).map( ( r ) => ( { type: r.type, id: r.id } ) ),
+				agents: [ ...agents ].filter( ( key ) => {
+					const a = store().agents.find( ( x ) => x.key === key );
+					return a && text.includes( '@' + a.name.toLowerCase() );
+				} ),
 			};
 		},
 		reset() {
 			mentions.clear();
+			agents.clear();
 			refs.clear();
 			close();
 		},

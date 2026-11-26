@@ -2,20 +2,24 @@
  * Custom dropdowns over a hidden native <select data-nw-sel>, ported from the
  * prototype's enhance(). The app never shows a native select.
  *
- * Options can carry decoration: data-person (avatar), data-color (dot),
+ * Options can carry decoration: data-person (avatar), data-agent (an
+ * agent's avatar, 1.3.0), data-color (dot),
  * data-everyone (grey circle), data-icon (icon), data-prio (priority bars),
  * data-you (the "You" badge). On the select: data-block (full width),
  * data-right (menu opens to the left).
  */
 import { ic } from '../lib/icons.js';
 import { __ } from '../lib/i18n.js';
-import { avatar, col, priSvg } from './model.js';
+import { avatar, agentAvatar, col, priSvg } from './model.js';
 
 let openBox = null;
 
 function decor( o ) {
 	if ( o.dataset.person !== undefined ) {
 		return avatar( o.dataset.pid || o.value );
+	}
+	if ( o.dataset.agent ) {
+		return agentAvatar( o.dataset.agent );
 	}
 	if ( o.dataset.color ) {
 		return `<span class="nw-dot" style="--nw-c:${ col( o.dataset.color ) }"></span>`;

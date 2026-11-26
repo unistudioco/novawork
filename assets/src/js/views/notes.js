@@ -20,6 +20,7 @@ import { serverNow } from '../store.js';
 import { store, person, cpair, parse, todayISO, days } from './model.js';
 import { refTitle } from './rich.js';
 import { mountAlerts, alertState, turnOn, turnOff } from './alerts.js';
+import { noteKind } from '../lib/ext.js';
 
 const $ = ( id ) => document.getElementById( id );
 
@@ -135,8 +136,19 @@ function noteText( n ) {
 					: sprintf( /* translators: 1: task, 2: "3 days". */ esc( __( '%1$s is due in %2$s', 'novawork' ) ), t, esc( plural( left ) ) ),
 			];
 		}
-		default:
+		default: {
+			// A kind an add-on writes and words (lib/ext.js addNoteKind, 1.3.0).
+			const own = noteKind( n.type );
+			if ( own ) {
+				try {
+					return [ n.type, String( own.text( n, { b, esc, who: () => who( n.actor, n.agent ) } ) ) ];
+				} catch ( e ) {
+					// eslint-disable-next-line no-console
+					console.error( 'NovaWork:', e );
+				}
+			}
 			return [ n.type, by + quote ];
+		}
 	}
 }
 
@@ -187,7 +199,8 @@ function alertsRow() {
 }
 
 function itemHTML( id, kind, html, at, unread, now ) {
-	const [ icon, color ] = KIND[ kind ] || [ 'bell', 'slate' ];
+	const own = ! KIND[ kind ] && noteKind( kind );
+	const [ icon, color ] = KIND[ kind ] || ( own ? [ own.icon || 'bell', own.color || 'slate' ] : [ 'bell', 'slate' ] );
 	return `<button class="nw-nitem${ unread ? ' nw-unread' : '' }" type="button" data-nid="${ esc( String( id ) ) }"><span class="nw-nic" style="${ cpair( color ) }">${ ic( icon ) }</span><span class="nw-ntext">${ html }<time>${ esc(
 		ago( at, now, store().locale )
 	) }</time></span><i class="nw-ndot"></i></button>`;
@@ -361,6 +374,11 @@ function onClick( e ) {
  */
 function openNote( n ) {
 	markRead( [ n.id ] );
+	const own = noteKind( n.type );
+	if ( own && typeof own.open === 'function' ) {
+		own.open( n );
+		return;
+	}
 	openTarget( n.objectType, n.objectId );
 }
 

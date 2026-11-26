@@ -204,10 +204,80 @@ final class Settings {
 	 * @param mixed  $value Sent value.
 	 */
 	public static function clean( string $key, mixed $value ): mixed {
-		$rule = self::SCHEMA[ $key ] ?? null;
+		$rule = self::schema()[ $key ] ?? null;
 		if ( null === $rule ) {
 			return new \WP_Error( 'novawork_unknown_setting', __( 'Unknown setting.', 'novawork' ) );
 		}
+		return self::check( $rule, $value );
+	}
+
+	/**
+	 * NovaWork's rules plus the ones add-ons add (1.3.0). An add-on never
+	 * changes a rule of NovaWork's own.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function schema(): array {
+		/**
+		 * Filters the rules settings are checked against, so an add-on's own
+		 * settings are checked exactly like NovaWork's (see Settings::clean()
+		 * and Settings::clean_values()). Each rule is keyed by the setting's
+		 * name and has a "type": int (with min and max), bool, choice (with
+		 * choices), text (with max), types, image or color. Keys NovaWork
+		 * already uses are ignored. The add-on stores its own values.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array<mixed> $rules Add-ons' rules by setting name.
+		 */
+		$extra = (array) apply_filters( 'novawork_settings_schema', array() );
+		$rules = self::SCHEMA;
+		foreach ( $extra as $key => $rule ) {
+			if ( is_string( $key ) && '' !== $key && ! isset( self::SCHEMA[ $key ] ) && is_array( $rule ) && isset( $rule['type'] ) ) {
+				$rules[ $key ] = $rule;
+			}
+		}
+		return $rules;
+	}
+
+	/**
+	 * Check several values at once. Unknown names are skipped; every bad
+	 * value comes back by name, so a caller can save nothing when one is
+	 * wrong and show each problem next to its field.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array<mixed>  $values Values by setting name.
+	 * @param string[]|null $only   Only these names (null: every name in the schema).
+	 * @return array{0: array<string, mixed>, 1: array<string, string>} Clean values, and error messages by name.
+	 */
+	public static function clean_values( array $values, ?array $only = null ): array {
+		$rules  = self::schema();
+		$clean  = array();
+		$errors = array();
+		foreach ( $values as $key => $value ) {
+			$key = (string) $key;
+			if ( ! isset( $rules[ $key ] ) || ( null !== $only && ! in_array( $key, $only, true ) ) ) {
+				continue;
+			}
+			$value = self::check( $rules[ $key ], $value );
+			if ( is_wp_error( $value ) ) {
+				$errors[ $key ] = $value->get_error_message();
+			} else {
+				$clean[ $key ] = $value;
+			}
+		}
+		return array( $clean, $errors );
+	}
+
+	/**
+	 * Check one value against a rule.
+	 *
+	 * @param array<string, mixed> $rule  Rule.
+	 * @param mixed                $value Value.
+	 * @return mixed The clean value, or a WP_Error.
+	 */
+	private static function check( array $rule, mixed $value ): mixed {
 		switch ( $rule['type'] ) {
 			case 'int':
 				if ( ! is_numeric( $value ) ) {

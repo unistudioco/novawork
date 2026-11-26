@@ -10,12 +10,12 @@ declare( strict_types = 1 );
 namespace NovaWork\Rest;
 
 use NovaWork\Access\Capabilities;
+use NovaWork\Api;
 use NovaWork\Data\AttachmentRepository;
 use NovaWork\Data\MessageRepository;
 use NovaWork\Data\NotificationRepository;
 use NovaWork\Data\ReadState;
 use NovaWork\Services\Files;
-use NovaWork\Services\Notifier;
 use NovaWork\Services\References;
 use WP_Error;
 use WP_REST_Request;
@@ -64,6 +64,7 @@ final class ChatController extends Controller {
 				'text'          => self::text( 2000 ),
 				'attachmentIds' => self::refs( self::MAX_FILES ),
 				'mentions'      => self::refs( 20 ),
+				'agents'        => self::agent_keys(),
 				'refs'          => self::links_schema(),
 				'replyTo'       => self::ref(),
 			)
@@ -75,6 +76,7 @@ final class ChatController extends Controller {
 			array(
 				'text'     => self::text( 2000 ),
 				'mentions' => self::refs( 20 ),
+				'agents'   => self::agent_keys(),
 				'refs'     => self::links_schema(),
 			)
 		);
@@ -112,55 +114,18 @@ final class ChatController extends Controller {
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 */
 	public function send( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$text  = trim( (string) $request->get_param( 'text' ) );
-		$files = (array) ( $request->get_param( 'attachmentIds' ) ?? array() );
-		if ( '' === $text && ! $files ) {
-			return new WP_Error( 'novawork_required', __( 'Write a message or add a file.', 'novawork' ), array( 'status' => 400 ) );
-		}
-
-		$repo     = new MessageRepository();
-		$reply_to = (int) $request->get_param( 'replyTo' );
-		$id       = $repo->insert(
+		$message = Api::post_message(
+			self::me(),
+			(string) $request->get_param( 'text' ),
 			array(
-				'user_id'  => self::me(),
-				'reply_to' => $reply_to > 0 && $repo->find( $reply_to ) ? $reply_to : 0,
-				'body'     => $text,
-				'mentions' => (string) wp_json_encode( References::mentions( $text, $request->get_param( 'mentions' ) ?? array() ) ),
-				'refs'     => (string) wp_json_encode( References::links( $text, $request->get_param( 'refs' ) ?? array() ) ),
+				'attachmentIds' => (array) ( $request->get_param( 'attachmentIds' ) ?? array() ),
+				'mentions'      => $request->get_param( 'mentions' ) ?? array(),
+				'agents'        => $request->get_param( 'agents' ) ?? array(),
+				'refs'          => $request->get_param( 'refs' ) ?? array(),
+				'replyTo'       => (int) $request->get_param( 'replyTo' ),
 			)
 		);
-		if ( ! $id ) {
-			return new WP_Error( 'novawork_save_failed', __( 'The message wasn’t sent. Try again.', 'novawork' ), array( 'status' => 500 ) );
-		}
-		$claimed = $files ? ( new AttachmentRepository() )->claim( array_map( 'intval', $files ), self::me(), 'message', $id ) : 0;
-		if ( '' === $text && 0 === $claimed ) {
-			$repo->delete( $id );
-			return new WP_Error( 'novawork_bad_files', __( 'Those files are no longer available. Add them again.', 'novawork' ), array( 'status' => 400 ) );
-		}
-		if ( $claimed ) {
-			$repo->touch( $id );
-		}
-
-		ReadState::set( self::me(), $id );
-		$message = (array) $repo->find( $id );
-		Notifier::chatted( $message );
-		References::notify_links(
-			References::decode( $message['refs'] ),
-			self::me(),
-			$text,
-			array_column( References::decode( $message['mentions'] ), 'id' )
-		);
-
-		/**
-		 * Fires after a member posts in team chat.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param array<string, mixed> $message Message row.
-		 */
-		do_action( 'novawork_message_created', $message );
-
-		return self::respond( $repo->present( $message ), 201 );
+		return $message instanceof WP_Error ? $message : self::respond( $message, 201 );
 	}
 
 	/**
@@ -183,7 +148,7 @@ final class ChatController extends Controller {
 		if ( '' === $text && ! ( new AttachmentRepository() )->for_messages( array( (int) $row['id'] ) ) ) {
 			return new WP_Error( 'novawork_required', __( 'A message needs some text. To remove it, delete it.', 'novawork' ), array( 'status' => 400 ) );
 		}
-		$after = References::save_edit( $repo, $row, $text, $request->get_param( 'mentions' ), $request->get_param( 'refs' ) );
+		$after = References::save_edit( $repo, $row, $text, $request->get_param( 'mentions' ), $request->get_param( 'refs' ), $request->get_param( 'agents' ) );
 
 		/**
 		 * Fires after a member edits a chat message.

@@ -139,6 +139,12 @@ export default () => ( {
 				this.closeNotes( true );
 			}
 		} );
+		// An add-on's row in the team menu closes the menu (lib/ext.js).
+		window.addEventListener( 'nw:team', ( e ) => {
+			if ( e.detail && e.detail.open === false ) {
+				this.closePop( true );
+			}
+		} );
 
 		document.addEventListener( 'pointerdown', ( e ) => this.onPointerDown( e ) );
 		document.addEventListener( 'keydown', ( e ) => this.onKey( e ) );

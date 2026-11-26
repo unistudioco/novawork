@@ -55,6 +55,16 @@ final class Assets {
 	public const FONTS_URL = 'https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700&f%5B%5D=supreme@400,500,700,800&display=swap';
 
 	/**
+	 * Script and style handles add-ons enqueued on novawork_app_enqueue.
+	 *
+	 * @var array{scripts: list<string>, styles: list<string>}
+	 */
+	private static array $addons = array(
+		'scripts' => array(),
+		'styles'  => array(),
+	);
+
+	/**
 	 * Register everything the app document prints.
 	 */
 	public static function register(): void {
@@ -110,7 +120,34 @@ final class Assets {
 	}
 
 	/**
-	 * Styles to print in the head.
+	 * Let add-ons enqueue their scripts and styles on the app document. Only
+	 * what they enqueue here is printed: the document never prints the
+	 * theme's or other plugins' front-end assets.
+	 */
+	public static function enqueue_addons(): void {
+		$scripts = wp_scripts()->queue;
+		$styles  = wp_styles()->queue;
+
+		/**
+		 * Fires while the workspace's page is built, for add-ons to enqueue
+		 * their scripts and styles (wp_enqueue_script/style). They print after
+		 * NovaWork's own, so they may depend on the "novawork-app" handles. A
+		 * script built as an ES module adds
+		 * wp_script_add_data( $handle, 'novawork_module', true ). Scripts
+		 * reach the app through the "nw:ready" event.
+		 *
+		 * @since 1.3.0
+		 */
+		do_action( 'novawork_app_enqueue' );
+
+		self::$addons = array(
+			'scripts' => array_values( array_diff( wp_scripts()->queue, $scripts ) ),
+			'styles'  => array_values( array_diff( wp_styles()->queue, $styles ) ),
+		);
+	}
+
+	/**
+	 * Styles to print in the head: NovaWork's, then add-ons'.
 	 *
 	 * @return list<string>
 	 */
@@ -119,7 +156,16 @@ final class Assets {
 		if ( Settings::get( 'load_fontshare' ) ) {
 			array_unshift( $handles, self::FONTS );
 		}
-		return $handles;
+		return array_merge( $handles, self::$addons['styles'] );
+	}
+
+	/**
+	 * Scripts to print at the end of the app document: the app, then add-ons'.
+	 *
+	 * @return list<string>
+	 */
+	public static function scripts(): array {
+		return array_merge( array( self::SCRIPT ), self::$addons['scripts'] );
 	}
 
 	/**
@@ -158,7 +204,8 @@ final class Assets {
 	 * @param string $handle Handle.
 	 */
 	public static function as_module( string $tag, string $handle ): string {
-		if ( ! in_array( $handle, array( self::SCRIPT, self::ADMIN_SCRIPT, 'novawork-vite' ), true ) ) {
+		$ours = in_array( $handle, array( self::SCRIPT, self::ADMIN_SCRIPT, 'novawork-vite' ), true );
+		if ( ! $ours && ! wp_scripts()->get_data( $handle, 'novawork_module' ) ) {
 			return $tag;
 		}
 		return str_replace( '<script ', '<script type="module" ', $tag );

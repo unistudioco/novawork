@@ -71,6 +71,8 @@ final class Installer {
 		dbDelta( Schema::statements() );
 		// Changes dbDelta cannot express (renames, data moves) go here, guarded
 		// by the version they belong to: `if ( $from < 2 ) { … }`.
+		// v9 (1.3.0) adds decisions.owner_agent; dbDelta adds it, empty for
+		// every existing decision, so nothing moves.
 		unset( $from );
 
 		Capabilities::install();

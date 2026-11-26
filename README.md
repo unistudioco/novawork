@@ -152,12 +152,55 @@ Code map: `src/` (PHP: `App`, `Rest`, `Data`, `Services`, `Install`, `Access`, `
 
 ## Extending NovaWork
 
-NovaWork is built so an add-on can listen and act, including authors that are not people: an add-on can post in chat and comment under its own name, like a team member.
+NovaWork is built so an add-on can listen and act, including authors that are not people: an add-on can post in chat and comment under its own name, like a team member, and add its own buttons and settings without changing NovaWork's files.
 
-- **Agents:** register a non-human author with the `novawork_agents` filter; messages and comments can be written by an agent instead of a user.
-- **Pro button:** `novawork_pro_link` changes the Pro waitlist button on the settings screen and the link on NovaWork's row in Plugins (label, address, a dialog or a plain link) or hides both, so an add-on can turn it into "Upgrade to Pro".
-- **Actions:** `novawork_task_created|updated`, `novawork_subtask_created|updated|deleted`, `novawork_project_created|updated`, `novawork_decision_created|updated|decided`, `novawork_comment_created|updated|deleted`, `novawork_message_created|updated|deleted`, `novawork_timer_started|stopped`, `novawork_time_entry_saved|deleted`, `novawork_member_joined`, `novawork_settings_saved`, `novawork_loaded`.
-- **Team feed:** add rows with `NovaWork\Services\Activity::record()`.
+### Hooks
+
+Actions (`@since 1.0.0` unless noted):
+
+- `novawork_loaded`: NovaWork has registered its parts; an add-on boots here.
+- `novawork_task_created|updated`, `novawork_subtask_created|updated|deleted`, `novawork_project_created|updated`, `novawork_decision_created|updated|decided`, `novawork_comment_created|updated|deleted`, `novawork_message_created|updated|deleted`, `novawork_timer_started|stopped`, `novawork_time_entry_saved|deleted` (1.2.0), `novawork_member_joined`, `novawork_settings_saved`.
+- `novawork_notification_created( array $note, int $user_id )` (1.3.0): a row was added to a member's bell (`$note` as the API presents it; not for a repeat a dedupe key stopped).
+- `novawork_agent_mentioned( string $agent_key, string $kind, array $row )` (1.3.0): a message (`$kind` "message") or comment ("comment") mentions an agent with "@Name"; on an edit only for newly mentioned agents, and never for an agent's own post.
+- `novawork_decision_assigned( array $decision, int $owner_id, string $owner_agent )` (1.3.0): a decision is opened with someone in "Who decides", or that changes.
+- `novawork_app_enqueue` (1.3.0): enqueue your scripts and styles on the workspace page. Only what is enqueued here is printed, after NovaWork's own; mark an ES-module build with `wp_script_add_data( $handle, 'novawork_module', true )`.
+
+Filters:
+
+- `novawork_agents`: register non-human authors, each `[ 'key', 'name', 'color' ]` (a NovaWork palette colour).
+- `novawork_pro_link` (1.1.0): changes the Pro waitlist button on the settings screen and the link on NovaWork's row in Plugins (label, address, a dialog or a plain link) or hides both.
+- `novawork_boot( array $addons, int $user_id )` (1.3.0): data for your script when the workspace opens, in `window.novawork.addons[ your key ]`.
+- `novawork_sync( array $addons, int $user_id, bool $full )` (1.3.0): small, current data with every `/sync` answer, kept in the app's `store.addons[ your key ]`.
+- `novawork_settings_schema( array $rules )` (1.3.0): rules for your own settings (`int` with `min`/`max`, `bool`, `choice` with `choices`, `text` with `max`, `types`, `image`, `color`), checked by `NovaWork\Settings::clean()` and `Settings::clean_values( $values, $only )` (clean values and errors by name, so one bad value can save nothing). NovaWork's own rules can't be replaced; your add-on stores its own values.
+- `novawork_can_decide( bool $allowed, array $decision, int $user_id, string $agent )` (1.3.0): who may record a decision; `$agent` is set when an agent asks.
+
+### Writing as a member or an agent (1.3.0)
+
+`NovaWork\Api` takes the same path as the app's own requests: text cleaned, mentions and /links kept only when really in the text, open apps updated on their next poll, people notified, the same actions fired. An author is a member's user id or a registered agent's key.
+
+- `Api::post_message( $author, $text, $args )`: `replyTo`, `mentions` (member ids), `agents` (agent keys), `refs`, `attachmentIds` (members only).
+- `Api::post_comment( $author, $object_type, $object_id, $text, $args )` on a task or decision.
+- `Api::notify( $user_id, $kind, $data, $author, $args )`: a bell row of your own kind (`objectType`, `objectId`, `dedupeKey`).
+
+Errors come back as `WP_Error` with an HTTP status.
+
+### In the app (1.3.0)
+
+Once the app has started it fires `nw:ready` on `window`; the same object stays at `window.novawork.app` for a script that runs later. It holds `store` (live), `api` (`get`, `post`, `patch`, `del`, `nonce()` for NovaWork's REST routes), `ic`, `icf`, `esc`, `toast`, `__`, `sprintf`, and three places to add to:
+
+- `addHeaderButton( { id, icon | svg, label, onClick, badge } )`: an icon button before the chat button; `badge()` may read the store and shows the unread dot.
+- `addMenuItem( { id, icon | svg, label, onClick } )`: a row at the top of the team menu.
+- `addNoteKind( kind, { icon, color, text( note, { b, esc, who } ), open( note ) } )`: the icon and wording of your notification kind, in the bell and in desktop alerts.
+
+Decisions can name an agent in "Who decides" (`ownerAgent`): the agent gives its advice and the person who opened the decision records it (administrators once that person is no longer a member). Agents appear in the @ suggestions in chat and comments.
+
+### Settings screen (1.3.0)
+
+A page under the NovaWork menu can look like NovaWork's settings: call `NovaWork\Admin\SettingsPage::enqueue_styles()` on `admin_enqueue_scripts` for that screen and put the page inside `class="nw-admin"`. The style handle is `novawork-admin`.
+
+### Team feed
+
+Add rows with `NovaWork\Services\Activity::record()`.
 
 ---
 

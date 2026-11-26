@@ -32,6 +32,8 @@ export function createStore( boot ) {
 		locale: boot.locale || undefined,
 		members: [],
 		agents: [],
+		// What add-ons send with each poll (the novawork_sync filter, 1.3.0).
+		addons: {},
 		settings: {},
 		chat: { unread: 0, readId: 0 },
 		projects: {},
@@ -91,6 +93,9 @@ export function createStore( boot ) {
 			}
 			if ( payload.agents && ! same( payload.agents, this.agents ) ) {
 				this.agents = payload.agents;
+			}
+			if ( payload.addons && ! same( payload.addons, this.addons ) ) {
+				this.addons = payload.addons;
 			}
 			if ( payload.chat && ! same( payload.chat, this.chat ) ) {
 				this.chat = payload.chat;

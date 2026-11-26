@@ -66,7 +66,7 @@ export function richText( m, q ) {
 	const spots = [];
 	( m.mentions || [] ).forEach( ( men ) => {
 		const token = '@' + men.name;
-		find( text, token ).forEach( ( at ) => spots.push( { at, end: at + token.length, html: `<span class="nw-mention${ men.id === S.me ? ' nw-me' : '' }">${ esc( text.slice( at, at + token.length ) ) }</span>` } ) );
+		find( text, token ).forEach( ( at ) => spots.push( { at, end: at + token.length, html: `<span class="nw-mention${ men.id && men.id === S.me ? ' nw-me' : '' }">${ esc( text.slice( at, at + token.length ) ) }</span>` } ) );
 	} );
 	( m.refs || [] ).forEach( ( ref ) => {
 		const token = '/' + ref.label;

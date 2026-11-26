@@ -11,9 +11,9 @@ namespace NovaWork\Services;
 
 use NovaWork\Access\Capabilities;
 use NovaWork\Data\DecisionRepository;
-use NovaWork\Data\NotificationRepository;
 use NovaWork\Data\ProjectRepository;
 use NovaWork\Data\TaskRepository;
+use NovaWork\Members;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,13 +33,15 @@ final class References {
 	public const MAX_REFS = 10;
 
 	/**
-	 * Mentions to keep: members whose "@Name" really is in the text.
+	 * Mentions to keep: members, and agents registered by add-ons (1.3.0),
+	 * whose "@Name" really is in the text.
 	 *
-	 * @param string $text Text.
-	 * @param mixed  $ids  Member ids the app says were mentioned.
-	 * @return list<array{id: int, name: string}>
+	 * @param string $text   Text.
+	 * @param mixed  $ids    Member ids the app says were mentioned.
+	 * @param mixed  $agents Agent keys the app says were mentioned.
+	 * @return list<array<string, int|string>> { id, name } for a member, { agent, name } for an agent.
 	 */
-	public static function mentions( string $text, mixed $ids ): array {
+	public static function mentions( string $text, mixed $ids, mixed $agents = array() ): array {
 		$out  = array();
 		$seen = array();
 		foreach ( (array) $ids as $id ) {
@@ -56,7 +58,62 @@ final class References {
 				);
 			}
 		}
+		$registered = array_column( Members::agents(), 'name', 'key' );
+		$keys       = array();
+		foreach ( (array) $agents as $key ) {
+			$key = is_string( $key ) ? sanitize_key( $key ) : '';
+			if ( '' === $key || in_array( $key, $keys, true ) || ! isset( $registered[ $key ] ) ) {
+				continue;
+			}
+			if ( false !== mb_stripos( $text, '@' . $registered[ $key ] ) ) {
+				$keys[] = $key;
+				$out[]  = array(
+					'agent' => $key,
+					'name'  => (string) $registered[ $key ],
+				);
+			}
+		}
 		return $out;
+	}
+
+	/**
+	 * Agent keys among stored mentions.
+	 *
+	 * @param mixed $json Mentions column value.
+	 * @return list<string>
+	 */
+	public static function agent_keys( mixed $json ): array {
+		return array_map( 'strval', array_column( self::decode( $json ), 'agent' ) );
+	}
+
+	/**
+	 * Tell add-ons their agents were mentioned: every agent mentioned in the
+	 * row and not in $before, except the row's own author (an agent never
+	 * answers itself).
+	 *
+	 * @param string               $kind   "message" or "comment".
+	 * @param array<string, mixed> $row    Stored row.
+	 * @param string[]             $before Agent keys already mentioned (an edit).
+	 */
+	public static function agents_mentioned( string $kind, array $row, array $before = array() ): void {
+		foreach ( self::agent_keys( $row['mentions'] ?? '[]' ) as $key ) {
+			if ( in_array( $key, $before, true ) || (string) ( $row['agent'] ?? '' ) === $key ) {
+				continue;
+			}
+
+			/**
+			 * Fires when a chat message or comment mentions an agent ("@Name"),
+			 * after it is saved. On an edit, only for newly mentioned agents. An
+			 * agent's own post never fires it for that agent.
+			 *
+			 * @since 1.3.0
+			 *
+			 * @param string               $agent_key The mentioned agent's key.
+			 * @param string               $kind      "message" or "comment".
+			 * @param array<string, mixed> $row       The message or comment row.
+			 */
+			do_action( 'novawork_agent_mentioned', $key, $kind, $row );
+		}
 	}
 
 	/**
@@ -109,6 +166,10 @@ final class References {
 			if ( is_array( $item ) && isset( $item['id'] ) ) {
 				$item['id'] = (int) $item['id'];
 				$out[]      = $item;
+			} elseif ( is_array( $item ) && isset( $item['agent'] ) ) {
+				// An agent mention (1.3.0): { agent, name }.
+				$item['agent'] = (string) $item['agent'];
+				$out[]         = $item;
 			}
 		}
 		return $out;
@@ -123,11 +184,11 @@ final class References {
 	 * @param int                                               $author  Who linked.
 	 * @param string                                            $excerpt What was said.
 	 * @param int[]                                             $skip    Already notified.
+	 * @param string                                            $agent   Agent key when an agent linked (1.3.0).
 	 */
-	public static function notify_links( array $links, int $author, string $excerpt, array $skip ): void {
+	public static function notify_links( array $links, int $author, string $excerpt, array $skip, string $agent = '' ): void {
 		$tasks     = new TaskRepository();
 		$decisions = new DecisionRepository();
-		$repo      = new NotificationRepository();
 		$told      = array_merge( array( $author ), array_map( 'intval', $skip ) );
 		foreach ( $links as $link ) {
 			$people = array();
@@ -135,25 +196,24 @@ final class References {
 				$people = $tasks->assignees_of( array( $link['id'] ) )[ $link['id'] ] ?? array();
 			} elseif ( 'decision' === $link['type'] ) {
 				$row    = $decisions->find( $link['id'] );
-				$people = $row && (int) $row['owner_id'] > 0 ? array( (int) $row['owner_id'] ) : array();
+				$people = $row ? Notifier::deciders( $row, false ) : array();
 			}
 			foreach ( $people as $user_id ) {
 				if ( in_array( $user_id, $told, true ) || ! Capabilities::is_member( $user_id ) ) {
 					continue;
 				}
 				$told[] = $user_id;
-				$repo->insert(
+				Notifier::send(
+					$user_id,
 					array(
-						'user_id'     => $user_id,
 						'type'        => 'link',
 						'actor_id'    => $author,
+						'agent'       => $agent,
 						'object_type' => $link['type'],
 						'object_id'   => $link['id'],
-						'data'        => (string) wp_json_encode(
-							array(
-								'title'   => $link['label'],
-								'excerpt' => $excerpt,
-							)
+						'data'        => array(
+							'title'   => $link['label'],
+							'excerpt' => $excerpt,
 						),
 					)
 				);
@@ -171,13 +231,14 @@ final class References {
 	 * @param string                                                            $text   New text.
 	 * @param mixed                                                             $people Mentioned member ids sent.
 	 * @param mixed                                                             $links  Links sent.
+	 * @param mixed                                                             $agents Mentioned agent keys sent (1.3.0).
 	 * @return array<string, mixed> The row after the edit.
 	 */
-	public static function save_edit( $repo, array $row, string $text, mixed $people, mixed $links ): array {
+	public static function save_edit( $repo, array $row, string $text, mixed $people, mixed $links, mixed $agents = array() ): array {
 		if ( (string) $row['body'] === $text ) {
 			return $row;
 		}
-		$mentions = self::mentions( $text, $people ?? array() );
+		$mentions = self::mentions( $text, $people ?? array(), $agents ?? array() );
 		$refs     = self::links( $text, $links ?? array() );
 		$repo->update(
 			(int) $row['id'],
@@ -199,8 +260,9 @@ final class References {
 		$before_links = array_map( static fn( $l ) => $l['type'] . ':' . $l['id'], self::decode( $row['refs'] ) );
 		$new_links    = array_values( array_filter( $refs, static fn( $l ) => ! in_array( $l['type'] . ':' . $l['id'], $before_links, true ) ) );
 		if ( $new_links ) {
-			self::notify_links( $new_links, (int) $row['user_id'], $text, array_column( $mentions, 'id' ) );
+			self::notify_links( $new_links, (int) $row['user_id'], $text, array_column( $mentions, 'id' ), (string) $row['agent'] );
 		}
+		self::agents_mentioned( $kind, $after, self::agent_keys( $row['mentions'] ) );
 		return $after;
 	}
 

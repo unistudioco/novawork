@@ -13,6 +13,7 @@ use NovaWork\Access\Capabilities;
 use NovaWork\Data\Db;
 use NovaWork\Data\DecisionRepository;
 use NovaWork\Data\ProjectRepository;
+use NovaWork\Members;
 use NovaWork\Services\Notifier;
 use NovaWork\Settings;
 use WP_Error;
@@ -28,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class DecisionsController extends Controller {
 
-	private const FIELDS = array( 'question', 'context', 'projectId', 'ownerId', 'decideBy', 'answer', 'status', 'voting', 'options' );
+	private const FIELDS = array( 'question', 'context', 'projectId', 'ownerId', 'ownerAgent', 'decideBy', 'answer', 'status', 'voting', 'options' );
 
 	/**
 	 * Most options a vote can have.
@@ -40,15 +41,20 @@ final class DecisionsController extends Controller {
 	 */
 	public function register_routes(): void {
 		$fields             = array(
-			'question'  => self::line( 240 ),
-			'context'   => self::text( 2000 ),
-			'projectId' => self::ref(),
-			'ownerId'   => self::ref(),
-			'decideBy'  => self::date(),
-			'answer'    => self::text( 2000 ),
-			'status'    => self::choice( DecisionRepository::STATUSES ),
-			'voting'    => array( 'type' => 'boolean' ),
-			'options'   => array(
+			'question'   => self::line( 240 ),
+			'context'    => self::text( 2000 ),
+			'projectId'  => self::ref(),
+			'ownerId'    => self::ref(),
+			// An agent registered by an add-on, instead of a person (1.3.0).
+			'ownerAgent' => array(
+				'type'      => 'string',
+				'maxLength' => 64,
+			),
+			'decideBy'   => self::date(),
+			'answer'     => self::text( 2000 ),
+			'status'     => self::choice( DecisionRepository::STATUSES ),
+			'voting'     => array( 'type' => 'boolean' ),
+			'options'    => array(
 				'type'     => 'array',
 				'maxItems' => self::MAX_OPTIONS,
 				'items'    => array(
@@ -95,7 +101,7 @@ final class DecisionsController extends Controller {
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 */
 	public function create( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$data = $this->columns( self::sent( $request, array( 'question', 'context', 'projectId', 'ownerId', 'decideBy', 'voting', 'options' ) ), null );
+		$data = $this->columns( self::sent( $request, array( 'question', 'context', 'projectId', 'ownerId', 'ownerAgent', 'decideBy', 'voting', 'options' ) ), null );
 		if ( $data instanceof WP_Error ) {
 			return $data;
 		}
@@ -128,6 +134,9 @@ final class DecisionsController extends Controller {
 		 * @param int                  $actor    Member who opened it.
 		 */
 		do_action( 'novawork_decision_created', $decision, self::me() );
+		if ( (int) $row['owner_id'] > 0 || '' !== (string) $row['owner_agent'] ) {
+			self::assigned( $decision );
+		}
 
 		return self::respond( $decision, 201 );
 	}
@@ -209,6 +218,9 @@ final class DecisionsController extends Controller {
 		 * @param int                  $actor    Member who changed it.
 		 */
 		do_action( 'novawork_decision_updated', $decision, $before, self::me() );
+		if ( (int) $row['owner_id'] !== (int) $before['owner_id'] || (string) $row['owner_agent'] !== (string) $before['owner_agent'] ) {
+			self::assigned( $decision );
+		}
 
 		return self::respond( $decision );
 	}
@@ -241,12 +253,32 @@ final class DecisionsController extends Controller {
 	}
 
 	/**
+	 * Tell add-ons who now decides.
+	 *
+	 * @param array<string, mixed> $decision Decision as the API presents it.
+	 */
+	private static function assigned( array $decision ): void {
+		/**
+		 * Fires when a decision is opened with someone in "Who decides", or
+		 * when that changes: a member, an agent, or no one (both empty).
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array<string, mixed> $decision    Decision as the API presents it.
+		 * @param int                  $owner_id    Member who decides, or 0.
+		 * @param string               $owner_agent Agent who decides, or ''.
+		 */
+		do_action( 'novawork_decision_assigned', $decision, (int) $decision['ownerId'], (string) $decision['ownerAgent'] );
+	}
+
+	/**
 	 * 403 for a member who may not decide this one.
 	 *
 	 * @param array<string, mixed> $decision Decision row.
 	 */
 	private static function not_yours( array $decision ): WP_Error {
-		$owner = get_userdata( (int) $decision['owner_id'] );
+		$deciders = Notifier::deciders( $decision, false );
+		$owner    = 1 === count( $deciders ) ? get_userdata( $deciders[0] ) : false;
 		return new WP_Error(
 			'novawork_cannot_decide',
 			$owner
@@ -421,7 +453,20 @@ final class DecisionsController extends Controller {
 					}
 					$out['owner_id'] = $owner;
 					break;
+				case 'ownerAgent':
+					$agent = (string) $value;
+					if ( '' !== $agent && ! in_array( $agent, array_column( Members::agents(), 'key' ), true ) ) {
+						return new WP_Error( 'novawork_bad_agent', __( 'That agent isn’t available.', 'novawork' ), array( 'status' => 400 ) );
+					}
+					$out['owner_agent'] = $agent;
+					break;
 			}
+		}
+		// One decider: naming an agent clears the person, naming a person the agent.
+		if ( '' !== (string) ( $out['owner_agent'] ?? '' ) ) {
+			$out['owner_id'] = 0;
+		} elseif ( (int) ( $out['owner_id'] ?? 0 ) > 0 ) {
+			$out['owner_agent'] = '';
 		}
 		return $out;
 	}

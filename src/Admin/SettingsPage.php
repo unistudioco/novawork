@@ -34,10 +34,18 @@ final class SettingsPage {
 	private static string $hook = '';
 
 	/**
+	 * Whether enqueue_styles() ran on this screen (an add-on's page).
+	 *
+	 * @var bool
+	 */
+	private static bool $styled = false;
+
+	/**
 	 * Register hooks.
 	 */
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'add' ), 20 );
+		add_action( 'admin_enqueue_scripts', array( Assets::class, 'register_admin' ), 5 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ) );
 		add_filter( 'admin_body_class', array( self::class, 'body_class' ) );
 	}
@@ -72,7 +80,7 @@ final class SettingsPage {
 	 */
 	public static function body_class( string $classes ): string {
 		$screen = get_current_screen();
-		if ( $screen && self::$hook === $screen->id ) {
+		if ( self::$styled || ( $screen && self::$hook === $screen->id ) ) {
 			$classes .= ' nw-admin-screen';
 		}
 		return $classes;
@@ -87,12 +95,7 @@ final class SettingsPage {
 		if ( ! self::is_screen( $hook_suffix ) ) {
 			return;
 		}
-		Assets::register_admin();
-		// The cards stay light like the rest of wp-admin, whatever the device's
-		// appearance (the tokens follow the system unless told otherwise).
-		wp_register_script( Assets::THEME, false, array(), NOVAWORK_VERSION, false );
-		wp_add_inline_script( Assets::THEME, 'document.documentElement.dataset.theme="light";' );
-		wp_enqueue_script( Assets::THEME );
+		self::enqueue_styles();
 		wp_enqueue_media(); // Branding images come from the media library.
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/novawork/v1/settings' ) );
 		$boot     = array(
@@ -103,9 +106,28 @@ final class SettingsPage {
 		);
 		wp_add_inline_script( Assets::ADMIN_SCRIPT, 'window.novawork = ' . wp_json_encode( $boot ) . ';', 'before' );
 		wp_enqueue_script( Assets::ADMIN_SCRIPT );
+	}
+
+	/**
+	 * The settings screen's look for another screen under the NovaWork menu
+	 * (an add-on's page): call it from admin_enqueue_scripts on that screen
+	 * and put the page inside an element with the class "nw-admin". It loads
+	 * the "novawork-admin" style (and the fonts when that setting is on),
+	 * keeps the cards light, and adds the body class toasts use.
+	 *
+	 * @since 1.3.0
+	 */
+	public static function enqueue_styles(): void {
+		Assets::register_admin();
+		// The cards stay light like the rest of wp-admin, whatever the device's
+		// appearance (the tokens follow the system unless told otherwise).
+		wp_register_script( Assets::THEME, false, array(), NOVAWORK_VERSION, false );
+		wp_add_inline_script( Assets::THEME, 'document.documentElement.dataset.theme="light";' );
+		wp_enqueue_script( Assets::THEME );
 		foreach ( Assets::admin_styles() as $handle ) {
 			wp_enqueue_style( $handle );
 		}
+		self::$styled = true;
 	}
 
 	/**

@@ -300,6 +300,22 @@ abstract class Controller {
 	}
 
 	/**
+	 * Schema: agent keys mentioned with "@Name" (1.3.0).
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected static function agent_keys(): array {
+		return array(
+			'type'     => 'array',
+			'maxItems' => 5,
+			'items'    => array(
+				'type'      => 'string',
+				'maxLength' => 64,
+			),
+		);
+	}
+
+	/**
 	 * Schema: /links as the app sends them ([ { type, id } ]).
 	 *
 	 * @return array<string, mixed>

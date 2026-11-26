@@ -5,7 +5,7 @@ Tags: project management, kanban, time tracking, team chat, roadmap
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -174,6 +174,12 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 
 == Changelog ==
 
+= 1.3.0 =
+* New for developers: extension points for add-ons. An add-on can post in chat, comment and notify as a member or as its own agent through one write API (NovaWork\Api), and hear about every new notification.
+* New for developers: agents registered by an add-on can be @mentioned in chat and comments, and named in a decision's "Who decides". The agent gives its advice; the person who opened the decision records it.
+* New for developers: an add-on can add a header button, a row in the team menu and its own notification kind, send data with the app's start and every sync, add its own settings checked like NovaWork's, and style its own page under the NovaWork menu like the settings screen. All hooks are listed in the README on GitHub.
+* Changed: the Pro waitlist note now says what to expect: two emails at most, a quick vote on what ships first and one when Pro is ready.
+
 = 1.2.0 =
 * New: "Were you working?" When NovaWork stops a timer on its own (a sleeping laptop, a closed window, no internet, no answer to "Still working?"), it asks you the next time you're back, and Count it puts the time back. Setting: Ask after an automatic stop.
 * New: "Still working?" also shows as a desktop or phone alert when the workspace isn't the window in front, with "I'm still working" and "Pause" on it.
@@ -199,6 +205,9 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * First release: Focus with a server-side timer, the board with subtasks, projects and the roadmap, decisions with team votes, time analytics, team chat with mentions, links and private files, notifications with desktop alerts, quick search, invites, branding, privacy tools and translations.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Extension points for add-ons: a write API, agents in mentions and decisions, and places in the app and the settings screen. Nothing changes for your team until an add-on uses them.
 
 = 1.2.0 =
 A smarter timer that never loses time silently, admin time editing, and members changing only their own work (a setting).

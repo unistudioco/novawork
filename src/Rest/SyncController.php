@@ -176,6 +176,20 @@ final class SyncController extends Controller {
 			),
 		);
 
+		/**
+		 * Filters the data add-ons send with every /sync answer, as "addons":
+		 * small, current facts for the member polling (a flag, a count). Put
+		 * yours under your add-on's key; the app keeps the latest in
+		 * store.addons.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array<string, mixed> $addons  Data by add-on key.
+		 * @param int                  $user_id The member polling.
+		 * @param bool                 $full    Whether this answer is a full snapshot.
+		 */
+		$body['addons'] = (object) (array) apply_filters( 'novawork_sync', array(), $me, $full );
+
 		if ( $away ) {
 			// The app says why the timer stopped.
 			$body['timerAway'] = $away;

@@ -71,15 +71,51 @@ final class Capabilities {
 	 * always; otherwise the person named in "Who decides", or anyone when no
 	 * one is named. The decide_rule setting "anyone" lets every member decide.
 	 *
+	 * When an agent is named (1.3.0), it gives its advice and the person who
+	 * opened the decision records it (owner, 2026-11-26); once that person is
+	 * no longer a member, administrators do. An agent that is no longer
+	 * registered counts as no one named, so a decision is never stuck. An
+	 * agent itself never records a decision unless an add-on allows it.
+	 *
 	 * @param array<string, mixed> $decision Decision row.
-	 * @param int                  $user_id  Member.
+	 * @param int                  $user_id  Member (0 when an agent acts).
+	 * @param string               $agent    Agent key when an agent acts.
 	 */
-	public static function can_decide( array $decision, int $user_id ): bool {
-		if ( user_can( $user_id, self::MANAGE ) || 'anyone' === \NovaWork\Settings::decide_rule() ) {
-			return true;
+	public static function can_decide( array $decision, int $user_id, string $agent = '' ): bool {
+		if ( '' !== $agent ) {
+			$allowed = false;
+		} elseif ( user_can( $user_id, self::MANAGE ) || 'anyone' === \NovaWork\Settings::decide_rule() ) {
+			$allowed = true;
+		} elseif ( (int) $decision['owner_id'] > 0 ) {
+			$allowed = (int) $decision['owner_id'] === $user_id;
+		} elseif ( self::names_agent( $decision ) ) {
+			$allowed = $user_id > 0 && (int) $decision['created_by'] === $user_id;
+		} else {
+			$allowed = true;
 		}
-		$owner = (int) $decision['owner_id'];
-		return 0 === $owner || $owner === $user_id;
+
+		/**
+		 * Filters whether a member, or an add-on's agent, may record (or
+		 * reopen) a decision.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param bool                 $allowed  Whether NovaWork's own rules allow it.
+		 * @param array<string, mixed> $decision Decision row.
+		 * @param int                  $user_id  Member, or 0 when an agent acts.
+		 * @param string               $agent    Agent key when an agent acts, else ''.
+		 */
+		return (bool) apply_filters( 'novawork_can_decide', $allowed, $decision, $user_id, $agent );
+	}
+
+	/**
+	 * Whether "Who decides" names an agent that is still registered.
+	 *
+	 * @param array<string, mixed> $decision Decision row.
+	 */
+	public static function names_agent( array $decision ): bool {
+		$key = (string) ( $decision['owner_agent'] ?? '' );
+		return '' !== $key && in_array( $key, array_column( \NovaWork\Members::agents(), 'key' ), true );
 	}
 
 	/**

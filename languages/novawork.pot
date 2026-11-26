@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: NovaWork 1.2.0\n"
+"Project-Id-Version: NovaWork 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/novawork/\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-26T06:09:53+00:00\n"
+"POT-Creation-Date: 2026-11-26T20:44:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -42,7 +42,7 @@ msgstr ""
 msgid "https://unistudio.co"
 msgstr ""
 
-#: src/Access/Capabilities.php:175
+#: src/Access/Capabilities.php:211
 msgid "NovaWork Member"
 msgstr ""
 
@@ -67,7 +67,7 @@ msgid "Gives this user access to the workspace and keeps their role as it is."
 msgstr ""
 
 #: src/Admin/Menu.php:46
-#: src/Admin/SettingsPage.php:53
+#: src/Admin/SettingsPage.php:61
 #: views/admin-settings.php:45
 msgid "NovaWork settings"
 msgstr ""
@@ -85,13 +85,50 @@ msgstr ""
 msgid "Pro waitlist"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:53
+#: src/Admin/SettingsPage.php:61
 msgid "Settings"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:116
+#: src/Admin/SettingsPage.php:138
 #: src/Rest/Controller.php:62
 msgid "Only an administrator can change NovaWork’s settings."
+msgstr ""
+
+#: src/Api.php:77
+msgid "Write a message or add a file."
+msgstr ""
+
+#: src/Api.php:93
+msgid "The message wasn’t sent. Try again."
+msgstr ""
+
+#: src/Api.php:98
+msgid "Those files are no longer available. Add them again."
+msgstr ""
+
+#: src/Api.php:160
+msgid "Write a comment first."
+msgstr ""
+
+#: src/Api.php:168
+#: src/Rest/Controller.php:139
+#: src/Services/TimeEdits.php:127
+#: src/Services/TimeEdits.php:161
+msgid "That item no longer exists."
+msgstr ""
+
+#: src/Api.php:188
+msgid "The comment wasn’t saved. Try again."
+msgstr ""
+
+#: src/Api.php:277
+msgid "Only a member or a registered agent can write in NovaWork."
+msgstr ""
+
+#. translators: %d: most characters allowed.
+#: src/Api.php:291
+#, php-format
+msgid "Keep it under %d characters."
 msgstr ""
 
 #: src/App/Login.php:99
@@ -145,49 +182,33 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: src/Rest/ChatController.php:118
-msgid "Write a message or add a file."
-msgstr ""
-
-#: src/Rest/ChatController.php:133
-msgid "The message wasn’t sent. Try again."
-msgstr ""
-
-#: src/Rest/ChatController.php:138
-msgid "Those files are no longer available. Add them again."
-msgstr ""
-
-#: src/Rest/ChatController.php:180
+#: src/Rest/ChatController.php:145
 msgid "You can’t edit this message."
 msgstr ""
 
-#: src/Rest/ChatController.php:184
-#: assets/src/js/views/thread.js:217
+#: src/Rest/ChatController.php:149
+#: assets/src/js/views/thread.js:223
 msgid "A message needs some text. To remove it, delete it."
 msgstr ""
 
-#: src/Rest/ChatController.php:215
+#: src/Rest/ChatController.php:180
 msgid "You can’t delete this message."
 msgstr ""
 
-#: src/Rest/ChatController.php:242
+#: src/Rest/ChatController.php:207
 msgid "Choose a file to upload."
 msgstr ""
 
-#: src/Rest/CommentsController.php:71
-msgid "Write a comment first."
-msgstr ""
-
-#: src/Rest/CommentsController.php:124
+#: src/Rest/CommentsController.php:96
 msgid "You can’t edit this comment."
 msgstr ""
 
-#: src/Rest/CommentsController.php:128
-#: assets/src/js/views/thread.js:217
+#: src/Rest/CommentsController.php:100
+#: assets/src/js/views/thread.js:223
 msgid "A comment needs some text. To remove it, delete it."
 msgstr ""
 
-#: src/Rest/CommentsController.php:158
+#: src/Rest/CommentsController.php:130
 msgid "You can’t delete this comment."
 msgstr ""
 
@@ -197,12 +218,6 @@ msgstr ""
 
 #: src/Rest/Controller.php:48
 msgid "You aren’t a member of this NovaWork workspace."
-msgstr ""
-
-#: src/Rest/Controller.php:139
-#: src/Services/TimeEdits.php:127
-#: src/Services/TimeEdits.php:161
-msgid "That item no longer exists."
 msgstr ""
 
 #: src/Rest/Controller.php:149
@@ -221,47 +236,51 @@ msgstr ""
 msgid "Use a date like 2026-12-31."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:103
-#: src/Rest/DecisionsController.php:153
+#: src/Rest/DecisionsController.php:109
+#: src/Rest/DecisionsController.php:162
 msgid "Say what needs deciding."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:180
-#: src/Rest/DecisionsController.php:278
+#: src/Rest/DecisionsController.php:189
+#: src/Rest/DecisionsController.php:310
 msgid "Write down what was decided."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:230
+#: src/Rest/DecisionsController.php:242
 msgid "This decision isn’t open for votes."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:233
+#: src/Rest/DecisionsController.php:245
 msgid "This decision has been made; voting is closed."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:237
+#: src/Rest/DecisionsController.php:249
 msgid "That option no longer exists."
 msgstr ""
 
 #. translators: %s: name of the person who decides.
-#: src/Rest/DecisionsController.php:254
+#: src/Rest/DecisionsController.php:286
 #, php-format
 msgid "Only %s can record this decision."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:255
+#: src/Rest/DecisionsController.php:287
 msgid "You can’t record this decision."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:413
+#: src/Rest/DecisionsController.php:445
 #: src/Rest/TasksController.php:268
 msgid "That project no longer exists."
 msgstr ""
 
-#: src/Rest/DecisionsController.php:420
+#: src/Rest/DecisionsController.php:452
 #: src/Rest/TimeController.php:203
 #: src/Rest/TimeController.php:262
 msgid "That person isn’t a member."
+msgstr ""
+
+#: src/Rest/DecisionsController.php:459
+msgid "That agent isn’t available."
 msgstr ""
 
 #: src/Rest/ProjectsController.php:61
@@ -269,7 +288,7 @@ msgstr ""
 msgid "Give the project a name."
 msgstr ""
 
-#: src/Rest/SettingsController.php:87
+#: src/Rest/SettingsController.php:74
 msgid "Some settings need a look."
 msgstr ""
 
@@ -356,8 +375,9 @@ msgstr ""
 #. translators: 1: a person's name, 2: the workspace's name.
 #: src/Services/Invites.php:105
 #: assets/src/js/views/editors.js:44
-#: assets/src/js/views/notes.js:63
-#: assets/src/js/views/notes.js:66
+#: assets/src/js/views/model.js:136
+#: assets/src/js/views/notes.js:64
+#: assets/src/js/views/notes.js:67
 #: assets/src/js/views/thread.js:52
 #: assets/src/js/views/thread.js:55
 msgid "Someone"
@@ -468,9 +488,9 @@ msgstr ""
 
 #: src/Services/Privacy.php:165
 #: assets/src/js/views/composer.js:15
-#: assets/src/js/views/editors.js:191
-#: assets/src/js/views/editors.js:192
-#: assets/src/js/views/editors.js:519
+#: assets/src/js/views/editors.js:201
+#: assets/src/js/views/editors.js:202
+#: assets/src/js/views/editors.js:529
 msgid "Task"
 msgstr ""
 
@@ -492,7 +512,7 @@ msgstr ""
 
 #: src/Services/Privacy.php:181
 #: assets/src/js/views/composer.js:15
-#: assets/src/js/views/editors.js:409
+#: assets/src/js/views/editors.js:419
 msgid "Decision"
 msgstr ""
 
@@ -529,7 +549,7 @@ msgstr ""
 
 #: src/Services/Privacy.php:228
 #: views/admin-settings.php:99
-#: assets/src/js/views/notes.js:249
+#: assets/src/js/views/notes.js:262
 msgid "Workspace"
 msgstr ""
 
@@ -542,7 +562,7 @@ msgid "Yes"
 msgstr ""
 
 #: src/Services/Privacy.php:230
-#: assets/src/js/views/editors.js:277
+#: assets/src/js/views/editors.js:287
 msgid "Colour"
 msgstr ""
 
@@ -674,39 +694,39 @@ msgid "The timer didn’t start. Try again."
 msgstr ""
 
 #: src/Settings.php:209
-#: src/Settings.php:257
+#: src/Settings.php:327
 msgid "Unknown setting."
 msgstr ""
 
-#: src/Settings.php:214
+#: src/Settings.php:284
 msgid "Enter a number."
 msgstr ""
 
-#: src/Settings.php:221
+#: src/Settings.php:291
 msgid "Choose one of the options."
 msgstr ""
 
-#: src/Settings.php:233
+#: src/Settings.php:303
 msgid "Allow at least one type of file."
 msgstr ""
 
-#: src/Settings.php:237
+#: src/Settings.php:307
 msgid "Enter an address, such as “work”."
 msgstr ""
 
-#: src/Settings.php:240
+#: src/Settings.php:310
 msgid "WordPress already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:244
+#: src/Settings.php:314
 msgid "A page of this site already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:250
+#: src/Settings.php:320
 msgid "Choose an image from the media library."
 msgstr ""
 
-#: src/Settings.php:255
+#: src/Settings.php:325
 #: assets/src/js/settings.js:92
 msgid "Enter a colour as #hex or rgb(r, g, b)."
 msgstr ""
@@ -782,7 +802,7 @@ msgid "where your team already looks."
 msgstr ""
 
 #: views/admin-settings.php:80
-msgid "Join the waitlist for the launch price, kept for life. One email when Pro is ready, nothing else."
+msgid "Join the waitlist for the launch price, kept for life. Two emails at most: a quick vote on what ships first, and one when Pro is ready."
 msgstr ""
 
 #: views/admin-settings.php:82
@@ -814,7 +834,7 @@ msgid "No thanks"
 msgstr ""
 
 #: views/admin-settings.php:100
-#: assets/src/js/views/editors.js:271
+#: assets/src/js/views/editors.js:281
 msgid "Name"
 msgstr ""
 
@@ -1080,7 +1100,7 @@ msgid "Any member"
 msgstr ""
 
 #: views/admin-settings.php:237
-#: assets/src/js/views/editors.js:406
+#: assets/src/js/views/editors.js:416
 msgid "Team votes"
 msgstr ""
 
@@ -1322,7 +1342,7 @@ msgstr ""
 
 #: views/app.php:32
 #: assets/src/js/views/dialog.js:184
-#: assets/src/js/views/thread.js:163
+#: assets/src/js/views/thread.js:169
 msgid "Cancel"
 msgstr ""
 
@@ -1340,8 +1360,8 @@ msgid "Team chat"
 msgstr ""
 
 #: views/app.php:43
-#: assets/src/js/shell.js:302
-#: assets/src/js/views/notes.js:255
+#: assets/src/js/shell.js:308
+#: assets/src/js/views/notes.js:268
 #: assets/src/js/views/tour.js:90
 msgid "Notifications"
 msgstr ""
@@ -1408,7 +1428,7 @@ msgstr ""
 
 #: views/app.php:122
 #: assets/src/js/views/chat.js:127
-#: assets/src/js/views/notes.js:201
+#: assets/src/js/views/notes.js:214
 #: assets/src/js/views/roadmap.js:113
 #: assets/src/js/views/roadmap.js:116
 #: assets/src/js/views/time.js:30
@@ -1450,7 +1470,7 @@ msgid "Send"
 msgstr ""
 
 #: views/app.php:143
-#: assets/src/js/views/editors.js:191
+#: assets/src/js/views/editors.js:201
 msgid "New task"
 msgstr ""
 
@@ -1459,7 +1479,7 @@ msgid "Goes to Now, assigned to you"
 msgstr ""
 
 #: views/app.php:144
-#: assets/src/js/views/editors.js:270
+#: assets/src/js/views/editors.js:280
 #: assets/src/js/views/roadmap.js:47
 msgid "New project"
 msgstr ""
@@ -1470,7 +1490,7 @@ msgstr ""
 
 #: views/app.php:145
 #: assets/src/js/views/decisions.js:44
-#: assets/src/js/views/editors.js:390
+#: assets/src/js/views/editors.js:400
 msgid "New decision"
 msgstr ""
 
@@ -1562,7 +1582,7 @@ msgstr ""
 #: views/login.php:128
 #: views/login.php:146
 #: views/login.php:166
-#: assets/src/js/views/notes.js:247
+#: assets/src/js/views/notes.js:260
 msgid "Show"
 msgstr ""
 
@@ -1743,7 +1763,7 @@ msgstr ""
 #: assets/src/js/settings.js:357
 #: assets/src/js/views/actions.js:37
 #: assets/src/js/views/actions.js:158
-#: assets/src/js/views/thread.js:227
+#: assets/src/js/views/thread.js:233
 msgid "Could not save. Check your connection and try again."
 msgstr ""
 
@@ -1756,12 +1776,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/src/js/settings.js:175
-#: assets/src/js/shell.js:283
+#: assets/src/js/shell.js:289
 msgid "Sample items removed."
 msgstr ""
 
 #: assets/src/js/settings.js:177
-#: assets/src/js/shell.js:285
+#: assets/src/js/shell.js:291
 msgid "Could not remove them. Try again."
 msgstr ""
 
@@ -1837,7 +1857,7 @@ msgid "Time"
 msgstr ""
 
 #: assets/src/js/shell.js:49
-#: assets/src/js/shell.js:530
+#: assets/src/js/shell.js:536
 #: assets/src/js/views/decisions.js:41
 #: assets/src/js/views/tour.js:72
 msgid "Decisions"
@@ -1887,7 +1907,7 @@ msgid "Away"
 msgstr ""
 
 #. translators: %d: number of other members online.
-#: assets/src/js/shell.js:212
+#: assets/src/js/shell.js:218
 #, js-format
 msgid "%d more here"
 msgid_plural "%d more here"
@@ -1895,13 +1915,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: time tracked today, e.g. "2h 5m".
-#: assets/src/js/shell.js:256
+#: assets/src/js/shell.js:262
 #, js-format
 msgid "Online · %s today"
 msgstr ""
 
 #. translators: %d: number of sample items.
-#: assets/src/js/shell.js:269
+#: assets/src/js/shell.js:275
 #, js-format
 msgid "%d sample item shows where to start."
 msgid_plural "%d sample items show where to start."
@@ -1909,53 +1929,53 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of unread notifications.
-#: assets/src/js/shell.js:302
+#: assets/src/js/shell.js:308
 #, js-format
 msgid "%d unread notifications"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/shell.js:310
+#: assets/src/js/shell.js:316
 #, js-format
 msgid "Pause: %s"
 msgstr ""
 
-#: assets/src/js/shell.js:516
+#: assets/src/js/shell.js:522
 msgid "active"
 msgstr ""
 
-#: assets/src/js/shell.js:516
+#: assets/src/js/shell.js:522
 msgid "paused"
 msgstr ""
 
-#: assets/src/js/shell.js:516
+#: assets/src/js/shell.js:522
 msgid "done"
 msgstr ""
 
-#: assets/src/js/shell.js:528
+#: assets/src/js/shell.js:534
 msgid "Tasks"
 msgstr ""
 
-#: assets/src/js/shell.js:529
+#: assets/src/js/shell.js:535
 msgid "Projects"
 msgstr ""
 
-#: assets/src/js/shell.js:530
+#: assets/src/js/shell.js:536
 #: assets/src/js/views/decisions.js:48
 msgid "Decided"
 msgstr ""
 
-#: assets/src/js/shell.js:530
+#: assets/src/js/shell.js:536
 #: assets/src/js/views/decisions.js:45
 msgid "Open"
 msgstr ""
 
-#: assets/src/js/shell.js:532
+#: assets/src/js/shell.js:538
 msgid "Messages"
 msgstr ""
 
 #. translators: %s: what was searched for.
-#: assets/src/js/shell.js:546
+#: assets/src/js/shell.js:552
 #, js-format
 msgid "Nothing matches “%s”."
 msgstr ""
@@ -2110,17 +2130,17 @@ msgid "Could not send. Check your connection and try again."
 msgstr ""
 
 #: assets/src/js/views/composer.js:15
-#: assets/src/js/views/editors.js:200
-#: assets/src/js/views/editors.js:270
-#: assets/src/js/views/editors.js:395
+#: assets/src/js/views/editors.js:210
+#: assets/src/js/views/editors.js:280
+#: assets/src/js/views/editors.js:405
 msgid "Project"
 msgstr ""
 
-#: assets/src/js/views/composer.js:118
+#: assets/src/js/views/composer.js:124
 msgid "Mention someone"
 msgstr ""
 
-#: assets/src/js/views/composer.js:118
+#: assets/src/js/views/composer.js:124
 msgid "Link a task, decision or project"
 msgstr ""
 
@@ -2145,7 +2165,7 @@ msgid "Decide"
 msgstr ""
 
 #: assets/src/js/views/decisions.js:32
-#: assets/src/js/views/editors.js:390
+#: assets/src/js/views/editors.js:400
 msgid "Edit decision"
 msgstr ""
 
@@ -2172,7 +2192,7 @@ msgid "Delete"
 msgstr ""
 
 #: assets/src/js/views/dialog.js:184
-#: assets/src/js/views/thread.js:163
+#: assets/src/js/views/thread.js:169
 msgid "Save"
 msgstr ""
 
@@ -2203,238 +2223,238 @@ msgstr ""
 msgid "No project"
 msgstr ""
 
-#: assets/src/js/views/editors.js:191
-msgid "Edit task"
-msgstr ""
-
-#: assets/src/js/views/editors.js:192
-msgid "What needs to happen?"
-msgstr ""
-
-#: assets/src/js/views/editors.js:193
-#: assets/src/js/views/editors.js:274
-msgid "Status"
-msgstr ""
-
-#: assets/src/js/views/editors.js:196
-msgid "Priority"
-msgstr ""
-
-#: assets/src/js/views/editors.js:199
-msgid "Due date"
+#: assets/src/js/views/editors.js:160
+msgid "Anyone"
 msgstr ""
 
 #: assets/src/js/views/editors.js:201
+msgid "Edit task"
+msgstr ""
+
+#: assets/src/js/views/editors.js:202
+msgid "What needs to happen?"
+msgstr ""
+
+#: assets/src/js/views/editors.js:203
+#: assets/src/js/views/editors.js:284
+msgid "Status"
+msgstr ""
+
+#: assets/src/js/views/editors.js:206
+msgid "Priority"
+msgstr ""
+
+#: assets/src/js/views/editors.js:209
+msgid "Due date"
+msgstr ""
+
+#: assets/src/js/views/editors.js:211
 msgid "Assigned to"
 msgstr ""
 
-#: assets/src/js/views/editors.js:204
+#: assets/src/js/views/editors.js:214
 msgid "Notes"
 msgstr ""
 
-#: assets/src/js/views/editors.js:204
+#: assets/src/js/views/editors.js:214
 msgid "Links, context, what done looks like"
 msgstr ""
 
-#: assets/src/js/views/editors.js:207
+#: assets/src/js/views/editors.js:217
 msgid "Time tracked"
 msgstr ""
 
-#: assets/src/js/views/editors.js:207
+#: assets/src/js/views/editors.js:217
 msgid "across all sessions"
 msgstr ""
 
-#: assets/src/js/views/editors.js:210
+#: assets/src/js/views/editors.js:220
 #: assets/src/js/views/index.js:134
 msgid "Only the people on this task, its creator or an administrator can change it."
 msgstr ""
 
-#: assets/src/js/views/editors.js:231
-#: assets/src/js/views/editors.js:292
-#: assets/src/js/views/editors.js:429
-#: assets/src/js/views/editors.js:461
+#: assets/src/js/views/editors.js:241
+#: assets/src/js/views/editors.js:302
+#: assets/src/js/views/editors.js:439
+#: assets/src/js/views/editors.js:471
 msgid "Saved"
 msgstr ""
 
-#: assets/src/js/views/editors.js:231
+#: assets/src/js/views/editors.js:241
 msgid "Task added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:265
+#: assets/src/js/views/editors.js:275
 #: assets/src/js/views/roadmap.js:29
 msgid "Active"
 msgstr ""
 
-#: assets/src/js/views/editors.js:266
+#: assets/src/js/views/editors.js:276
 #: assets/src/js/views/roadmap.js:29
 msgid "Paused"
 msgstr ""
 
-#: assets/src/js/views/editors.js:267
+#: assets/src/js/views/editors.js:277
 #: assets/src/js/views/model.js:34
 #: assets/src/js/views/roadmap.js:29
 msgid "Done"
 msgstr ""
 
-#: assets/src/js/views/editors.js:270
+#: assets/src/js/views/editors.js:280
 msgid "Edit project"
 msgstr ""
 
-#: assets/src/js/views/editors.js:271
+#: assets/src/js/views/editors.js:281
 msgid "Project name"
 msgstr ""
 
-#: assets/src/js/views/editors.js:272
+#: assets/src/js/views/editors.js:282
 msgid "Goal"
 msgstr ""
 
-#: assets/src/js/views/editors.js:272
+#: assets/src/js/views/editors.js:282
 msgid "What does done look like?"
 msgstr ""
 
-#: assets/src/js/views/editors.js:273
+#: assets/src/js/views/editors.js:283
 #: assets/src/js/views/focus.js:113
 msgid "Start"
 msgstr ""
 
-#: assets/src/js/views/editors.js:273
+#: assets/src/js/views/editors.js:283
 msgid "Target"
 msgstr ""
 
-#: assets/src/js/views/editors.js:274
+#: assets/src/js/views/editors.js:284
 msgid "Hard deadline"
 msgstr ""
 
-#: assets/src/js/views/editors.js:278
+#: assets/src/js/views/editors.js:288
 msgid "Only its creator or an administrator can change this project."
 msgstr ""
 
-#: assets/src/js/views/editors.js:292
+#: assets/src/js/views/editors.js:302
 msgid "Project added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:390
+#: assets/src/js/views/editors.js:400
 msgid "Record decision"
 msgstr ""
 
-#: assets/src/js/views/editors.js:391
+#: assets/src/js/views/editors.js:401
 msgid "Question"
 msgstr ""
 
-#: assets/src/js/views/editors.js:392
+#: assets/src/js/views/editors.js:402
 msgid "What needs deciding?"
 msgstr ""
 
-#: assets/src/js/views/editors.js:394
+#: assets/src/js/views/editors.js:404
 msgid "Options and context"
 msgstr ""
 
-#: assets/src/js/views/editors.js:396
+#: assets/src/js/views/editors.js:406
 msgid "Decide by"
 msgstr ""
 
-#: assets/src/js/views/editors.js:398
+#: assets/src/js/views/editors.js:408
 msgid "Who decides"
 msgstr ""
 
-#: assets/src/js/views/editors.js:398
-msgid "Anyone"
-msgstr ""
-
-#: assets/src/js/views/editors.js:400
+#: assets/src/js/views/editors.js:410
 msgid "Ask the team to vote"
 msgstr ""
 
-#: assets/src/js/views/editors.js:401
+#: assets/src/js/views/editors.js:411
 msgid "Options, one per line"
 msgstr ""
 
-#: assets/src/js/views/editors.js:402
+#: assets/src/js/views/editors.js:412
 msgid "Up to eight short options"
 msgstr ""
 
-#: assets/src/js/views/editors.js:410
+#: assets/src/js/views/editors.js:420
 msgid "What we decided, and why"
 msgstr ""
 
-#: assets/src/js/views/editors.js:412
+#: assets/src/js/views/editors.js:422
 msgid "Reopen this decision"
 msgstr ""
 
-#: assets/src/js/views/editors.js:415
+#: assets/src/js/views/editors.js:425
 msgid "Only its creator or an administrator can change this decision."
 msgstr ""
 
-#: assets/src/js/views/editors.js:429
-#: assets/src/js/views/editors.js:461
+#: assets/src/js/views/editors.js:439
+#: assets/src/js/views/editors.js:471
 msgid "Decision recorded"
 msgstr ""
 
-#: assets/src/js/views/editors.js:461
+#: assets/src/js/views/editors.js:471
 msgid "Decision added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:513
+#: assets/src/js/views/editors.js:523
 #: assets/src/js/views/time.js:280
 msgid "Edit session"
 msgstr ""
 
-#: assets/src/js/views/editors.js:513
+#: assets/src/js/views/editors.js:523
 #: assets/src/js/views/time.js:269
 msgid "Add time"
 msgstr ""
 
-#: assets/src/js/views/editors.js:515
-#: assets/src/js/views/editors.js:516
+#: assets/src/js/views/editors.js:525
+#: assets/src/js/views/editors.js:526
 msgid "Tracked by"
 msgstr ""
 
-#: assets/src/js/views/editors.js:520
+#: assets/src/js/views/editors.js:530
 #: assets/src/js/views/time.js:261
 #: assets/src/js/views/time.js:277
 msgid "Deleted task"
 msgstr ""
 
-#: assets/src/js/views/editors.js:522
+#: assets/src/js/views/editors.js:532
 msgid "Day"
 msgstr ""
 
-#: assets/src/js/views/editors.js:523
+#: assets/src/js/views/editors.js:533
 msgid "From"
 msgstr ""
 
-#: assets/src/js/views/editors.js:524
+#: assets/src/js/views/editors.js:534
 msgid "To"
 msgstr ""
 
-#: assets/src/js/views/editors.js:526
+#: assets/src/js/views/editors.js:536
 #: assets/src/js/views/focus.js:66
 msgid "Running"
 msgstr ""
 
-#: assets/src/js/views/editors.js:529
+#: assets/src/js/views/editors.js:539
 msgid "An end earlier than the start counts as the next day. Sessions of one person can’t overlap."
 msgstr ""
 
-#: assets/src/js/views/editors.js:536
+#: assets/src/js/views/editors.js:546
 msgid "Pick a task and a day."
 msgstr ""
 
-#: assets/src/js/views/editors.js:549
+#: assets/src/js/views/editors.js:559
 msgid "Session saved"
 msgstr ""
 
-#: assets/src/js/views/editors.js:549
+#: assets/src/js/views/editors.js:559
 msgid "Time added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:567
+#: assets/src/js/views/editors.js:577
 #: assets/src/js/views/subtasks.js:166
 #: assets/src/js/views/undo.js:55
 msgid "Deleted."
 msgstr ""
 
-#: assets/src/js/views/editors.js:568
+#: assets/src/js/views/editors.js:578
 #: assets/src/js/views/subtasks.js:167
 #: assets/src/js/views/undo.js:56
 msgid "Undo"
@@ -2498,8 +2518,8 @@ msgstr ""
 #: assets/src/js/views/focus.js:92
 #: assets/src/js/views/focus.js:93
 #: assets/src/js/views/focus.js:131
-#: assets/src/js/views/notes.js:66
-#: assets/src/js/views/select.js:35
+#: assets/src/js/views/notes.js:67
+#: assets/src/js/views/select.js:39
 #: assets/src/js/views/time.js:103
 msgid "You"
 msgstr ""
@@ -2673,67 +2693,67 @@ msgid "No priority"
 msgstr ""
 
 #. translators: 1: subtasks done, 2: all subtasks.
-#: assets/src/js/views/model.js:151
+#: assets/src/js/views/model.js:161
 #, js-format
 msgid "%1$d of %2$d subtasks done"
 msgstr ""
 
 #. translators: %d: days late.
-#: assets/src/js/views/model.js:165
+#: assets/src/js/views/model.js:175
 #, js-format
 msgid "%dd late"
 msgstr ""
 
-#: assets/src/js/views/model.js:168
+#: assets/src/js/views/model.js:178
 msgid "today"
 msgstr ""
 
 #. translators: %d: days left.
-#: assets/src/js/views/model.js:171
+#: assets/src/js/views/model.js:181
 #, js-format
 msgid "%dd"
 msgstr ""
 
 #. translators: %s: priority, e.g. "High".
-#: assets/src/js/views/model.js:196
+#: assets/src/js/views/model.js:206
 #, js-format
 msgid "%s priority"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/views/model.js:204
+#: assets/src/js/views/model.js:214
 #, js-format
 msgid "Pause %s"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/views/model.js:204
+#: assets/src/js/views/model.js:214
 #, js-format
 msgid "Track time on %s"
 msgstr ""
 
 #. translators: %s: task title.
 #. translators: %s: subtask.
-#: assets/src/js/views/model.js:209
+#: assets/src/js/views/model.js:219
 #: assets/src/js/views/subtasks.js:45
 #, js-format
 msgid "Mark %s done"
 msgstr ""
 
 #. translators: 1: option, 2: number of votes.
-#: assets/src/js/views/model.js:259
+#: assets/src/js/views/model.js:280
 #, js-format
 msgid "%1$s, %2$d votes"
 msgstr ""
 
 #. translators: 1: members who voted, 2: all members.
-#: assets/src/js/views/model.js:265
+#: assets/src/js/views/model.js:286
 #, js-format
 msgid "%1$d of %2$d voted"
 msgstr ""
 
 #. translators: %d: number of days.
-#: assets/src/js/views/notes.js:72
+#: assets/src/js/views/notes.js:73
 #, js-format
 msgid "%d day"
 msgid_plural "%d days"
@@ -2741,13 +2761,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: file name.
-#: assets/src/js/views/notes.js:86
+#: assets/src/js/views/notes.js:87
 #, js-format
 msgid "shared %s"
 msgstr ""
 
 #. translators: %d: number of files.
-#: assets/src/js/views/notes.js:87
+#: assets/src/js/views/notes.js:88
 #, js-format
 msgid "shared %d file"
 msgid_plural "shared %d files"
@@ -2755,181 +2775,181 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: a person, 2: subtask, 3: its task.
-#: assets/src/js/views/notes.js:99
+#: assets/src/js/views/notes.js:100
 #, js-format
 msgid "%1$s gave you %2$s on %3$s"
 msgstr ""
 
 #. translators: 1: a person, 2: task.
-#: assets/src/js/views/notes.js:101
+#: assets/src/js/views/notes.js:102
 #, js-format
 msgid "%1$s assigned you %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: task or decision.
-#: assets/src/js/views/notes.js:103
-#: assets/src/js/views/notes.js:165
+#: assets/src/js/views/notes.js:104
+#: assets/src/js/views/notes.js:177
 #, js-format
 msgid "%1$s commented on %2$s"
 msgstr ""
 
 #. translators: %s: a person.
-#: assets/src/js/views/notes.js:106
+#: assets/src/js/views/notes.js:107
 #, js-format
 msgid "%s mentioned you in chat"
 msgstr ""
 
 #. translators: 1: a person, 2: task or decision.
-#: assets/src/js/views/notes.js:107
+#: assets/src/js/views/notes.js:108
 #, js-format
 msgid "%1$s mentioned you on %2$s"
 msgstr ""
 
-#: assets/src/js/views/notes.js:109
+#: assets/src/js/views/notes.js:110
 msgid "sent a message"
 msgstr ""
 
 #. translators: 1: a person, 2: task or decision.
-#: assets/src/js/views/notes.js:111
+#: assets/src/js/views/notes.js:112
 #, js-format
 msgid "%1$s linked %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: decision.
-#: assets/src/js/views/notes.js:113
+#: assets/src/js/views/notes.js:114
 #, js-format
 msgid "%1$s asked you to vote on %2$s"
 msgstr ""
 
 #. translators: 1: decision, 2: "3 days".
-#: assets/src/js/views/notes.js:119
+#: assets/src/js/views/notes.js:120
 #, js-format
 msgid "Decide %1$s in %2$s"
 msgstr ""
 
 #. translators: %s: decision.
-#: assets/src/js/views/notes.js:121
+#: assets/src/js/views/notes.js:122
 #, js-format
 msgid "Decide %s today"
 msgstr ""
 
 #. translators: %s: decision.
-#: assets/src/js/views/notes.js:122
+#: assets/src/js/views/notes.js:123
 #, js-format
 msgid "Decide %s (overdue)"
 msgstr ""
 
 #. translators: 1: task, 2: "3 days".
-#: assets/src/js/views/notes.js:129
+#: assets/src/js/views/notes.js:130
 #, js-format
 msgid "%1$s is %2$s late"
 msgstr ""
 
 #. translators: %s: task.
-#: assets/src/js/views/notes.js:134
+#: assets/src/js/views/notes.js:135
 #, js-format
 msgid "%s is due today"
 msgstr ""
 
 #. translators: 1: task, 2: "3 days".
-#: assets/src/js/views/notes.js:135
+#: assets/src/js/views/notes.js:136
 #, js-format
 msgid "%1$s is due in %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: task.
-#: assets/src/js/views/notes.js:151
+#: assets/src/js/views/notes.js:163
 #, js-format
 msgid "%1$s added %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: task.
-#: assets/src/js/views/notes.js:153
+#: assets/src/js/views/notes.js:165
 #, js-format
 msgid "%1$s finished %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: project.
-#: assets/src/js/views/notes.js:155
+#: assets/src/js/views/notes.js:167
 #, js-format
 msgid "%1$s started the project %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: project.
-#: assets/src/js/views/notes.js:157
+#: assets/src/js/views/notes.js:169
 #, js-format
 msgid "%1$s finished the project %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: decision.
-#: assets/src/js/views/notes.js:159
+#: assets/src/js/views/notes.js:171
 #, js-format
 msgid "%1$s opened a decision: %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: decision.
-#: assets/src/js/views/notes.js:161
+#: assets/src/js/views/notes.js:173
 #, js-format
 msgid "%1$s decided %2$s"
 msgstr ""
 
 #. translators: 1: a person, 2: decision.
-#: assets/src/js/views/notes.js:163
+#: assets/src/js/views/notes.js:175
 #, js-format
 msgid "%1$s asked the team to vote on %2$s"
 msgstr ""
 
 #. translators: %s: a person.
-#: assets/src/js/views/notes.js:167
+#: assets/src/js/views/notes.js:179
 #, js-format
 msgid "%s joined the workspace"
 msgstr ""
 
-#: assets/src/js/views/notes.js:180
+#: assets/src/js/views/notes.js:192
 msgid "Get desktop alerts on this device while the workspace is open in the background."
 msgstr ""
 
-#: assets/src/js/views/notes.js:180
+#: assets/src/js/views/notes.js:192
 msgid "Turn on"
 msgstr ""
 
-#: assets/src/js/views/notes.js:181
+#: assets/src/js/views/notes.js:193
 msgid "Desktop alerts are on for this device."
 msgstr ""
 
-#: assets/src/js/views/notes.js:181
+#: assets/src/js/views/notes.js:193
 msgid "Turn off"
 msgstr ""
 
-#: assets/src/js/views/notes.js:182
+#: assets/src/js/views/notes.js:194
 msgid "Alerts are blocked for this site. Allow notifications in your browser’s site settings to turn them on."
 msgstr ""
 
-#: assets/src/js/views/notes.js:202
+#: assets/src/js/views/notes.js:215
 msgid "Earlier"
 msgstr ""
 
-#: assets/src/js/views/notes.js:234
+#: assets/src/js/views/notes.js:247
 msgid "You’re all caught up."
 msgstr ""
 
-#: assets/src/js/views/notes.js:243
+#: assets/src/js/views/notes.js:256
 msgid "Nothing has happened yet. What the team does shows up here."
 msgstr ""
 
 #. translators: %d: number of unread notifications.
-#: assets/src/js/views/notes.js:246
+#: assets/src/js/views/notes.js:259
 #, js-format
 msgid "%d unread"
 msgid_plural "%d unread"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/src/js/views/notes.js:248
+#: assets/src/js/views/notes.js:261
 msgid "Mine"
 msgstr ""
 
-#: assets/src/js/views/notes.js:256
+#: assets/src/js/views/notes.js:269
 msgid "Mark all as read"
 msgstr ""
 
@@ -3159,15 +3179,15 @@ msgstr ""
 msgid "Cancel reply"
 msgstr ""
 
-#: assets/src/js/views/thread.js:161
+#: assets/src/js/views/thread.js:167
 msgid "Edit message"
 msgstr ""
 
-#: assets/src/js/views/thread.js:162
+#: assets/src/js/views/thread.js:168
 msgid "Enter to save · Esc to cancel"
 msgstr ""
 
-#: assets/src/js/views/thread.js:238
+#: assets/src/js/views/thread.js:244
 msgid "That message is no longer here."
 msgstr ""
 

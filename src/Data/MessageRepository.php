@@ -122,10 +122,11 @@ final class MessageRepository extends Repository {
 	}
 
 	/**
-	 * Members a message mentions: [ { id, name } ] (the name as typed).
+	 * Who a message mentions: [ { id, name } ] for a member, [ { agent, name } ]
+	 * for an agent (1.3.0); the name as typed.
 	 *
 	 * @param array<string, mixed> $row Database row.
-	 * @return list<array{id: int, name: string}>
+	 * @return list<array<string, int|string>>
 	 */
 	public static function mentions( array $row ): array {
 		$list = json_decode( (string) ( $row['mentions'] ?? '[]' ), true );
@@ -135,6 +136,11 @@ final class MessageRepository extends Repository {
 				$out[] = array(
 					'id'   => (int) $m['id'],
 					'name' => (string) $m['name'],
+				);
+			} elseif ( is_array( $m ) && isset( $m['agent'], $m['name'] ) ) {
+				$out[] = array(
+					'agent' => (string) $m['agent'],
+					'name'  => (string) $m['name'],
 				);
 			}
 		}

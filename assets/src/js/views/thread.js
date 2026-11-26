@@ -142,6 +142,12 @@ export function wireThread( o ) {
 			input.value = '@' + p.name + ' ' + input.value.replace( /^\s+/, '' );
 			o.composer().mention( p.id );
 		}
+		// Replying to an agent asks it again (1.3.0).
+		const a = m.agent ? S.agents.find( ( x ) => x.key === m.agent ) : null;
+		if ( a && ! input.value.toLowerCase().includes( '@' + a.name.toLowerCase() ) ) {
+			input.value = '@' + a.name + ' ' + input.value.replace( /^\s+/, '' );
+			o.composer().mentionAgent( a.key );
+		}
 		input.focus();
 		input.setSelectionRange( input.value.length, input.value.length );
 	}

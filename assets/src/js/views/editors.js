@@ -22,7 +22,7 @@ import { write, keepTask, stopTracking } from './actions.js';
 import { toast } from '../lib/ui.js';
 import {
 	store, me, people, person, projects, task, project, has, commentsOf, myRun, avatar, COLORS, STATUSES, PRIORITIES, fmt, iso, todayISO, size, byOrder, votesHTML,
-	canEditTask, canEditOwn, canDecide,
+	canEditTask, canEditOwn, canDecide, agentAvatar,
 } from './model.js';
 
 /* ---------- comments ---------- */
@@ -52,7 +52,7 @@ export function msgHTML( m, q, opts ) {
 				: `<a class="nw-fchip" href="${ url }" download>${ ic( 'file' ) }<span class="nw-fn">${ esc( f.name ) }</span><small>${ esc( size( f.size ) ) }</small>${ ic( 'download-simple', 16 ) }</a>`;
 		} )
 		.join( '' );
-	const av = agent ? `<span class="nw-avatar" title="${ esc( name ) }" style="--nw-c:var(--nw-c-${ esc( agent.color ) });--nw-ci:var(--nw-ci-${ esc( agent.color ) })">${ ic( 'sparkle', 13 ) }</span>` : avatar( m.by );
+	const av = agent ? agentAvatar( m.agent ) : avatar( m.by );
 	const edited = m.editedAt ? `<span class="nw-edited">${ esc( __( 'edited', 'novawork' ) ) }</span>` : '';
 	return `<div class="nw-msg" data-mid="${ Number( m.id ) }" data-kind="${ kindOf( m ) }">${ av }<div class="nw-mwho">${ esc( name ) }<time>${ esc( when ) }</time>${ edited }</div>${ quoteHTML( m ) }${
 		m.text ? `<div class="nw-txt">${ richText( m, q || '' ) }</div>` : ''
@@ -154,6 +154,16 @@ export const personOpts = ( sel, none ) =>
 	people()
 		.map( ( p ) => `<option data-person value="${ p.id }"${ p.id === Number( sel ) ? ' selected' : '' }>${ esc( p.name ) }</option>` )
 		.join( '' );
+
+/** "Who decides": members, then the agents add-ons registered (1.3.0). */
+const deciderOpts = ( d ) =>
+	personOpts( d.ownerAgent ? -1 : d.ownerId, __( 'Anyone', 'novawork' ) ) +
+	store()
+		.agents.map( ( a ) => `<option data-agent="${ esc( a.key ) }" value="agent:${ esc( a.key ) }"${ a.key === d.ownerAgent ? ' selected' : '' }>${ esc( a.name ) }</option>` )
+		.join( '' );
+
+/** The "Who decides" value as the API takes it: a member's id or "agent:key". */
+const ownerFields = ( value ) => ( value.startsWith( 'agent:' ) ? { ownerId: 0, ownerAgent: value.slice( 6 ) } : { ownerId: Number( value ) || 0, ownerAgent: '' } );
 
 const swatches = ( name, sel ) =>
 	'<div class="nw-swatches">' +
@@ -376,7 +386,7 @@ export async function vote( id, key ) {
  */
 export function openDecision( id, decideNow ) {
 	const S = store();
-	const d = id ? S.decisions[ id ] : { question: '', context: '', projectId: 0, ownerId: me(), decideBy: '', status: 'open', answer: '', voting: false, options: [], votes: {} };
+	const d = id ? S.decisions[ id ] : { question: '', context: '', projectId: 0, ownerId: me(), ownerAgent: '', decideBy: '', status: 'open', answer: '', voting: false, options: [], votes: {} };
 	if ( ! d ) {
 		return;
 	}
@@ -395,7 +405,7 @@ export function openDecision( id, decideNow ) {
 			`<div class="nw-two"><div class="nw-field"><label for="nw-d-p">${ L( __( 'Project', 'novawork' ) ) }</label><select id="nw-d-p" data-nw-sel data-block="1" name="projectId">${ projOpts( d.projectId ) }</select></div><div class="nw-field"><label for="nw-d-by">${ L(
 				__( 'Decide by', 'novawork' )
 			) }</label><input class="nw-input" id="nw-d-by" type="date" name="decideBy" value="${ esc( d.decideBy || '' ) }"></div></div>` +
-			`<div class="nw-field"><label for="nw-d-own">${ L( __( 'Who decides', 'novawork' ) ) }</label><select id="nw-d-own" data-nw-sel data-block="1" name="ownerId">${ personOpts( d.ownerId, __( 'Anyone', 'novawork' ) ) }</select></div>` +
+			`<div class="nw-field"><label for="nw-d-own">${ L( __( 'Who decides', 'novawork' ) ) }</label><select id="nw-d-own" data-nw-sel data-block="1" name="ownerId">${ deciderOpts( d ) }</select></div>` +
 			( ! decideNow && S.settings.decisionVotes !== false
 				? `<label class="nw-checkline"><input type="checkbox" name="voting" value="1" id="nw-d-vote"${ d.voting ? ' checked' : '' }> ${ L( __( 'Ask the team to vote', 'novawork' ) ) }</label>` +
 				  `<div class="nw-field" id="nw-d-opts"${ d.voting ? '' : ' hidden' }><label for="nw-d-ol">${ L( __( 'Options, one per line', 'novawork' ) ) }</label><textarea class="nw-input" id="nw-d-ol" name="options" maxlength="1000" placeholder="${ L(
@@ -437,7 +447,7 @@ export function openDecision( id, decideNow ) {
 				context: String( fd.get( 'context' ) || '' ),
 				projectId: Number( fd.get( 'projectId' ) || 0 ),
 				decideBy: String( fd.get( 'decideBy' ) || '' ),
-				ownerId: Number( fd.get( 'ownerId' ) || 0 ),
+				...ownerFields( String( fd.get( 'ownerId' ) || '0' ) ),
 			};
 			if ( ! data.question ) {
 				return false;

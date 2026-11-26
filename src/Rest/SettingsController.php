@@ -66,21 +66,8 @@ final class SettingsController extends Controller {
 	 * @phpstan-param WP_REST_Request<array<string, mixed>> $request
 	 */
 	public function save( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$sent   = (array) $request->get_param( 'values' );
-		$clean  = array();
-		$errors = array();
-		foreach ( $sent as $key => $value ) {
-			$key = (string) $key;
-			if ( ! isset( Settings::SCHEMA[ $key ] ) ) {
-				continue;
-			}
-			$value = Settings::clean( $key, $value );
-			if ( is_wp_error( $value ) ) {
-				$errors[ $key ] = $value->get_error_message();
-			} else {
-				$clean[ $key ] = $value;
-			}
-		}
+		// NovaWork's own settings only: an add-on stores its own (1.3.0).
+		list( $clean, $errors ) = Settings::clean_values( (array) $request->get_param( 'values' ), array_keys( Settings::SCHEMA ) );
 		if ( $errors ) {
 			return new WP_Error(
 				'novawork_invalid_settings',

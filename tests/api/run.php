@@ -1162,6 +1162,217 @@ try {
 	}
 
 	// ------------------------------------------------------------------
+	$t->section( 'Extension points: the write API (1.3.0)' );
+	$ext_settings = get_option( NovaWork\Settings::OPTION, false );
+	update_option( NovaWork\Settings::OPTION, array( 'decide_rule' => 'named', 'edit_rule' => 'own' ) );
+	$agent_filter = static fn( $a ) => array_merge( (array) $a, array( array( 'key' => 'helper', 'name' => 'Helper', 'color' => 'teal' ) ) );
+	add_filter( 'novawork_agents', $agent_filter );
+	$heard = array( 'message' => array(), 'comment' => array(), 'note' => array(), 'agent' => array(), 'assigned' => array() );
+	$on_message  = static function ( $m ) use ( &$heard ) { $heard['message'][] = $m; };
+	$on_comment  = static function ( $c ) use ( &$heard ) { $heard['comment'][] = $c; };
+	$on_note     = static function ( $ext_n, $u ) use ( &$heard ) { $heard['note'][] = array( 'note' => $ext_n, 'user' => $u ); };
+	$on_agent    = static function ( $k, $kind, $ext_row ) use ( &$heard ) { $heard['agent'][] = array( $k, $kind, (int) $ext_row['id'] ); };
+	$on_assigned = static function ( $d, $o, $a ) use ( &$heard ) { $heard['assigned'][] = array( (int) $d['id'], $o, $a ); };
+	add_action( 'novawork_message_created', $on_message );
+	add_action( 'novawork_comment_created', $on_comment );
+	add_action( 'novawork_notification_created', $on_note, 10, 2 );
+	add_action( 'novawork_agent_mentioned', $on_agent, 10, 3 );
+	add_action( 'novawork_decision_assigned', $on_assigned, 10, 3 );
+	// A closure, not an arrow function: it must read $heard as it is now.
+	$notes_for = static function ( int $user, string $type, string $object_type, int $object_id ) use ( &$heard ): array {
+		return array_values( array_filter( $heard['note'], fn( $h ) => $user === $h['user'] && $type === $h['note']['type'] && $object_type === $h['note']['objectType'] && $object_id === $h['note']['objectId'] ) );
+	};
+
+	list( , $ext_task ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Ship the extension points', 'assignees' => array( $admin ) ) );
+	list( , $ext_floor ) = $t->call( $alex, 'GET', '/sync' );
+	wp_set_current_user( 0 ); // The write API never depends on who is signed in.
+	$ext_am = NovaWork\Api::post_message( 'helper', 'Morning @Sam, /Ship the extension points is next.', array( 'mentions' => array( $sam ), 'refs' => array( array( 'type' => 'task', 'id' => $ext_task['id'] ) ) ) );
+	$t->ok( is_array( $ext_am ) && 'helper' === $ext_am['agent'] && 0 === $ext_am['by'], 'an agent posts in chat', $ext_am );
+	$t->ok( array( array( 'id' => $sam, 'name' => get_userdata( $sam )->display_name ) ) === $ext_am['mentions'] && 'Ship the extension points' === ( $ext_am['refs'][0]['label'] ?? '' ), 'its mentions and /links are kept as for a member', $ext_am );
+	$t->ok( 1 === count( $heard['message'] ) && 'helper' === $heard['message'][0]['agent'], 'novawork_message_created fires once, with the agent' );
+	list( , $ext_after ) = $t->call( $alex, 'GET', '/sync', array( 'since' => $ext_floor['cursor'] ) );
+	$t->ok( in_array( $ext_am['id'], array_column( $ext_after['data']['messages'] ?? array(), 'id' ), true ), 'open apps get it on their next poll (change log)' );
+	$t->ok( 1 === count( $notes_for( $sam, 'mention', 'message', $ext_am['id'] ) ) && 'helper' === $notes_for( $sam, 'mention', 'message', $ext_am['id'] )[0]['note']['agent'], 'the mentioned member gets a mention from the agent' );
+	$t->ok( 1 === count( $notes_for( $alex, 'chat', 'message', $ext_am['id'] ) ), 'every other member gets the chat notification' );
+	$t->ok( 1 === count( $notes_for( $admin, 'link', 'task', $ext_task['id'] ) ) && 'helper' === $notes_for( $admin, 'link', 'task', $ext_task['id'] )[0]['note']['agent'], 'a linked task’s assignee gets a link, through the same writer' );
+	foreach ( array( array( 'nobody', 'an unknown agent' ), array( (string) $sam, 'a user id passed as text' ) ) as list( $ext_who, $ext_label ) ) {
+		$ext_bad = NovaWork\Api::post_message( $ext_who, 'Hi' );
+		$t->ok( is_wp_error( $ext_bad ) && 'novawork_bad_author' === $ext_bad->get_error_code(), $ext_label . ' can’t write' );
+	}
+	$ext_bad = NovaWork\Api::post_message( (int) $outsider, 'Hi' );
+	$t->ok( is_wp_error( $ext_bad ) && 'novawork_bad_author' === $ext_bad->get_error_code() && 400 === $ext_bad->get_error_data()['status'], 'a non-member can’t write' );
+	$ext_bad = NovaWork\Api::post_message( 'helper', '   ' );
+	$t->ok( is_wp_error( $ext_bad ) && 'novawork_required' === $ext_bad->get_error_code(), 'an empty message is refused' );
+	$ext_bad = NovaWork\Api::post_message( 'helper', str_repeat( 'x', 2001 ) );
+	$t->ok( is_wp_error( $ext_bad ) && 'novawork_too_long' === $ext_bad->get_error_code(), 'a message over 2000 characters is refused' );
+	$ext_bad = NovaWork\Api::post_message( 'helper', '<b>Bold</b> move' );
+	$t->ok( is_array( $ext_bad ) && 'Bold move' === $ext_bad['text'], 'text is stored plain' );
+	$ext_mm = NovaWork\Api::post_message( $alex, 'From an add-on, as Alex' );
+	$t->ok( is_array( $ext_mm ) && $alex === $ext_mm['by'] && '' === $ext_mm['agent'] && NovaWork\Data\ReadState::get( $alex ) === $ext_mm['id'], 'a member author: their own message, read by them' );
+	$ext_count = count( $heard['message'] );
+	list( $s, $ext_rm ) = $t->call( $sam, 'POST', '/messages', array( 'text' => 'Through REST' ) );
+	$t->ok( 201 === $s && $sam === $ext_rm['by'] && $ext_count + 1 === count( $heard['message'] ), 'POST /messages takes the same path (one hook)' );
+
+	$ext_ac = NovaWork\Api::post_comment( 'helper', 'task', $ext_task['id'], 'Looks ready to me.' );
+	$t->ok( is_array( $ext_ac ) && 'helper' === $ext_ac['agent'] && 'task' === $ext_ac['objectType'], 'an agent comments on a task', $ext_ac );
+	$t->ok( 1 === count( $heard['comment'] ) && 1 === count( $notes_for( $alex, 'comment', 'task', $ext_task['id'] ) ), 'novawork_comment_created fires; the task’s people are told' );
+	list( , $ext_other ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Another task' ) );
+	$ext_other = NovaWork\Api::post_comment( $alex, 'task', $ext_other['id'], 'Elsewhere' );
+	$ext_re    = NovaWork\Api::post_comment( 'helper', 'task', $ext_task['id'], 'A reply', array( 'replyTo' => $ext_other['id'] ) );
+	$t->ok( 0 === $ext_re['replyTo'], 'a reply to a comment on another task is not kept' );
+	$ext_bad = NovaWork\Api::post_comment( 'helper', 'task', 999999, 'Hi' );
+	$t->ok( is_wp_error( $ext_bad ) && 404 === $ext_bad->get_error_data()['status'], 'a comment on a missing task → not found' );
+	$ext_bad = NovaWork\Api::post_comment( 'helper', 'project', $ext_task['id'], 'Hi' );
+	$t->ok( is_wp_error( $ext_bad ) && 'novawork_not_found' === $ext_bad->get_error_code(), 'only tasks and decisions take comments' );
+
+	$ext_count = count( $heard['note'] );
+	$ext_nid   = NovaWork\Api::notify( $sam, 'reminder', array( 'title' => 'Stand-up' ), 'helper', array( 'objectType' => 'task', 'objectId' => $ext_task['id'], 'dedupeKey' => 'reminder:1' ) );
+	$ext_row   = ( new NovaWork\Data\NotificationRepository() )->find( $ext_nid );
+	$t->ok( $ext_nid > 0 && 'reminder' === $ext_row['type'] && 'helper' === $ext_row['agent'] && 'task' === $ext_row['object_type'], 'notify() writes an add-on’s own kind', $ext_row );
+	$t->ok( $ext_count + 1 === count( $heard['note'] ) && $sam === end( $heard['note'] )['user'] && 'reminder' === end( $heard['note'] )['note']['type'], 'novawork_notification_created fires with the note and its recipient' );
+	$t->ok( 0 === NovaWork\Api::notify( $sam, 'reminder', array(), 'helper', array( 'dedupeKey' => 'reminder:1' ) ) && $ext_count + 1 === count( $heard['note'] ), 'a repeat of a dedupe key writes nothing and fires nothing' );
+	$t->ok( 0 === NovaWork\Api::notify( (int) $outsider, 'reminder' ) && 0 === NovaWork\Api::notify( $sam, '!!!' ) && 0 === NovaWork\Api::notify( $sam, 'reminder', array(), 'nobody' ), 'non-members, empty kinds and unknown authors get nothing' );
+	list( , $ext_snap ) = $t->call( $sam, 'GET', '/sync' );
+	$t->ok( in_array( $ext_nid, array_column( $ext_snap['data']['notifications'], 'id' ), true ), 'it reaches the member’s bell through sync' );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Extension points: agents in mentions (1.3.0)' );
+	$heard['agent'] = array();
+	list( , $ext_q1 ) = $t->call( $alex, 'POST', '/messages', array( 'text' => '@Helper what is due?', 'agents' => array( 'helper' ), 'mentions' => array() ) );
+	$t->ok( array( array( 'agent' => 'helper', 'name' => 'Helper' ) ) === $ext_q1['mentions'], 'an agent whose "@Name" is in the text is kept', $ext_q1['mentions'] );
+	$t->ok( array( array( 'helper', 'message', $ext_q1['id'] ) ) === $heard['agent'], 'novawork_agent_mentioned fires with the key, "message" and the row' );
+	list( , $ext_q2 ) = $t->call( $alex, 'POST', '/messages', array( 'text' => 'No mention here', 'agents' => array( 'helper' ) ) );
+	list( , $ext_q3 ) = $t->call( $alex, 'POST', '/messages', array( 'text' => '@Ghost hello', 'agents' => array( 'ghost' ) ) );
+	$t->ok( array() === $ext_q2['mentions'] && array() === $ext_q3['mentions'] && 1 === count( $heard['agent'] ), 'not in the text, or not registered: dropped, and nothing fires' );
+	list( $s ) = $t->call( $alex, 'POST', '/messages', array( 'text' => 'x', 'agents' => array_fill( 0, 6, 'helper' ) ) );
+	$t->ok( 400 === $s, 'at most five agents per message', $s );
+	list( , $ext_qc ) = $t->call( $alex, 'POST', '/comments', array( 'objectType' => 'task', 'objectId' => $ext_task['id'], 'text' => '@Helper thoughts?', 'agents' => array( 'helper' ) ) );
+	$t->ok( array( 'helper', 'comment', $ext_qc['id'] ) === end( $heard['agent'] ), 'in a comment, it fires with "comment"' );
+	$ext_n = count( $heard['agent'] );
+	$t->call( $alex, 'PATCH', '/messages/' . $ext_q2['id'], array( 'text' => 'Now asking @Helper', 'agents' => array( 'helper' ) ) );
+	$t->ok( $ext_n + 1 === count( $heard['agent'] ), 'an edit that adds the mention fires once' );
+	$t->call( $alex, 'PATCH', '/messages/' . $ext_q2['id'], array( 'text' => 'Now asking @Helper again', 'agents' => array( 'helper' ) ) );
+	$t->ok( $ext_n + 1 === count( $heard['agent'] ), 'an edit that keeps it does not fire again' );
+	$ext_self = NovaWork\Api::post_message( 'helper', 'Note from @Helper to the team', array( 'agents' => array( 'helper' ) ) );
+	$t->ok( 1 === count( $ext_self['mentions'] ) && $ext_n + 1 === count( $heard['agent'] ), 'an agent mentioning itself never hears about it' );
+	list( , $ext_both ) = $t->call( $alex, 'POST', '/messages', array( 'text' => '@Sam and @Helper', 'mentions' => array( $sam ), 'agents' => array( 'helper' ) ) );
+	$t->ok( 2 === count( $ext_both['mentions'] ) && 1 === count( $notes_for( $sam, 'mention', 'message', $ext_both['id'] ) ), 'members and agents together; the member is still told' );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Extension points: the app and sync (1.3.0)' );
+	list( , $ext_plain ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( array() === $ext_plain['addons'], 'with no add-on, sync carries an empty "addons"' );
+	$sync_filter = static fn( $a, $u, $full ) => array_merge( (array) $a, array( 'demo' => array( 'user' => $u, 'full' => $full ) ) );
+	add_filter( 'novawork_sync', $sync_filter, 10, 3 );
+	list( , $ext_s1 ) = $t->call( $alex, 'GET', '/sync' );
+	list( , $ext_s2 ) = $t->call( $alex, 'GET', '/sync', array( 'since' => $ext_s1['cursor'] ) );
+	$t->ok( array( 'user' => $alex, 'full' => true ) === $ext_s1['addons']['demo'] && array( 'user' => $alex, 'full' => false ) === $ext_s2['addons']['demo'], 'novawork_sync adds data for the member polling, on full and partial answers' );
+	remove_filter( 'novawork_sync', $sync_filter, 10 );
+	$boot_filter = static fn( $a, $u ) => array_merge( (array) $a, array( 'demo' => array( 'user' => $u ) ) );
+	add_filter( 'novawork_boot', $boot_filter, 10, 2 );
+	wp_set_current_user( $alex );
+	$ext_boot = NovaWork\App\Page::boot();
+	$t->ok( array( 'demo' => array( 'user' => $alex ) ) === (array) $ext_boot['addons'] && isset( $ext_boot['restUrl'], $ext_boot['sync'] ), 'novawork_boot adds data under window.novawork.addons, never over core keys' );
+	remove_filter( 'novawork_boot', $boot_filter, 10 );
+	wp_enqueue_script( 'nw-test-earlier', 'https://example.invalid/earlier.js', array(), '1', true );
+	$ext_enqueue = static function () {
+		wp_enqueue_script( 'nw-test-addon', 'https://example.invalid/addon.js', array( NovaWork\App\Assets::SCRIPT ), '1', true );
+		wp_script_add_data( 'nw-test-addon', 'novawork_module', true );
+		wp_enqueue_style( 'nw-test-addon', 'https://example.invalid/addon.css', array(), '1' );
+	};
+	add_action( 'novawork_app_enqueue', $ext_enqueue );
+	NovaWork\App\Assets::enqueue_addons();
+	$t->ok( array( NovaWork\App\Assets::SCRIPT, 'nw-test-addon' ) === NovaWork\App\Assets::scripts() && in_array( 'nw-test-addon', NovaWork\App\Assets::styles(), true ), 'novawork_app_enqueue: what an add-on enqueues there prints after the app' );
+	$t->ok( ! in_array( 'nw-test-earlier', NovaWork\App\Assets::scripts(), true ), 'nothing enqueued elsewhere leaks into the app' );
+	$t->ok( str_contains( NovaWork\App\Assets::as_module( '<script src="a.js"></script>', 'nw-test-addon' ), 'type="module"' ) && ! str_contains( NovaWork\App\Assets::as_module( '<script src="a.js"></script>', 'nw-test-earlier' ), 'type="module"' ), 'a script marked novawork_module loads as a module; others don’t' );
+	remove_action( 'novawork_app_enqueue', $ext_enqueue );
+	wp_dequeue_script( 'nw-test-addon' );
+	wp_dequeue_script( 'nw-test-earlier' );
+	wp_dequeue_style( 'nw-test-addon' );
+	NovaWork\App\Assets::enqueue_addons();
+	$t->ok( array( NovaWork\App\Assets::SCRIPT ) === NovaWork\App\Assets::scripts(), 'without an add-on, only the app prints' );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Extension points: settings (1.3.0)' );
+	$schema_filter = static fn( $r ) => array_merge(
+		(array) $r,
+		array(
+			'demo_limit'   => array( 'type' => 'int', 'min' => 1, 'max' => 9 ),
+			'demo_mode'    => array( 'type' => 'choice', 'choices' => array( 'a', 'b' ) ),
+			'poll_seconds' => array( 'type' => 'text', 'max' => 3 ),
+			'demo_broken'  => 'not a rule',
+		)
+	);
+	add_filter( 'novawork_settings_schema', $schema_filter );
+	$t->ok( 9 === NovaWork\Settings::clean( 'demo_limit', 50 ) && 'b' === NovaWork\Settings::clean( 'demo_mode', 'b' ), 'an add-on’s rules are checked by Settings::clean()' );
+	$t->ok( 'int' === NovaWork\Settings::schema()['poll_seconds']['type'] && ! isset( NovaWork\Settings::schema()['demo_broken'] ), 'NovaWork’s own rules can’t be replaced; a malformed rule is ignored' );
+	list( $ext_ok, $ext_errs ) = NovaWork\Settings::clean_values( array( 'demo_limit' => 'x', 'demo_mode' => 'a', 'demo_unknown' => 1 ) );
+	$t->ok( array( 'demo_mode' => 'a' ) === $ext_ok && array( 'demo_limit' ) === array_keys( $ext_errs ), 'clean_values() returns clean values and errors by name, skipping unknown names', array( $ext_ok, $ext_errs ) );
+	list( $ext_ok ) = NovaWork\Settings::clean_values( array( 'demo_mode' => 'a', 'poll_seconds' => 5 ), array( 'demo_mode' ) );
+	$t->ok( array( 'demo_mode' => 'a' ) === $ext_ok, 'and can be limited to some names' );
+	list( $s ) = $t->call( $admin, 'POST', '/settings', array( 'values' => array( 'demo_mode' => 'a', 'poll_seconds' => 5 ) ) );
+	$ext_stored = (array) get_option( NovaWork\Settings::OPTION, array() );
+	$t->ok( 200 === $s && ! isset( $ext_stored['demo_mode'] ) && 5 === ( $ext_stored['poll_seconds'] ?? null ), 'POST /settings saves NovaWork’s settings only; an add-on stores its own', $ext_stored );
+	remove_filter( 'novawork_settings_schema', $schema_filter );
+	update_option( NovaWork\Settings::OPTION, array( 'decide_rule' => 'named', 'edit_rule' => 'own' ) );
+	NovaWork\App\Assets::register_admin();
+	$t->ok( 'novawork-admin' === NovaWork\App\Assets::ADMIN_STYLE && wp_style_is( NovaWork\App\Assets::ADMIN_STYLE, 'registered' ), 'the settings screen’s style is a public handle, "novawork-admin"' );
+	$t->ok( has_action( 'admin_enqueue_scripts', array( NovaWork\App\Assets::class, 'register_admin' ) ) && is_callable( array( NovaWork\Admin\SettingsPage::class, 'enqueue_styles' ) ), 'registered on every admin screen, with enqueue_styles() for an add-on page' );
+
+	// ------------------------------------------------------------------
+	$t->section( 'Extension points: decisions that name an agent (1.3.0)' );
+	$t->ok( 9 === Schema::VERSION && (int) get_option( NovaWork\Install\Installer::VERSION_OPTION ) >= 9, 'schema version 9 is installed' );
+	$t->ok( array( 'owner_agent' ) === $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', Db::table( 'decisions' ), 'owner_agent' ) ), 'decisions have an owner_agent column' );
+	$heard['assigned'] = array();
+	list( $s, $ext_ad ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Which launch date?', 'ownerAgent' => 'helper', 'ownerId' => $sam ) );
+	$t->ok( 201 === $s && 'helper' === $ext_ad['ownerAgent'] && 0 === $ext_ad['ownerId'], 'a decision can name an agent; naming one clears the person', $ext_ad );
+	$t->ok( array( array( $ext_ad['id'], 0, 'helper' ) ) === $heard['assigned'], 'novawork_decision_assigned fires when it is opened with a decider' );
+	list( $s, $ext_err ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Q', 'ownerAgent' => 'ghost' ) );
+	$t->ok( 400 === $s && 'novawork_bad_agent' === $ext_err['code'], 'an unknown agent → 400', $ext_err );
+	list( , $ext_plain_d ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Plain', 'ownerId' => $sam ) );
+	$t->ok( '' === $ext_plain_d['ownerAgent'], 'a person-named decision has an empty ownerAgent' );
+	$ext_row = ( new NovaWork\Data\DecisionRepository() )->find( $ext_ad['id'] );
+	$t->ok( ! NovaWork\Access\Capabilities::can_decide( $ext_row, $sam ) && NovaWork\Access\Capabilities::can_decide( $ext_row, $alex ) && NovaWork\Access\Capabilities::can_decide( $ext_row, $admin ), 'the person who opened it records it, and administrators; not other members' );
+	list( $s, $ext_err ) = $t->call( $sam, 'POST', '/decisions/' . $ext_ad['id'] . '/decide', array( 'answer' => 'Monday.' ) );
+	$t->ok( 403 === $s && str_contains( $ext_err['message'], get_userdata( $alex )->display_name ), 'another member gets a 403 that names who records it', $ext_err );
+	$t->ok( ! NovaWork\Access\Capabilities::can_decide( $ext_row, 0, 'helper' ), 'an agent can’t record a decision by default' );
+	$let_agent = static fn( $allowed, $d, $u, $a ) => 'helper' === $a ? true : $allowed;
+	add_filter( 'novawork_can_decide', $let_agent, 10, 4 );
+	$t->ok( NovaWork\Access\Capabilities::can_decide( $ext_row, 0, 'helper' ), 'novawork_can_decide lets an add-on allow it' );
+	remove_filter( 'novawork_can_decide', $let_agent, 10 );
+	$t->ok( array( $alex ) === NovaWork\Services\Notifier::deciders( $ext_row, true ), 'the person who opened it is the one told' );
+	NovaWork\Api::post_comment( $sam, 'decision', $ext_ad['id'], 'My vote: Monday' );
+	$t->ok( 1 === count( $notes_for( $alex, 'comment', 'decision', $ext_ad['id'] ) ), 'a comment on it notifies the person who opened it' );
+	$ext_orphan_id = ( new NovaWork\Data\DecisionRepository() )->insert( array( 'question' => 'Left behind', 'owner_agent' => 'helper', 'created_by' => (int) $outsider, 'decide_by' => wp_date( 'Y-m-d' ) ) );
+	$ext_orphan    = ( new NovaWork\Data\DecisionRepository() )->find( $ext_orphan_id );
+	$ext_admins    = array_values( array_filter( NovaWork\Members::ids(), fn( $id ) => user_can( $id, NovaWork\Access\Capabilities::MANAGE ) ) );
+	$t->ok( $ext_admins === NovaWork\Services\Notifier::deciders( $ext_orphan, true ) && ! NovaWork\Access\Capabilities::can_decide( $ext_orphan, $alex ) && NovaWork\Access\Capabilities::can_decide( $ext_orphan, $admin ), 'once the opener is no longer a member, administrators record it (owner, 2026-11-26)' );
+	$ext_ad_due = ( new NovaWork\Data\DecisionRepository() )->insert( array( 'question' => 'Due today', 'owner_agent' => 'helper', 'created_by' => $alex, 'decide_by' => wp_date( 'Y-m-d' ) ) );
+	NovaWork\Services\Notifier::check_due( true );
+	$t->ok( 1 === count( $notes_for( $alex, 'decision', 'decision', $ext_ad_due ) ) && ! $notes_for( $sam, 'decision', 'decision', $ext_ad_due ), 'the decide-by reminder goes to the person who opened it' );
+	$t->ok( $notes_for( $admin, 'decision', 'decision', $ext_orphan_id ) && ! $notes_for( $sam, 'decision', 'decision', $ext_orphan_id ), 'and to the administrators once that person is gone' );
+	$heard['assigned'] = array();
+	list( , $ext_p1d ) = $t->call( $alex, 'PATCH', '/decisions/' . $ext_ad['id'], array( 'ownerId' => $sam, 'ownerAgent' => '' ) );
+	$t->ok( $sam === $ext_p1d['ownerId'] && '' === $ext_p1d['ownerAgent'] && array( array( $ext_ad['id'], $sam, '' ) ) === $heard['assigned'], 'naming a person clears the agent, and fires decision_assigned' );
+	$t->call( $alex, 'PATCH', '/decisions/' . $ext_ad['id'], array( 'ownerId' => $sam, 'question' => 'Which launch date, really?' ) );
+	$t->ok( 1 === count( $heard['assigned'] ), 'a save that keeps the decider does not fire it' );
+	list( , $ext_p2d ) = $t->call( $alex, 'PATCH', '/decisions/' . $ext_ad['id'], array( 'ownerAgent' => 'helper' ) );
+	$t->ok( 0 === $ext_p2d['ownerId'] && 'helper' === $ext_p2d['ownerAgent'] && 2 === count( $heard['assigned'] ), 'naming the agent again clears the person' );
+	remove_filter( 'novawork_agents', $agent_filter );
+	$ext_row = ( new NovaWork\Data\DecisionRepository() )->find( $ext_ad['id'] );
+	$t->ok( NovaWork\Access\Capabilities::can_decide( $ext_row, $sam ) && NovaWork\Members::ids() === NovaWork\Services\Notifier::deciders( $ext_row, true ), 'an agent no longer registered counts as no one named: never stuck' );
+	list( , $ext_gone ) = $t->call( $alex, 'GET', '/sync' );
+	$t->ok( array() === $ext_gone['agents'], 'without the add-on, no agents are listed' );
+	foreach ( array( 'novawork_message_created' => $on_message, 'novawork_comment_created' => $on_comment, 'novawork_notification_created' => $on_note, 'novawork_agent_mentioned' => $on_agent, 'novawork_decision_assigned' => $on_assigned ) as $ext_hook => $ext_fn ) {
+		remove_action( $ext_hook, $ext_fn, 10 );
+	}
+	if ( false === $ext_settings ) {
+		delete_option( NovaWork\Settings::OPTION );
+	} else {
+		update_option( NovaWork\Settings::OPTION, $ext_settings );
+	}
+
+	// ------------------------------------------------------------------
 	$t->section( 'Removing a member' );
 	$t->call( $alex, 'PATCH', '/tasks/' . $due['id'], array( 'assignees' => array( $sam, $alex ) ) );
 	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $due['id'] ) );
