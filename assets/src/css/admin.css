@@ -202,7 +202,7 @@
 .nw-admin .nw-shead-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 @media (min-width: 783px) { .nw-admin .nw-shead-acts { flex: none; flex-wrap: nowrap; } }
 .nw-admin .nw-pro-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-/* The Pro gradient, as on the landing page: a thin border and the sparkle. */
+/* The Pro gradient, as on the landing page: a thin border and the crown. */
 .nw-admin .nw-pro-btn { border: 1.5px solid transparent; background: linear-gradient(var(--nw-surface), var(--nw-surface)) padding-box, linear-gradient(100deg, #f08a3c, #e0559a 40%, #8b6cf0 72%, #2065f5) border-box; box-shadow: 0 1px 2px rgb(29 25 25 / .06), 0 4px 14px -8px rgb(224 85 154 / .55); transition: transform .15s ease, box-shadow .15s ease; }
 .nw-admin .nw-pro-btn:hover { box-shadow: 0 1px 2px rgb(29 25 25 / .06), 0 6px 18px -8px rgb(139 108 240 / .7); filter: none; }
 .nw-admin .nw-pro-spark .nw-ic { fill: url(#nw-pro-grad); }
@@ -212,11 +212,13 @@ html:has(.nw-pro-dlg[open]) { overflow: hidden; }
 .nw-admin .nw-pro-in { position: relative; padding: 28px 28px 22px; }
 .nw-admin .nw-pro-x { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 9px; background: transparent; color: var(--nw-muted); cursor: pointer; }
 .nw-admin .nw-pro-x:hover, .nw-admin .nw-pro-x:focus-visible { background: var(--nw-field); color: var(--nw-fg); }
-/* The header: a soft band of the Pro colours, the sparkle on a white tile. */
+/* The header: a soft band of the Pro colours, the crown on a white tile. */
 .nw-admin .nw-pro-hero { display: flex; align-items: center; gap: 14px; margin: -28px -28px 12px; padding: 30px 56px 18px 28px; border-radius: 18px 18px 0 0; background: radial-gradient(70% 120% at 0% 0%, rgb(240 138 60 / .28), transparent 60%), radial-gradient(60% 120% at 45% 0%, rgb(224 85 154 / .22), transparent 62%), radial-gradient(70% 130% at 100% 0%, rgb(32 101 245 / .24), transparent 62%); }
 .nw-admin .nw-pro-mark { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: var(--nw-surface); box-shadow: 0 1px 2px rgb(29 25 25 / .06), 0 10px 24px -12px rgb(139 108 240 / .65); }
-.nw-admin .nw-pro-hero h2 { margin: 0; }
 .nw-admin .nw-pro-dlg h2 { margin: 0 0 6px; padding: 0; font: 700 20px/1.25 var(--nw-font-head); letter-spacing: -.02em; color: var(--nw-fg); }
+/* In the header the title sits on the tile's centre line: no bottom margin, and the crown's lighter top lifts it 1px, so it comes down 1px. */
+.nw-admin .nw-pro-hero h2 { margin: 0; text-wrap: balance; }
+.nw-admin .nw-pro-mark svg { transform: translateY(1px); }
 .nw-admin .nw-pro-lead { margin: 0 0 14px; color: var(--nw-muted); font-size: 13.5px; line-height: 1.5; }
 .nw-admin .nw-pro-list { display: grid; gap: 26px; margin: 0 0 20px; padding: 0; list-style: none; }
 .nw-admin .nw-pro-list li { display: flex; align-items: flex-start; gap: 12px; margin: 0; color: var(--nw-fg); font-size: 13.5px; line-height: 1.45; }

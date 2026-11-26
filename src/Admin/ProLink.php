@@ -38,6 +38,26 @@ final class ProLink {
 	 */
 	public static function register(): void {
 		add_filter( 'plugin_action_links_' . plugin_basename( NOVAWORK_FILE ), array( self::class, 'action_links' ) );
+		add_action( 'admin_enqueue_scripts', array( self::class, 'plugins_style' ) );
+	}
+
+	/**
+	 * On the Plugins screen, the link in NovaWork's orange and bold (owner,
+	 * 2026-11-26), scoped to NovaWork's row so nothing else changes.
+	 *
+	 * @param string $hook_suffix Hook suffix from admin_enqueue_scripts.
+	 */
+	public static function plugins_style( $hook_suffix ): void {
+		if ( 'plugins.php' !== $hook_suffix || ! current_user_can( Capabilities::MANAGE ) ) {
+			return;
+		}
+		wp_register_style( 'novawork-plugins', false, array(), NOVAWORK_VERSION );
+		wp_enqueue_style( 'novawork-plugins' );
+		wp_add_inline_style(
+			'novawork-plugins',
+			'.plugins tr[data-slug="novawork"] .row-actions .novawork_pro a{color:#f34f35;font-weight:700}'
+			. '.plugins tr[data-slug="novawork"] .row-actions .novawork_pro a:hover,.plugins tr[data-slug="novawork"] .row-actions .novawork_pro a:focus{color:#c7321a}'
+		);
 	}
 
 	/**

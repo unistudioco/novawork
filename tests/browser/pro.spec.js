@@ -26,6 +26,10 @@ test( 'the Pro waitlist dialog opens only on a click, links out, and closes', as
 		await btn.click();
 		await expect( dlg ).toHaveAttribute( 'open', '' );
 		await expect( dlg.locator( 'h2' ) ).toHaveText( 'NovaWork Pro is on its way' );
+		// The Pro mark is the filled crown (crown-simple), in the button and the dialog.
+		const crown = 'path[d^="M239.75,90.81"]';
+		await expect( btn.locator( '.nw-pro-spark ' + crown ) ).toHaveCount( 1 );
+		await expect( dlg.locator( '.nw-pro-mark ' + crown ) ).toHaveCount( 1 );
 		const join = dlg.locator( 'a.nw-primary' );
 		await expect( join ).toHaveAttribute( 'href', 'https://novawork.unistudio.co/pro-waitlist/' );
 		await expect( join ).toHaveAttribute( 'target', '_blank' );
@@ -60,6 +64,10 @@ test( 'the Plugins screen shows the Pro waitlist link on NovaWork\'s row', async
 		await expect( link ).toHaveAttribute( 'href', 'https://novawork.unistudio.co/pro-waitlist/' );
 		await expect( link ).toHaveAttribute( 'target', '_blank' );
 		await expect( link ).toContainText( 'Pro waitlist' );
+		// NovaWork's orange, bold, on its own row only.
+		await expect( link ).toHaveCSS( 'color', 'rgb(243, 79, 53)' );
+		await expect( link ).toHaveCSS( 'font-weight', '700' );
+		await expect( page.locator( 'tr[data-slug="novawork"] .row-actions .deactivate a' ) ).not.toHaveCSS( 'color', 'rgb(243, 79, 53)' );
 	} finally {
 		await context.close();
 	}
