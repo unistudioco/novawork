@@ -2,7 +2,7 @@
 # Run the official Plugin Check against exactly what ships: the release zip.
 #
 # Builds the zip with bin/build-zip.sh (assets, .distignore, production-only
-# Composer autoloader), unpacks it and checks that copy, so dev files such as
+# Composer autoloader), unpacks it into a temporary folder and checks that copy, so dev files such as
 # phpcs.xml.dist never show up as false errors and nothing that ships is
 # skipped. Plugin Check exits 0 even when it reports errors, so this script
 # reads the results and fails on any ERROR row.
@@ -28,10 +28,15 @@ bash "$ROOT/bin/build-zip.sh" "$@"
 ZIP=$(ls -t "$ROOT"/build/novawork-*.zip | head -1)
 
 OUT="$ROOT/build/check"
-COPY="$OUT/novawork"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-unzip -q "$ZIP" -d "$OUT"
+# The copy goes in a fresh folder outside the repository: a Finder window (or
+# Quick Look) showing build/ writes .DS_Store files into the folders it shows,
+# and Plugin Check then reports a hidden file the zip never contained.
+UNPACKED="$(mktemp -d)"
+trap 'rm -rf "$UNPACKED"' EXIT
+COPY="$UNPACKED/novawork"
+unzip -q "$ZIP" -d "$UNPACKED"
 
 REPORT="$OUT/report.csv"
 "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin check "$COPY" --slug=novawork \
