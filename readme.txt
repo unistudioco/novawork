@@ -185,6 +185,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * Fix: activity from a moment offline now reaches your other devices once you're back.
 * Fix: in chat and comments, the Reply, Edit and Delete buttons no longer cover the end of a message's first line, so a /link there can always be clicked.
 * Fix: the bell keeps its tooltip while it shows how many notifications are unread.
+* Fix: the “Who does” menu on a subtask stays open while the task updates in the background.
 
 = 1.1.0 =
 * New: install the workspace as an app on phones, tablets and computers, with the workspace icon and its own window, and a calm offline page. Setting: Installable app.

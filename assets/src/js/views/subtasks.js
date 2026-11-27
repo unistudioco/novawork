@@ -65,15 +65,30 @@ function rowHTML( s ) {
 		`<button class="nw-iconbtn nw-xs nw-subtask-x" type="button" data-sub="remove" aria-label="${ esc( sprintf( /* translators: %s: subtask. */ __( 'Remove %s', 'novawork' ), s.title ) ) }">${ ic( 'x', 14 ) }</button></li>`;
 }
 
-function draw() {
+/**
+ * Draw the checklist.
+ *
+ * @param {boolean} [always] Redraw even when the rows are the same (after
+ *                           your own action, e.g. a cancelled rename).
+ *                           Changes arriving with sync pass false: a poll
+ *                           that brings the task back unchanged (your own
+ *                           change echoed, a teammate editing its notes)
+ *                           must not rebuild the rows, which would close an
+ *                           open "Who does" menu.
+ */
+function draw( always = true ) {
 	const ul = document.getElementById( 'nw-subtasks' );
 	if ( ! ul || ! current || current.editing ) {
 		return;
 	}
 	const list = items();
 	const done = list.filter( ( s ) => s.done ).length;
-	ul.innerHTML = list.map( rowHTML ).join( '' );
-	enhance( ul );
+	const html = list.map( rowHTML ).join( '' );
+	if ( always || html !== ul.dataset.drawn ) {
+		ul.dataset.drawn = html;
+		ul.innerHTML = html;
+		enhance( ul );
+	}
 	const field = ul.closest( '.nw-subtasks-field' );
 	field.querySelector( '.nw-subtasks-count' ).textContent = list.length ? ' · ' + done + '/' + list.length : '';
 	const bar = field.querySelector( '.nw-subtasks-bar' );
@@ -352,7 +367,7 @@ export function wireSubtasks( id, readOnly = false ) {
 				queueMicrotask( () => Alpine.release( fx ) );
 				return;
 			}
-			draw();
+			draw( false );
 		} );
 	}
 }
