@@ -1320,6 +1320,39 @@ try {
 	$t->ok( has_action( 'admin_enqueue_scripts', array( NovaWork\App\Assets::class, 'register_admin' ) ) && is_callable( array( NovaWork\Admin\SettingsPage::class, 'enqueue_styles' ) ), 'registered on every admin screen, with enqueue_styles() for an add-on page' );
 
 	// ------------------------------------------------------------------
+	$t->section( 'Extension points: an add-on’s Vite bundle and page kit (1.3.0)' );
+	// NovaWork's own build stands in for an add-on's: the same layout.
+	$ext_manifest = json_decode( (string) file_get_contents( NOVAWORK_PATH . 'assets/dist/manifest.json' ), true );
+	$ext_built    = $ext_manifest['js/settings.js'];
+	NovaWork\App\Assets::register_bundle( 'nw-test-bundle', array( 'path' => NOVAWORK_PATH, 'url' => 'https://example.test/addon/', 'entry' => 'js/settings.js', 'domain' => 'nw-test', 'deps' => array( 'wp-api-fetch' ) ) );
+	$ext_script = wp_scripts()->registered['nw-test-bundle'] ?? null;
+	$ext_style  = wp_styles()->registered['nw-test-bundle'] ?? null;
+	$t->ok( $ext_script && 'https://example.test/addon/assets/dist/' . $ext_built['file'] === $ext_script->src && array( 'wp-i18n', 'wp-api-fetch' ) === $ext_script->deps, 'register_bundle(): the script from the manifest, wp-i18n added to its dependencies', $ext_script );
+	$t->ok( $ext_style && 'https://example.test/addon/assets/dist/' . $ext_built['css'][0] === $ext_style->src, 'and its CSS under the same handle' );
+	$t->ok( str_contains( NovaWork\App\Assets::as_module( '<script src="b.js"></script>', 'nw-test-bundle' ), 'type="module"' ), 'it loads as an ES module' );
+	$t->ok( 'nw-test' === $ext_script->textdomain && NOVAWORK_PATH . 'languages' === $ext_script->translations_path, 'its strings use the add-on’s text domain and languages folder' );
+	$ext_lang = WP_LANG_DIR . '/plugins/nw-test-xx_XX-' . md5( 'assets/src/js/settings.js' ) . '.json';
+	wp_mkdir_p( dirname( $ext_lang ) );
+	file_put_contents( $ext_lang, $jed( 'assets/src/js/settings.js', array( 'Save' => array( 'Xsave' ) ) ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Test fixture.
+	$ext_locale = static fn() => 'xx_XX';
+	add_filter( 'determine_locale', $ext_locale );
+	$ext_tr = json_decode( (string) NovaWork\App\Translations::load( null, false, 'nw-test-bundle', 'nw-test' ), true );
+	$t->ok( array( 'Xsave' ) === ( $ext_tr['locale_data']['messages']['Save'] ?? null ), 'its translations load from its sources in i18n.json, under its own domain' );
+	$t->ok( null === NovaWork\App\Translations::load( null, false, 'nw-test-bundle', 'novawork' ), 'another domain on the same handle is left to WordPress' );
+	remove_filter( 'determine_locale', $ext_locale );
+	wp_delete_file( $ext_lang );
+	NovaWork\App\Assets::register_bundle( 'nw-test-dev', array( 'path' => NOVAWORK_PATH, 'url' => 'https://example.test/addon/', 'entry' => 'js/settings.js', 'dev' => 'http://localhost:9999/' ) );
+	$ext_dev = wp_scripts()->registered['nw-test-dev'] ?? null;
+	$t->ok( $ext_dev && 'http://localhost:9999/js/settings.js' === $ext_dev->src && in_array( 'nw-test-dev-vite', $ext_dev->deps, true ) && wp_scripts()->get_data( 'nw-test-dev-vite', 'novawork_module' ), 'with a dev server, the entry and the Vite client load from it' );
+	NovaWork\App\Assets::register_admin();
+	$ext_kit = wp_scripts()->registered[ NovaWork\App\Assets::ADMIN_KIT ] ?? null;
+	$t->ok( 'novawork-admin-kit' === NovaWork\App\Assets::ADMIN_KIT && $ext_kit && str_contains( (string) $ext_kit->src, 'admin-kit' ) && wp_scripts()->get_data( NovaWork\App\Assets::ADMIN_KIT, 'novawork_module' ), 'the add-on page kit is a public handle, "novawork-admin-kit", registered with the settings bundle' );
+	foreach ( array( 'nw-test-bundle', 'nw-test-dev', 'nw-test-dev-vite' ) as $ext_h ) {
+		wp_deregister_script( $ext_h );
+		wp_deregister_style( $ext_h );
+	}
+
+	// ------------------------------------------------------------------
 	$t->section( 'Extension points: decisions that name an agent (1.3.0)' );
 	$t->ok( 9 === Schema::VERSION && (int) get_option( NovaWork\Install\Installer::VERSION_OPTION ) >= 9, 'schema version 9 is installed' );
 	$t->ok( array( 'owner_agent' ) === $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', Db::table( 'decisions' ), 'owner_agent' ) ), 'decisions have an owner_agent column' );

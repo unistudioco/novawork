@@ -23,6 +23,12 @@ if [[ -n "${NOVAWORK_WP_PATH:-}" ]]; then
 fi
 TMP="$(mktemp -d)"
 trap 'rm -r "$TMP"' EXIT
+# NovaWork alone: plugins that require it are off for this run and back on
+# at the end, even when it fails (bin/addons.sh).
+if [[ -n "${NOVAWORK_WP_PATH:-}" ]]; then
+	bash "$ROOT/bin/addons.sh" off
+	trap 'rm -r "$TMP"; bash "$ROOT/bin/addons.sh" on' EXIT
+fi
 pass=0; fail=0
 ok() { if [[ "$1" == "$2" ]]; then echo "  ✓ $3"; pass=$((pass+1)); else echo "  ✗ $3 (got: $1, want: $2)"; fail=$((fail+1)); fi; }
 json() { python3 -I -c "import json,sys; d=json.load(sys.stdin); print(eval(sys.argv[1], {'d': d}))" "$1"; }

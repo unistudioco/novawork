@@ -48,3 +48,58 @@ JS
 		wp_enqueue_style( 'novawork-test-addon' );
 	}
 );
+
+// A page under the NovaWork menu built with the settings screen's look and
+// the add-on page kit (1.3.0). A classic inline script runs before the kit's
+// module, so it waits for nw:admin-ready.
+add_action(
+	'admin_menu',
+	static function () {
+		$hook = add_submenu_page( 'novawork-settings', 'Test add-on page', 'Test add-on', 'novawork_manage', 'novawork-test-addon', 'novawork_test_addon_page' );
+		add_action(
+			'admin_enqueue_scripts',
+			static function ( $suffix ) use ( $hook ) {
+				if ( $suffix !== $hook ) {
+					return;
+				}
+				NovaWork\Admin\SettingsPage::enqueue_styles();
+				wp_register_script( 'novawork-test-addon-page', false, array( 'novawork-admin-kit' ), '1', true );
+				wp_add_inline_script(
+					'novawork-test-addon-page',
+					<<<'JS'
+window.addEventListener( 'nw:admin-ready', ( e ) => {
+	const kit = e.detail;
+	window.nwTestAddonPage = { keys: Object.keys( kit ).sort(), same: kit === window.novawork.admin };
+	kit.Alpine.data( 'nwTestPage', () => ( {
+		pick: 'b',
+		init() {
+			this.$nextTick( () => kit.enhance( this.$root ) );
+		},
+		icon: ( name ) => kit.icf( name, 18 ),
+		hello() {
+			kit.toast( 'Kit toast works' );
+		},
+	} ) );
+} );
+JS
+				);
+				wp_enqueue_script( 'novawork-test-addon-page' );
+			}
+		);
+	},
+	30
+);
+
+function novawork_test_addon_page() {
+	?>
+	<div class="wrap nw-admin" id="nw-test-page" x-data="nwTestPage">
+		<section class="nw-scard" aria-labelledby="nw-t-card">
+			<h3 id="nw-t-card"><span x-html="icon('sparkle')"></span> Test add-on page</h3>
+			<div class="nw-srow"><div class="nw-srow-l"><label class="nw-slabel" for="nw-t-pick">Pick</label></div><div class="nw-srow-c">
+				<select id="nw-t-pick" data-nw-sel data-block="1" x-model="pick"><option value="a">First</option><option value="b">Second</option></select>
+			</div></div>
+			<p><button type="button" class="nw-btn nw-primary" id="nw-t-hello" @click="hello()">Say hello</button> <span id="nw-t-picked" x-text="pick"></span></p>
+		</section>
+	</div>
+	<?php
+}

@@ -1,7 +1,8 @@
 /**
  * Extension points for add-ons (1.3.0): the app tells add-ons it is ready,
  * a header button, a team menu row, a notification kind, data on boot and
- * sync, agents in @mentions and in "Who decides". Uses the test add-on in
+ * sync, agents in @mentions and in "Who decides", and a page under the
+ * NovaWork menu built with the settings look and kit. Uses the test add-on in
  * tests/fixtures (a must-use plugin, linked for this file only and gated by
  * an option), and checks that nothing changes without it.
  */
@@ -176,5 +177,32 @@ test( '"Who decides" can name an agent; the person who opened it records it', as
 	await expect( cardB.locator( '[data-act="decide"]' ) ).toHaveCount( 0 );
 	await ctxB.close();
 	await cleanUp( page );
+	await ctx.close();
+} );
+
+test( 'an add-on page under the NovaWork menu gets the settings look and the page kit', async ( { browser } ) => {
+	addon( true );
+	const base = process.env.NOVAWORK_URL || 'http://novawork.local';
+	const [ user, pass ] = ( process.env.NOVAWORK_ADMIN || 'admin:admin' ).split( ':' );
+	const ctx = await browser.newContext( { viewport: { width: 1366, height: 900 } } );
+	await ctx.addCookies( [ { name: 'wordpress_test_cookie', value: 'WP Cookie check', url: base } ] );
+	await ctx.request.post( base + '/wp-login.php', { form: { log: user, pwd: pass, testcookie: '1' }, maxRedirects: 0 } );
+	const page = await ctx.newPage();
+	await page.goto( base + '/wp-admin/admin.php?page=novawork-test-addon' );
+	await page.waitForFunction( () => !! window.nwTestAddonPage );
+	expect( await page.evaluate( () => window.nwTestAddonPage ) ).toEqual( { keys: [ 'Alpine', 'enhance', 'ic', 'icf', 'toast' ], same: true } );
+	// The settings screen's look: body class, card, NovaWork's icons.
+	await expect( page.locator( 'body' ) ).toHaveClass( /nw-admin-screen/ );
+	await expect( page.locator( '#nw-test-page .nw-scard h3 svg.nw-ic' ) ).toHaveCount( 1 );
+	expect( await page.locator( '#nw-test-page .nw-scard' ).evaluate( ( el ) => getComputedStyle( el ).borderTopLeftRadius ) ).not.toBe( '0px' );
+	// Alpine runs the page; the native select becomes NovaWork's dropdown.
+	await expect( page.locator( '#nw-t-picked' ) ).toHaveText( 'b' );
+	await expect( page.locator( '#nw-t-pick' ) ).toHaveClass( /nw-vh/ );
+	await page.click( '#nw-t-pick + .nw-sel .nw-sel-btn' );
+	await page.locator( '.nw-sel-menu [role="option"]', { hasText: 'First' } ).click();
+	await expect( page.locator( '#nw-t-picked' ) ).toHaveText( 'a' );
+	await page.click( '#nw-t-hello' );
+	await expect( page.locator( '.nw-toasts .nw-toast', { hasText: 'Kit toast works' } ) ).toBeVisible();
+	await page.screenshot( { path: 'build/browser/addon-page.png' } );
 	await ctx.close();
 } );

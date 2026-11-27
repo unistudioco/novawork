@@ -198,6 +198,12 @@ Decisions can name an agent in "Who decides" (`ownerAgent`): the agent gives its
 
 A page under the NovaWork menu can look like NovaWork's settings: call `NovaWork\Admin\SettingsPage::enqueue_styles()` on `admin_enqueue_scripts` for that screen and put the page inside `class="nw-admin"`. The style handle is `novawork-admin`.
 
+For its behaviour, make the page's script depend on `novawork-admin-kit` (`Assets::ADMIN_KIT`). The kit fires `nw:admin-ready` on `window` and keeps the same object at `window.novawork.admin`: `Alpine` (register your `x-data` with `Alpine.data()`; Alpine starts once the page has loaded), `toast( message, icon )`, `ic` and `icf`, and `enhance( root )`, which turns each `select[data-nw-sel]` under `root` into NovaWork's dropdown.
+
+### Your own Vite build (1.3.0)
+
+An add-on built like NovaWork (Vite root `assets/src`, output `assets/dist` with `manifest.json`) registers each entry with `NovaWork\App\Assets::register_bundle( $handle, array( 'path' => …, 'url' => …, 'entry' => 'js/addon.js', 'domain' => 'your-domain', 'deps' => array(), 'dev' => '' ) )`: the script loads as an ES module, its CSS under the same handle, and its strings get their translations. For those, add NovaWork's `vite-i18n-map.js` plugin to your Vite config (it writes `assets/dist/i18n.json`) and keep the JSON files in your `languages` folder. With `dev` set to a Vite dev server, the entry loads from it.
+
 ### Team feed
 
 Add rows with `NovaWork\Services\Activity::record()`.
@@ -229,6 +235,8 @@ Requirements: WordPress 6.4+ and PHP 8.1+. Desktop alerts and installing the app
 2. Copy `.dev.env.example` to `.dev.env` and fill in the site path, MySQL socket and test users (`alex` and `sam`, both NovaWork members).
 3. `npm ci && composer install`, then `npm run dev` (with `NOVAWORK_DEV_SERVER` in wp-config.php) or `npm run build`.
 4. `bash bin/seed-dev.sh` fills an empty workspace with a generic demo studio.
+
+The tests check NovaWork alone: plugins that require NovaWork are switched off for the HTTP and browser runs and back on at the end, and skipped by the API tests (`bin/addons.sh`; if a run is interrupted, `bash bin/addons.sh on` switches them back on).
 
 The gates every change passes:
 

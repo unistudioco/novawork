@@ -20,6 +20,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * During development, define NOVAWORK_DEV_SERVER (e.g. 'http://localhost:5175')
  * in wp-config.php and run `npm run dev` to load from Vite with hot reload.
+ *
+ * register_bundle() does this for any plugin built the same way, NovaWork's
+ * own bundles included (1.3.0).
  */
 final class Assets {
 
@@ -47,6 +50,13 @@ final class Assets {
 	public const ADMIN_STYLE  = 'novawork-admin';
 
 	/**
+	 * Tools for an add-on's page under the NovaWork menu (assets/src/js/admin-kit.js).
+	 *
+	 * @since 1.3.0
+	 */
+	public const ADMIN_KIT = 'novawork-admin-kit';
+
+	/**
 	 * Satoshi and Supreme from Fontshare's own CDN. The ITF Free Font Licence
 	 * forbids redistributing the files, so they are never bundled. Disclosed
 	 * in readme.txt under "External services"; off in Settings means nothing
@@ -65,49 +75,107 @@ final class Assets {
 	);
 
 	/**
+	 * Vite manifests already read, by path.
+	 *
+	 * @var array<string, array<string, array<string, mixed>>>
+	 */
+	private static array $manifests = array();
+
+	/**
 	 * Register everything the app document prints.
 	 */
 	public static function register(): void {
-		$deps = array( 'wp-i18n' );
-		$dev  = self::dev_server();
-
-		if ( '' !== $dev ) {
-			wp_register_script( 'novawork-vite', $dev . '/@vite/client', array(), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
-			wp_register_script( self::SCRIPT, $dev . '/js/app.js', array_merge( $deps, array( 'novawork-vite' ) ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
-			wp_register_style( self::STYLE, false, array(), NOVAWORK_VERSION );
-		} else {
-			$entry = self::manifest()['js/app.js'] ?? array();
-			$base  = NOVAWORK_URL . 'assets/dist/';
-			wp_register_script( self::SCRIPT, $base . ( $entry['file'] ?? 'missing.js' ), $deps, null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
-			$css = (array) ( $entry['css'] ?? array() );
-			wp_register_style( self::STYLE, $css ? $base . $css[0] : false, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
-		}
-
+		self::register_bundle( self::SCRIPT, self::own( 'js/app.js' ) );
 		wp_register_style( self::FONTS, self::FONTS_URL, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Fontshare versions its own files.
-		wp_set_script_translations( self::SCRIPT, 'novawork', NOVAWORK_PATH . 'languages' );
-		add_filter( 'script_loader_tag', array( self::class, 'as_module' ), 10, 2 );
 	}
 
 	/**
-	 * Register the settings screen's bundle (from the dev server when
-	 * NOVAWORK_DEV_SERVER is set).
+	 * Register the settings screen's bundle and the add-on page kit (from the
+	 * dev server when NOVAWORK_DEV_SERVER is set). Runs on every admin screen.
 	 */
 	public static function register_admin(): void {
-		$dev = self::dev_server();
-		if ( '' !== $dev ) {
-			wp_register_script( 'novawork-vite', $dev . '/@vite/client', array(), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
-			wp_register_script( self::ADMIN_SCRIPT, $dev . '/js/settings.js', array( 'wp-i18n', 'novawork-vite' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
-			wp_register_style( self::ADMIN_STYLE, false, array(), NOVAWORK_VERSION );
-		} else {
-			$entry = self::manifest()['js/settings.js'] ?? array();
-			$base  = NOVAWORK_URL . 'assets/dist/';
-			wp_register_script( self::ADMIN_SCRIPT, $base . ( $entry['file'] ?? 'missing.js' ), array( 'wp-i18n' ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
-			$css = (array) ( $entry['css'] ?? array() );
-			wp_register_style( self::ADMIN_STYLE, $css ? $base . $css[0] : false, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
-		}
+		self::register_bundle( self::ADMIN_SCRIPT, self::own( 'js/settings.js' ) );
+		self::register_bundle( self::ADMIN_KIT, self::own( 'js/admin-kit.js' ) );
 		wp_register_style( self::FONTS, self::FONTS_URL, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Fontshare versions its own files.
-		wp_set_script_translations( self::ADMIN_SCRIPT, 'novawork', NOVAWORK_PATH . 'languages' );
-		add_filter( 'script_loader_tag', array( self::class, 'as_module' ), 10, 2 );
+	}
+
+	/**
+	 * Register a bundle built by Vite the way NovaWork's are: its script (an
+	 * ES module) and its CSS under one handle, with the script's translations.
+	 *
+	 * The plugin keeps its Vite root in assets/src and builds to assets/dist
+	 * with a manifest (build.manifest = 'manifest.json') and the i18n.json
+	 * that NovaWork's vite-i18n-map.js plugin writes; translations live in its
+	 * languages folder. Register on wp_enqueue_scripts, admin_enqueue_scripts
+	 * or novawork_app_enqueue, then enqueue the handle.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string               $handle Handle for the script and its style.
+	 * @param array<string, mixed> $args   {
+	 *     The bundle.
+	 *
+	 *     @type string   $path   The plugin's folder, from plugin_dir_path().
+	 *     @type string   $url    The plugin's URL, from plugin_dir_url().
+	 *     @type string   $entry  The entry, relative to assets/src: 'js/app.js'.
+	 *     @type string   $domain The text domain of the script's strings.
+	 *     @type string[] $deps   Other scripts it needs (wp-i18n is always added).
+	 *     @type string   $dev    A Vite dev server URL to load from instead of
+	 *                            the build, '' (the default) for the build.
+	 * }
+	 */
+	public static function register_bundle( string $handle, array $args ): void {
+		$path   = trailingslashit( (string) ( $args['path'] ?? '' ) );
+		$url    = trailingslashit( (string) ( $args['url'] ?? '' ) );
+		$entry  = ltrim( (string) ( $args['entry'] ?? '' ), '/' );
+		$domain = (string) ( $args['domain'] ?? '' );
+		$dev    = untrailingslashit( (string) ( $args['dev'] ?? '' ) );
+		$deps   = array_values( array_unique( array_merge( array( 'wp-i18n' ), array_map( 'strval', (array) ( $args['deps'] ?? array() ) ) ) ) );
+
+		if ( '' !== $dev ) {
+			$client = $handle . '-vite';
+			wp_register_script( $client, $dev . '/@vite/client', array(), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
+			wp_script_add_data( $client, 'novawork_module', true );
+			wp_register_script( $handle, $dev . '/' . $entry, array_merge( $deps, array( $client ) ), null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Dev server only.
+			wp_register_style( $handle, false, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- No file; inline styles can attach.
+			$name = pathinfo( $entry, PATHINFO_FILENAME );
+		} else {
+			$built = self::manifest( $path )[ $entry ] ?? array();
+			$base  = $url . 'assets/dist/';
+			wp_register_script( $handle, $base . ( $built['file'] ?? 'missing.js' ), $deps, null, array( 'in_footer' => true ) ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
+			$css   = array_values( array_map( 'strval', (array) ( $built['css'] ?? array() ) ) );
+			$extra = array();
+			foreach ( array_slice( $css, 1 ) as $i => $file ) {
+				$extra[] = $handle . '-' . ( $i + 1 );
+				wp_register_style( end( $extra ), $base . $file, array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
+			}
+			wp_register_style( $handle, $css ? $base . $css[0] : false, $extra, null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The file name carries a content hash.
+			$name = (string) ( $built['name'] ?? pathinfo( $entry, PATHINFO_FILENAME ) );
+		}
+		wp_script_add_data( $handle, 'novawork_module', true );
+		if ( '' !== $domain ) {
+			Translations::add( $handle, $name, $domain, $path );
+			wp_set_script_translations( $handle, $domain, $path . 'languages' );
+		}
+		if ( ! has_filter( 'script_loader_tag', array( self::class, 'as_module' ) ) ) {
+			add_filter( 'script_loader_tag', array( self::class, 'as_module' ), 10, 2 );
+		}
+	}
+
+	/**
+	 * NovaWork's own bundle arguments.
+	 *
+	 * @param string $entry Entry, relative to assets/src.
+	 * @return array<string, mixed>
+	 */
+	private static function own( string $entry ): array {
+		return array(
+			'path'   => NOVAWORK_PATH,
+			'url'    => NOVAWORK_URL,
+			'entry'  => $entry,
+			'domain' => 'novawork',
+			'dev'    => self::dev_server(),
+		);
 	}
 
 	/**
@@ -204,8 +272,7 @@ final class Assets {
 	 * @param string $handle Handle.
 	 */
 	public static function as_module( string $tag, string $handle ): string {
-		$ours = in_array( $handle, array( self::SCRIPT, self::ADMIN_SCRIPT, 'novawork-vite' ), true );
-		if ( ! $ours && ! wp_scripts()->get_data( $handle, 'novawork_module' ) ) {
+		if ( ! wp_scripts()->get_data( $handle, 'novawork_module' ) || str_contains( $tag, 'type="module"' ) ) {
 			return $tag;
 		}
 		return str_replace( '<script ', '<script type="module" ', $tag );
@@ -219,16 +286,17 @@ final class Assets {
 	}
 
 	/**
-	 * The Vite manifest.
+	 * A plugin's Vite manifest (assets/dist/manifest.json), read once.
 	 *
+	 * @param string $path The plugin's folder, with a trailing slash.
 	 * @return array<string, array<string, mixed>>
 	 */
-	private static function manifest(): array {
-		$path = NOVAWORK_PATH . 'assets/dist/manifest.json';
-		if ( ! is_readable( $path ) ) {
-			return array();
+	private static function manifest( string $path ): array {
+		if ( ! isset( self::$manifests[ $path ] ) ) {
+			$file                     = $path . 'assets/dist/manifest.json';
+			$json                     = is_readable( $file ) ? wp_json_file_decode( $file, array( 'associative' => true ) ) : null;
+			self::$manifests[ $path ] = is_array( $json ) ? $json : array();
 		}
-		$json = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- A local file inside the plugin.
-		return is_array( $json ) ? $json : array();
+		return self::$manifests[ $path ];
 	}
 }

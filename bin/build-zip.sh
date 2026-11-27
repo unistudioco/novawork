@@ -55,13 +55,27 @@ rm -f "$COPY/composer.lock"
 find "$COPY" -name .DS_Store -delete
 
 # What must ship.
-for f in novawork.php uninstall.php readme.txt LICENSE vendor/autoload.php assets/dist/manifest.json assets/dist/i18n.json assets/alerts-worker.js assets/app-worker.js assets/app-icons/shape.png assets/app-icons/flag.png assets/app-icons/icon-512.png languages/novawork.pot package.json vite.config.js assets/src/js/app.js; do
+for f in novawork.php uninstall.php readme.txt LICENSE vendor/autoload.php assets/dist/manifest.json assets/dist/i18n.json assets/alerts-worker.js assets/app-worker.js assets/app-icons/shape.png assets/app-icons/flag.png assets/app-icons/icon-512.png languages/novawork.pot package.json vite.config.js vite-i18n-map.js assets/src/js/app.js assets/src/js/admin-kit.js; do
 	[[ -e "$COPY/$f" ]] || fail "$f is missing from the release"
 done
 # What must never ship.
 for f in .git node_modules tests bin build test-results playwright-report CLAUDE.md HANDOFF.md .dev.env .distignore composer.lock vendor/bin vendor/phpstan vendor/squizlabs; do
 	[[ ! -e "$COPY/$f" ]] || fail "$f must not be in the release"
 done
+
+# The source ships with its build tools (guideline 4): the shipped
+# vite.config.js, with everything it imports, must build. Rebuild a scratch
+# copy of the release with this checkout's node_modules and compare entries.
+SCRATCH="$(mktemp -d)"
+trap 'rm -rf "$SCRATCH"' EXIT
+cp -R "$COPY" "$SCRATCH/novawork"
+ln -s "$ROOT/node_modules" "$SCRATCH/novawork/node_modules"
+(cd "$SCRATCH/novawork" && npx --no-install vite build --logLevel error) >/dev/null || fail "the shipped vite.config.js does not build"
+for f in manifest.json i18n.json; do
+	[[ -f "$SCRATCH/novawork/assets/dist/$f" ]] || fail "the shipped build tools did not write assets/dist/$f"
+done
+entries() { node -e 'const m=require(process.argv[1]);console.log(Object.keys(m).filter((k)=>m[k].isEntry).sort().join(" "))' "$1"; }
+[[ "$(entries "$SCRATCH/novawork/assets/dist/manifest.json")" == "$(entries "$COPY/assets/dist/manifest.json")" ]] || fail "the shipped build tools build different entries"
 
 (cd "$OUT" && zip -rqX "$ZIP" novawork)
 
