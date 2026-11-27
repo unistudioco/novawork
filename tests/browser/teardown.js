@@ -1,7 +1,9 @@
-// After the whole browser run: remove the team activity rows the tests made
-// (tasks and decisions they created and deleted still left feed entries).
-import { cleanActivity } from './helpers.js';
+// After the whole browser run: delete the test items a stopped or failed
+// test left behind, then the team activity rows the tests made (tasks and
+// decisions they created and deleted still left feed entries).
+import { cleanActivity, cleanLeftovers } from './helpers.js';
 
 export default function teardown() {
+	cleanLeftovers();
 	cleanActivity();
 }

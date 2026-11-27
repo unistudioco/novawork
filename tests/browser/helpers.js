@@ -69,7 +69,9 @@ export const unique = ( label ) => `E2E ${ label } ${ Date.now().toString( 36 ) 
 
 /**
  * Delete every task and decision a test run left behind ("E2E …"), even
- * when the test failed halfway. Runs in the page, through the API.
+ * when the test failed halfway. Runs in the page, through the API, so it
+ * deletes only what that member may delete; cleanLeftovers() (after the
+ * whole run) catches the rest.
  */
 export const cleanUp = ( page ) =>
 	page.evaluate( async () => {
@@ -120,6 +122,16 @@ export function appPath() {
 /** Remove chat messages a test sent (text containing "E2E "), with their files and notifications. */
 export const cleanChat = () =>
 	wpEval( `global $wpdb; $r = new NovaWork\\Data\\MessageRepository(); $n = new NovaWork\\Data\\NotificationRepository(); foreach ( $wpdb->get_col( $wpdb->prepare( "SELECT id FROM %i WHERE body LIKE %s", $r->table_name(), "%E2E %" ) ) as $id ) { $r->delete( (int) $id ); $n->delete_for_object( "message", (int) $id ); }` );
+
+/**
+ * Delete every task and decision still titled "E2E …", whoever made it, as
+ * an administrator through the API (a member's cleanUp() can't delete an
+ * administrator's task, and a run stopped halfway skips a test's finally).
+ */
+export const cleanLeftovers = () => {
+	const admin = ( process.env.NOVAWORK_ADMIN || 'admin:admin' ).split( ':' )[ 0 ];
+	return wpEval( `global $wpdb; $u = get_user_by( 'login', ${ JSON.stringify( admin ) } ); if ( ! $u ) { return; } wp_set_current_user( $u->ID ); foreach ( array( 'tasks' => 'title', 'decisions' => 'question' ) as $t => $col ) { foreach ( $wpdb->get_col( $wpdb->prepare( 'SELECT id FROM %i WHERE %i LIKE %s', NovaWork\\Data\\Db::table( $t ), $col, 'E2E %' ) ) as $id ) { rest_do_request( new WP_REST_Request( 'DELETE', '/novawork/v1/' . $t . '/' . (int) $id ) ); } }` );
+};
 
 /** Remove the team activity rows about test items ("E2E …" titles). */
 export const cleanActivity = () =>
