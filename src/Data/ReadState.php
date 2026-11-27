@@ -41,6 +41,7 @@ final class ReadState {
 	 */
 	public static function set( int $user_id, int $last_id, string $channel = 'chat' ): void {
 		global $wpdb;
+		$before = self::get( $user_id, $channel );
 		$wpdb->query(
 			$wpdb->prepare(
 				'INSERT INTO %i ( user_id, channel, last_read_id, updated_at ) VALUES ( %d, %s, %d, %s ) ON DUPLICATE KEY UPDATE last_read_id = GREATEST( last_read_id, VALUES( last_read_id ) ), updated_at = VALUES( updated_at )',
@@ -51,5 +52,19 @@ final class ReadState {
 				Db::now()
 			)
 		);
+		if ( $last_id > $before ) {
+			/**
+			 * Fires when a member's read position moves forward: they opened
+			 * the chat, read new messages, or posted one.
+			 *
+			 * @since 1.3.0
+			 *
+			 * @param int    $user_id The member.
+			 * @param int    $last_id The last message id they have read now.
+			 * @param int    $before  The last one they had read before (0 for none).
+			 * @param string $channel The channel ("chat").
+			 */
+			do_action( 'novawork_read_moved', $user_id, $last_id, $before, $channel );
+		}
 	}
 }

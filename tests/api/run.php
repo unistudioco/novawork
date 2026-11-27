@@ -1357,6 +1357,23 @@ try {
 	}
 
 	// ------------------------------------------------------------------
+	$t->section( 'Extension points: read positions (1.3.0)' );
+	$ext_moves = array();
+	$ext_move  = static function ( $user, $last, $before, $channel ) use ( &$ext_moves ) {
+		$ext_moves[] = array( $user, $last, $before, $channel );
+	};
+	add_action( 'novawork_read_moved', $ext_move, 10, 4 );
+	$ext_was = NovaWork\Data\ReadState::get( $sam );
+	NovaWork\Data\ReadState::set( $sam, $ext_was + 5 );
+	NovaWork\Data\ReadState::set( $sam, $ext_was + 2 );
+	NovaWork\Data\ReadState::set( $sam, $ext_was + 5 );
+	$t->ok( array( array( $sam, $ext_was + 5, $ext_was, 'chat' ) ) === $ext_moves, 'novawork_read_moved fires when a read position moves forward, with where it was; never for a step back or no move', $ext_moves );
+	$ext_moves = array();
+	list( $s, $ext_rm ) = $t->call( $sam, 'POST', '/messages', array( 'text' => 'Read position test' ) );
+	$t->ok( 201 === $s && 1 === count( $ext_moves ) && $ext_moves[0][1] === $ext_rm['id'] && $ext_moves[0][2] === $ext_was + 5, 'posting a message moves it too, and says where it was before', $ext_moves );
+	remove_action( 'novawork_read_moved', $ext_move, 10 );
+
+	// ------------------------------------------------------------------
 	$t->section( 'Extension points: decisions that name an agent (1.3.0)' );
 	$t->ok( 9 === Schema::VERSION && (int) get_option( NovaWork\Install\Installer::VERSION_OPTION ) >= 9, 'schema version 9 is installed' );
 	$t->ok( array( 'owner_agent' ) === $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', Db::table( 'decisions' ), 'owner_agent' ) ), 'decisions have an owner_agent column' );

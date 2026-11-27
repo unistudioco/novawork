@@ -163,6 +163,7 @@ Actions (`@since 1.0.0` unless noted):
 - `novawork_notification_created( array $note, int $user_id )` (1.3.0): a row was added to a member's bell (`$note` as the API presents it; not for a repeat a dedupe key stopped).
 - `novawork_agent_mentioned( string $agent_key, string $kind, array $row )` (1.3.0): a message (`$kind` "message") or comment ("comment") mentions an agent with "@Name"; on an edit only for newly mentioned agents, and never for an agent's own post.
 - `novawork_decision_assigned( array $decision, int $owner_id, string $owner_agent )` (1.3.0): a decision is opened with someone in "Who decides", or that changes.
+- `novawork_read_moved( int $user_id, int $last_id, int $before, string $channel )` (1.3.0): a member's read position in the chat moved forward (they opened it, read new messages, or posted one); `$before` is where it was.
 - `novawork_app_enqueue` (1.3.0): enqueue your scripts and styles on the workspace page. Only what is enqueued here is printed, after NovaWork's own; mark an ES-module build with `wp_script_add_data( $handle, 'novawork_module', true )`.
 
 Filters:
