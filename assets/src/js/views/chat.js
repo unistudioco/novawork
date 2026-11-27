@@ -16,6 +16,7 @@ import { enhance } from './select.js';
 import { msgHTML } from './editors.js';
 import { attachComposer } from './composer.js';
 import { wireThread } from './thread.js';
+import { watchThreadStatus } from '../lib/ext.js';
 import { multiline, fit } from '../lib/multiline.js';
 
 const $ = ( id ) => document.getElementById( id );
@@ -540,6 +541,7 @@ export function mountChat() {
 	} );
 	$( 'nw-msgs' ).addEventListener( 'click', thread.onClick );
 	$( 'nw-chat-reply' ).addEventListener( 'click', thread.onClick );
+	watchThreadStatus( $( 'nw-chat-status' ), 'chat' );
 	$( 'nw-chat-form' ).addEventListener( 'submit', ( e ) => {
 		e.preventDefault();
 		if ( ! composer.isOpen() ) {

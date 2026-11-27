@@ -39,6 +39,11 @@ window.addEventListener( 'nw:ready', ( e ) => {
 	app.addHeaderButton( { id: 'test', icon: 'bell-ringing', label: 'Test add-on', onClick: () => app.toast( 'Header button works' ), badge: () => !! ( app.store.addons.testaddon && app.store.addons.testaddon.flag ) } );
 	app.addMenuItem( { id: 'test', icon: 'sparkle', label: 'Test add-on row', onClick: () => app.toast( 'Menu row works' ) } );
 	app.addNoteKind( 'test_ping', { icon: 'bell-ringing', color: 'teal', text: ( n, h ) => h.b( h.who() ) + ' ' + h.esc( 'pinged you about' ) + ' ' + h.b( n.data.title || '' ) } );
+	// A toggle on the agent's messages and comments only.
+	const pressed = new Set();
+	app.addMessageAction( { id: 'test', icon: 'sparkle', label: 'Test action', when: ( m ) => m.agent === 'helper', pressed: ( m, kind ) => pressed.has( kind + ':' + m.id ), onClick: ( m, kind ) => { const k = kind + ':' + m.id; if ( pressed.has( k ) ) { pressed.delete( k ); } else { pressed.add( k ); } } } );
+	app.addPanel( { id: 'test', title: 'Test panel', render: ( body ) => { body.innerHTML = '<p id="nw-test-panel-text">Panel works</p>'; } } );
+	window.nwTestStatus = ( where, text ) => app.setThreadStatus( where, text );
 } );
 JS
 		);

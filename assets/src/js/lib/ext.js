@@ -3,10 +3,11 @@
  *
  * Once the app has started, it fires "nw:ready" on window. Its detail (also
  * kept at window.novawork.app for a script that runs later) holds the live
- * store, the API helpers, a few helpers for building markup, and three places
- * to add to: a header button, a row in the team menu and a notification
- * kind. Nothing is added unless an add-on asks, so the app looks exactly the
- * same without one.
+ * store, the API helpers, a few helpers for building markup, and the places
+ * to add to: a header button, a row in the team menu, a notification kind, a
+ * button on messages and comments, a status line under a thread, and a panel.
+ * Nothing is added unless an add-on asks, so the app looks exactly the same
+ * without one.
  */
 import { safeEffect } from './effect.js';
 import { ic, icf } from './icons.js';
@@ -14,8 +15,12 @@ import { esc } from './format.js';
 import { __, sprintf } from './i18n.js';
 import { get, post, patch, del, currentNonce } from './api.js';
 import { toast } from './ui.js';
+import { addPanel, openPanel } from './panel.js';
 
 const kinds = new Map();
+const actions = new Map();
+const statuses = new Map();
+const statusListeners = new Set();
 
 /** An icon from NovaWork's set by name, or an add-on's own SVG markup. */
 const iconOf = ( def, size ) => ( def.svg ? String( def.svg ) : ic( def.icon, size ) );
@@ -107,6 +112,107 @@ export function addMenuItem( def ) {
 }
 
 /**
+ * A button on chat messages and comments, after Reply / Edit / Delete (1.3.0).
+ *
+ * @param {Object}   def             Button.
+ * @param {string}   def.id          Unique id (letters, digits, - and _).
+ * @param {string}   def.label       Accessible name and tooltip.
+ * @param {string}   [def.icon]      Icon from NovaWork's set (fill weight when pressed), or:
+ * @param {string}   [def.svg]       The add-on's own SVG markup, and
+ * @param {string}   [def.svgPressed] its markup when pressed.
+ * @param {Function} [def.when]      ( item, kind ) → whether this message or comment
+ *                                   gets the button; kind is "message" or "comment".
+ * @param {Function} [def.pressed]   ( item, kind ) → whether it shows as pressed
+ *                                   (a toggle, with aria-pressed).
+ * @param {Function} def.onClick     ( item, kind ); the list redraws once it
+ *                                   returns (or its promise settles).
+ */
+export function addMessageAction( def ) {
+	const id = idOf( def && def.id );
+	if ( id && typeof def.onClick === 'function' && ! actions.has( id ) ) {
+		actions.set( id, def );
+	}
+}
+
+/** The buttons add-ons put on one message or comment. */
+export function messageActions( item, kind ) {
+	return [ ...actions.entries() ]
+		.filter( ( [ , def ] ) => ! def.when || def.when( item, kind ) )
+		.map( ( [ id, def ] ) => {
+			const pressed = def.pressed ? !! def.pressed( item, kind ) : null;
+			let icon;
+			if ( def.svg ) {
+				icon = String( pressed && def.svgPressed ? def.svgPressed : def.svg );
+			} else {
+				icon = pressed ? icf( def.icon, 15 ) : ic( def.icon, 15 );
+			}
+			return { id, label: String( def.label || '' ), icon, pressed };
+		} );
+}
+
+/** Run an add-on's button for a message or comment. */
+export const runMessageAction = ( id, item, kind ) => {
+	const def = actions.get( id );
+	return def ? Promise.resolve( def.onClick( item, kind ) ) : Promise.resolve();
+};
+
+/** The key of a thread: the team chat, or one object's comments. */
+const whereKey = ( where ) => ( where === 'chat' ? 'chat' : where && where.objectType && where.objectId ? `${ where.objectType }:${ Number( where.objectId ) }` : '' );
+
+/**
+ * A quiet status line above a thread's text field, such as "Helper is
+ * thinking…" (1.3.0). Text is set as text, never HTML; null clears it.
+ *
+ * @param {string|Object} where "chat", or { objectType, objectId } for comments.
+ * @param {string|null}   text  The line, or null.
+ */
+export function setThreadStatus( where, text ) {
+	const key = whereKey( where );
+	if ( ! key ) {
+		return;
+	}
+	const now = text ? String( text ) : '';
+	if ( ( statuses.get( key ) || '' ) === now ) {
+		return;
+	}
+	if ( now ) {
+		statuses.set( key, now );
+	} else {
+		statuses.delete( key );
+	}
+	statusListeners.forEach( ( fn ) => fn( key ) );
+}
+
+/** The status line of a thread ("chat" or "task:12"), or ''. */
+export const threadStatus = ( key ) => statuses.get( key ) || '';
+
+/** Draw a thread's status line into its element (hidden when there is none). */
+function paintStatus( el, key ) {
+	const text = threadStatus( key );
+	el.hidden = ! text;
+	el.innerHTML = text ? `<span class="nw-tdots" aria-hidden="true"><i></i><i></i><i></i></span><span>${ esc( text ) }</span>` : '';
+}
+
+/**
+ * Keep a status line element up to date (the chat and comment views). It
+ * stops once the element leaves the page.
+ *
+ * @param {HTMLElement} el  The element.
+ * @param {string}      key "chat", or "task:12" for an object's comments.
+ */
+export function watchThreadStatus( el, key ) {
+	paintStatus( el, key );
+	const fn = ( changed ) => {
+		if ( ! el.isConnected ) {
+			statusListeners.delete( fn );
+		} else if ( changed === key ) {
+			paintStatus( el, key );
+		}
+	};
+	statusListeners.add( fn );
+}
+
+/**
  * Tell add-ons the app is ready.
  *
  * @param {Object} store The live (Alpine) store.
@@ -124,6 +230,10 @@ export function announceReady( store ) {
 		addHeaderButton,
 		addMenuItem,
 		addNoteKind,
+		addMessageAction,
+		setThreadStatus,
+		addPanel,
+		openPanel,
 	} );
 	window.novawork = window.novawork || {};
 	window.novawork.app = app;

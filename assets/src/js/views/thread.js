@@ -23,6 +23,7 @@ import { plainText } from './rich.js';
 import { attachComposer } from './composer.js';
 import { multiline, isSendKey } from '../lib/multiline.js';
 import { deleteWithUndo } from './undo.js';
+import { messageActions, runMessageAction } from '../lib/ext.js';
 
 const KEY = { message: 'messages', comment: 'comments' };
 const PATH = { message: 'messages/', comment: 'comments/' };
@@ -89,14 +90,22 @@ export function quoteHTML( m ) {
 	return `<button type="button" class="nw-quote" data-tact="jump" data-to="${ Number( m.replyTo ) }" aria-label="${ esc( sprintf( /* translators: %s: a person's name. */ __( 'Go to the message from %s', 'novawork' ), authorName( o ) ) ) }">${ ic( 'arrow-bend-up-left', 13 ) }<b>${ esc( authorName( o ) ) }</b><span>${ esc( text ) }</span></button>`;
 }
 
-/** The small toolbar on a message (hover or focus on desktop, a tap on touch). */
+/**
+ * The small toolbar on a message (hover or focus on desktop, a tap on touch):
+ * Reply, Edit and Delete, then any add-on's buttons (1.3.0).
+ */
 export function actsHTML( m ) {
-	const btn = ( act, icon, label ) => `<button type="button" class="nw-iconbtn" data-tact="${ act }" aria-label="${ esc( label ) }" title="${ esc( label ) }">${ ic( icon, 15 ) }</button>`;
+	const btn = ( act, icon, label, pressed = null ) =>
+		`<button type="button" class="nw-iconbtn${ pressed ? ' nw-on' : '' }" data-tact="${ esc( act ) }" aria-label="${ esc( label ) }" title="${ esc( label ) }"${ null === pressed ? '' : ` aria-pressed="${ pressed ? 'true' : 'false' }"` }>${ icon }</button>`;
+	const extra = messageActions( m, kindOf( m ) )
+		.map( ( a ) => btn( 'x:' + a.id, a.icon, a.label, a.pressed ) )
+		.join( '' );
 	return (
 		`<div class="nw-msg-acts" role="toolbar" aria-label="${ esc( __( 'Message actions', 'novawork' ) ) }">` +
-		btn( 'reply', 'arrow-bend-up-left', __( 'Reply', 'novawork' ) ) +
-		( canEdit( m ) ? btn( 'edit', 'pencil-simple', __( 'Edit', 'novawork' ) ) : '' ) +
-		( canDelete( m ) ? btn( 'delete', 'trash', __( 'Delete', 'novawork' ) ) : '' ) +
+		btn( 'reply', ic( 'arrow-bend-up-left', 15 ), __( 'Reply', 'novawork' ) ) +
+		( canEdit( m ) ? btn( 'edit', ic( 'pencil-simple', 15 ), __( 'Edit', 'novawork' ) ) : '' ) +
+		( canDelete( m ) ? btn( 'delete', ic( 'trash', 15 ), __( 'Delete', 'novawork' ) ) : '' ) +
+		extra +
 		'</div>'
 	);
 }
@@ -294,6 +303,10 @@ export function wireThread( o ) {
 		}
 		e.preventDefault();
 		el.classList.remove( 'nw-acts-on' );
+		if ( act.startsWith( 'x:' ) ) {
+			runMessageAction( act.slice( 2 ), m, kind ).finally( () => o.redraw() );
+			return;
+		}
 		if ( act === 'reply' ) {
 			startReply( m );
 		} else if ( act === 'edit' ) {

@@ -125,6 +125,7 @@ defined( 'ABSPATH' ) || exit;
 	</div>
 	<div class="nw-msgs" id="nw-msgs"></div>
 	<form class="nw-composer" id="nw-chat-form">
+		<div class="nw-tstatus" id="nw-chat-status" role="status" aria-live="polite" hidden></div>
 		<div class="nw-replying" id="nw-chat-reply" hidden></div>
 		<div class="nw-pending" id="nw-pending"></div>
 		<div class="nw-line">

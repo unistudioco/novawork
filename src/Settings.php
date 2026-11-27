@@ -223,7 +223,8 @@ final class Settings {
 		 * settings are checked exactly like NovaWork's (see Settings::clean()
 		 * and Settings::clean_values()). Each rule is keyed by the setting's
 		 * name and has a "type": int (with min and max), bool, choice (with
-		 * choices), text (with max), types, image or color. Keys NovaWork
+		 * choices), text (one line, with max), textarea (several lines, with
+		 * max), types, image or color. Keys NovaWork
 		 * already uses are ignored. The add-on stores its own values.
 		 *
 		 * @since 1.3.0
@@ -291,6 +292,9 @@ final class Settings {
 				return in_array( $value, (array) $rule['choices'], true ) ? $value : new \WP_Error( 'novawork_bad_choice', __( 'Choose one of the options.', 'novawork' ) );
 			case 'text':
 				return mb_substr( sanitize_text_field( (string) $value ), 0, (int) $rule['max'] );
+			case 'textarea':
+				// Several lines (1.3.0): line breaks stay, tags and odd characters go.
+				return mb_substr( sanitize_textarea_field( (string) $value ), 0, (int) $rule['max'] );
 			case 'types':
 				$list = is_array( $value ) ? $value : preg_split( '/[\s,]+/', (string) $value );
 				$out  = array();

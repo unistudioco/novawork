@@ -177,7 +177,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 = 1.3.0 =
 * New for developers: extension points for add-ons. An add-on can post in chat, comment and notify as a member or as its own agent through one write API (NovaWork\Api), and hear about every new notification.
 * New for developers: agents registered by an add-on can be @mentioned in chat and comments, and named in a decision's "Who decides". The agent gives its advice; the person who opened the decision records it.
-* New for developers: an add-on can add a header button, a row in the team menu and its own notification kind, send data with the app's start and every sync, add its own settings checked like NovaWork's, and build its own page under the NovaWork menu with the settings screen's look and tools. An add-on built with Vite like NovaWork registers its scripts, styles and their translations in one call. All hooks are listed in the README on GitHub.
+* New for developers: an add-on can add a header button, a row in the team menu, its own notification kind, a button on messages and comments, a status line under a thread and its own panel, send data with the app's start and every sync, add its own settings checked like NovaWork's, and build its own page under the NovaWork menu with the settings screen's look and tools. An add-on built with Vite like NovaWork registers its scripts, styles and their translations in one call. All hooks are listed in the README on GitHub.
 * Changed: the Pro waitlist note now says what to expect: two emails at most, a quick vote on what ships first and one when Pro is ready.
 
 = 1.2.0 =

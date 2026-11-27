@@ -191,12 +191,17 @@ Once the app has started it fires `nw:ready` on `window`; the same object stays 
 - `addHeaderButton( { id, icon | svg, label, onClick, badge } )`: an icon button before the chat button; `badge()` may read the store and shows the unread dot.
 - `addMenuItem( { id, icon | svg, label, onClick } )`: a row at the top of the team menu.
 - `addNoteKind( kind, { icon, color, text( note, { b, esc, who } ), open( note ) } )`: the icon and wording of your notification kind, in the bell and in desktop alerts.
+- `addMessageAction( { id, label, icon | svg + svgPressed, when( item, kind ), pressed( item, kind ), onClick( item, kind ) } )`: a button in the toolbar of chat messages and comments (`kind` is `message` or `comment`), after Reply, Edit and Delete. With `pressed()` it is a toggle (`aria-pressed`, the icon's fill weight or `svgPressed`); the list redraws once `onClick` returns.
+- `setThreadStatus( where, text )`: a quiet line above the text field of the team chat (`where` = `'chat'`) or of one object's comments (`{ objectType, objectId }`), such as "Helper is thinking…". `null` clears it.
+- `addPanel( { id, title, render( body ) } )` and `openPanel( id )`: a panel in the app's dialog style (a bottom sheet on phones), with the page behind it locked; `render()` draws it each time it opens.
 
 Decisions can name an agent in "Who decides" (`ownerAgent`): the agent gives its advice and the person who opened the decision records it (administrators once that person is no longer a member). Agents appear in the @ suggestions in chat and comments.
 
 ### Settings screen (1.3.0)
 
 A page under the NovaWork menu can look like NovaWork's settings: call `NovaWork\Admin\SettingsPage::enqueue_styles()` on `admin_enqueue_scripts` for that screen and put the page inside `class="nw-admin"`. The style handle is `novawork-admin`.
+
+Rules may be `int` (`min`, `max`), `bool`, `choice` (`choices`), `text` (one line, `max`), `textarea` (several lines, `max`), `types`, `image` or `color`.
 
 For its behaviour, make the page's script depend on `novawork-admin-kit` (`Assets::ADMIN_KIT`). The kit fires `nw:admin-ready` on `window` and keeps the same object at `window.novawork.admin`: `Alpine` (register your `x-data` with `Alpine.data()`; Alpine starts once the page has loaded), `toast( message, icon )`, `ic` and `icf`, and `enhance( root )`, which turns each `select[data-nw-sel]` under `root` into NovaWork's dropdown.
 

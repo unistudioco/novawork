@@ -1,7 +1,8 @@
 /**
  * Extension points for add-ons (1.3.0): the app tells add-ons it is ready,
  * a header button, a team menu row, a notification kind, data on boot and
- * sync, agents in @mentions and in "Who decides", and a page under the
+ * sync, agents in @mentions and in "Who decides", a button on messages and
+ * comments, a status line under a thread, a panel, and a page under the
  * NovaWork menu built with the settings look and kit. Uses the test add-on in
  * tests/fixtures (a must-use plugin, linked for this file only and gated by
  * an option), and checks that nothing changes without it.
@@ -62,7 +63,7 @@ test( 'an add-on adds a header button, a team menu row and data on boot and sync
 	await page.goto( APP + '#focus' );
 	await page.waitForFunction( () => !! window.nwTestAddon );
 	const seen = await page.evaluate( () => window.nwTestAddon );
-	expect( seen.keys ).toEqual( [ '__', 'addHeaderButton', 'addMenuItem', 'addNoteKind', 'api', 'esc', 'ic', 'icf', 'sprintf', 'store', 'toast' ] );
+	expect( seen.keys ).toEqual( [ '__', 'addHeaderButton', 'addMenuItem', 'addMessageAction', 'addNoteKind', 'addPanel', 'api', 'esc', 'ic', 'icf', 'openPanel', 'setThreadStatus', 'sprintf', 'store', 'toast' ] );
 	expect( seen.same ).toBe( true );
 	expect( seen.boot.hello ).toBe( 'boot' );
 
@@ -205,4 +206,122 @@ test( 'an add-on page under the NovaWork menu gets the settings look and the pag
 	await expect( page.locator( '.nw-toasts .nw-toast', { hasText: 'Kit toast works' } ) ).toBeVisible();
 	await page.screenshot( { path: 'build/browser/addon-page.png' } );
 	await ctx.close();
+} );
+
+test( 'an add-on’s button sits on its agent’s messages and comments, and toggles', async ( { browser } ) => {
+	addon( true );
+	const ctx = await browser.newContext( { viewport: { width: 1366, height: 1100 } } );
+	await signIn( ctx, 'A' );
+	const page = await ctx.newPage();
+	await page.goto( APP + '#focus' );
+	await page.waitForFunction( () => !! window.nwTestAddon );
+	const said = unique( 'agent says' );
+	wpEval( `NovaWork\\Api::post_message( 'helper', '${ said }' );` );
+	const mine = unique( 'person says' );
+	wpEval( `NovaWork\\Api::post_message( get_user_by( 'login', 'alex' )->ID, '${ mine }' );` );
+	await page.click( '#nw-chat-btn' );
+	const agentMsg = page.locator( '#nw-msgs .nw-msg', { hasText: said } );
+	const personMsg = page.locator( '#nw-msgs .nw-msg', { hasText: mine } );
+	await expect( agentMsg ).toBeVisible( { timeout: 15000 } );
+	await expect( personMsg ).toBeVisible( { timeout: 15000 } );
+	// Only where when() says so, after NovaWork's own buttons.
+	const btn = agentMsg.locator( '.nw-msg-acts [data-tact="x:test"]' );
+	await expect( btn ).toHaveCount( 1 );
+	await expect( personMsg.locator( '[data-tact="x:test"]' ) ).toHaveCount( 0 );
+	expect( await agentMsg.locator( '.nw-msg-acts button' ).evaluateAll( ( bs ) => bs.map( ( b ) => b.dataset.tact ) ) ).toEqual( [ 'reply', 'x:test' ] );
+	await expect( btn ).toHaveAttribute( 'aria-pressed', 'false' );
+	await expect( btn ).toHaveAttribute( 'aria-label', 'Test action' );
+	// A toggle: pressed shows the icon's fill weight.
+	const regular = await btn.innerHTML();
+	await agentMsg.hover();
+	await btn.click();
+	const on = agentMsg.locator( '[data-tact="x:test"]' );
+	await expect( on ).toHaveAttribute( 'aria-pressed', 'true' );
+	await expect( on ).toHaveClass( /nw-on/ );
+	expect( await on.innerHTML() ).not.toBe( regular );
+	await agentMsg.hover();
+	await on.click();
+	await expect( agentMsg.locator( '[data-tact="x:test"]' ) ).toHaveAttribute( 'aria-pressed', 'false' );
+	cleanChat();
+	await ctx.close();
+} );
+
+test( 'an add-on’s status line shows above the chat and comment fields, and clears', async ( { browser } ) => {
+	addon( true );
+	const ctx = await browser.newContext( { viewport: { width: 1366, height: 1100 } } );
+	await signIn( ctx, 'A' );
+	const page = await ctx.newPage();
+	await page.goto( APP + '#focus' );
+	await page.waitForFunction( () => !! window.nwTestStatus );
+	await page.click( '#nw-chat-btn' );
+	const line = page.locator( '#nw-chat-status' );
+	await expect( line ).toBeHidden();
+	await page.evaluate( () => window.nwTestStatus( 'chat', 'Helper is thinking…' ) );
+	await expect( line ).toBeVisible();
+	await expect( line ).toHaveText( 'Helper is thinking…' );
+	await expect( line ).toHaveAttribute( 'role', 'status' );
+	await expect( line.locator( '.nw-tdots i' ) ).toHaveCount( 3 );
+	await page.evaluate( () => window.nwTestStatus( 'chat', null ) );
+	await expect( line ).toBeHidden();
+
+	// A task's comments: only that task's line.
+	const id = Number( wpEval( "echo ( new NovaWork\\Data\\TaskRepository() )->insert( array( 'title' => 'E2E status line', 'status' => 'next', 'created_by' => get_user_by( 'login', 'alex' )->ID ) );" ).trim() );
+	try {
+		await page.reload();
+		await page.waitForFunction( () => !! window.nwTestStatus );
+		await page.evaluate( ( tid ) => {
+			window.nwTestStatus( { objectType: 'task', objectId: tid }, 'Helper is reading this task…' );
+			window.dispatchEvent( new CustomEvent( 'nw:open', { detail: { kind: 'task', id: tid } } ) );
+		}, id );
+		const cmt = page.locator( '#nw-dlg #nw-cmt-status' );
+		await expect( cmt ).toHaveText( 'Helper is reading this task…' );
+		await page.evaluate( ( tid ) => window.nwTestStatus( { objectType: 'task', objectId: tid + 1 }, 'Another task' ), id );
+		await expect( cmt ).toHaveText( 'Helper is reading this task…' );
+		await page.evaluate( ( tid ) => window.nwTestStatus( { objectType: 'task', objectId: tid }, null ), id );
+		await expect( cmt ).toBeHidden();
+	} finally {
+		wpEval( `( new NovaWork\\Data\\TaskRepository() )->delete( ${ id } );` );
+	}
+	await ctx.close();
+} );
+
+test( 'an add-on’s panel opens like the app’s dialogs and locks the page behind it', async ( { browser } ) => {
+	addon( true );
+	for ( const [ w, h, touch ] of [ [ 1366, 900, false ], [ 390, 844, true ] ] ) {
+		const ctx = await browser.newContext( { viewport: { width: w, height: h }, hasTouch: touch, isMobile: touch } );
+		await signIn( ctx, 'A' );
+		const page = await ctx.newPage();
+		await page.goto( APP + '#focus' );
+		await page.waitForFunction( () => !! window.nwTestAddon );
+		expect( await page.evaluate( () => window.novawork.app.openPanel( 'nope' ) ) ).toBe( false );
+		await page.evaluate( () => window.novawork.app.openPanel( 'test' ) );
+		const panel = page.locator( 'dialog#nw-xpanel[open]' );
+		await expect( panel ).toBeVisible();
+		await expect( panel.locator( '#nw-xpanel-title' ) ).toHaveText( 'Test panel' );
+		await expect( panel.locator( '#nw-test-panel-text' ) ).toHaveText( 'Panel works' );
+		await expect( page.locator( 'html' ) ).toHaveClass( /nw-scroll-locked/ );
+		if ( touch ) {
+			// A bottom sheet: full width, at the bottom, with the grab handle
+			// (measured once it has slid up).
+			await panel.evaluate( ( el ) => Promise.all( el.getAnimations().map( ( a ) => a.finished ) ) );
+			const box = await panel.boundingBox();
+			expect( Math.round( box.width ) ).toBe( w );
+			expect( Math.round( box.y + box.height ) ).toBe( h );
+			await expect( panel.locator( '.nw-sgrab' ) ).toBeVisible();
+		}
+		await page.screenshot( { path: `build/browser/addon-panel-${ w }.png` } );
+		await page.keyboard.press( 'Escape' );
+		await expect( page.locator( 'dialog#nw-xpanel[open]' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'html' ) ).not.toHaveClass( /nw-scroll-locked/ );
+		// The close button and the backdrop close it too.
+		await page.evaluate( () => window.novawork.app.openPanel( 'test' ) );
+		await page.locator( '#nw-xpanel [data-close]' ).click();
+		await expect( page.locator( 'dialog#nw-xpanel[open]' ) ).toHaveCount( 0 );
+		if ( ! touch ) {
+			await page.evaluate( () => window.novawork.app.openPanel( 'test' ) );
+			await page.mouse.click( 6, h / 2 );
+			await expect( page.locator( 'dialog#nw-xpanel[open]' ) ).toHaveCount( 0 );
+		}
+		await ctx.close();
+	}
 } );

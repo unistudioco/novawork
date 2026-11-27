@@ -14,6 +14,7 @@ import { attachComposer } from './composer.js';
 import { multiline, fit } from '../lib/multiline.js';
 import { subtasksField, wireSubtasks, saveDraft } from './subtasks.js';
 import { wireThread, quoteHTML, actsHTML, kindOf } from './thread.js';
+import { watchThreadStatus } from '../lib/ext.js';
 import Alpine from 'alpinejs';
 import { safeEffect } from '../lib/effect.js';
 import { routeUrl, currentNonce } from '../lib/api.js';
@@ -64,6 +65,7 @@ function commentBox( kind, id ) {
 	return `<div class="nw-field"><span class="nw-flabel">${ esc( __( 'Comments', 'novawork' ) ) }${ list.length ? ' · ' + list.length : '' }</span><div class="nw-comments" id="nw-cmts">${
 		list.length ? list.map( ( c ) => msgHTML( c ) ).join( '' ) : `<span style="color:var(--nw-faint);font-size:13px">${ esc( __( 'No comments yet.', 'novawork' ) ) }</span>`
 	}</div>` +
+		`<div class="nw-tstatus" id="nw-cmt-status" role="status" aria-live="polite" hidden></div>` +
 		`<div class="nw-replying" id="nw-cmt-reply" hidden></div>` +
 		`<div class="nw-cmt-in"><label for="nw-cmt-in" class="nw-vh">${ esc( __( 'Comment', 'novawork' ) ) }</label><textarea class="nw-input nw-grow" id="nw-cmt-in" rows="1" maxlength="2000" enterkeyhint="send" placeholder="${ esc( __( 'Write a comment', 'novawork' ) ) }"></textarea><button class="nw-btn" type="button" data-cmt="1" aria-label="${ esc( __( 'Send comment', 'novawork' ) ) }">${ ic( 'paper-plane-right', 15 ) }</button></div></div>`;
 }
@@ -101,6 +103,7 @@ function commentsFor( kind, id ) {
 	} );
 	list.addEventListener( 'click', thread.onClick );
 	form.querySelector( '#nw-cmt-reply' ).addEventListener( 'click', thread.onClick );
+	watchThreadStatus( form.querySelector( '#nw-cmt-status' ), `${ kind }:${ Number( id ) }` );
 	input.addEventListener( 'keydown', ( e ) => {
 		if ( e.key === 'Escape' && ! composer.isOpen() && thread.escape() ) {
 			e.preventDefault();

@@ -1299,6 +1299,7 @@ try {
 		array(
 			'demo_limit'   => array( 'type' => 'int', 'min' => 1, 'max' => 9 ),
 			'demo_mode'    => array( 'type' => 'choice', 'choices' => array( 'a', 'b' ) ),
+			'demo_notes'   => array( 'type' => 'textarea', 'max' => 12 ),
 			'poll_seconds' => array( 'type' => 'text', 'max' => 3 ),
 			'demo_broken'  => 'not a rule',
 		)
@@ -1306,6 +1307,7 @@ try {
 	add_filter( 'novawork_settings_schema', $schema_filter );
 	$t->ok( 9 === NovaWork\Settings::clean( 'demo_limit', 50 ) && 'b' === NovaWork\Settings::clean( 'demo_mode', 'b' ), 'an add-on’s rules are checked by Settings::clean()' );
 	$t->ok( 'int' === NovaWork\Settings::schema()['poll_seconds']['type'] && ! isset( NovaWork\Settings::schema()['demo_broken'] ), 'NovaWork’s own rules can’t be replaced; a malformed rule is ignored' );
+	$t->ok( "One\nTwo x an" === NovaWork\Settings::clean( 'demo_notes', "One\nTwo <b>x</b> and more" ), 'a textarea rule keeps line breaks, drops tags and stops at its maximum', NovaWork\Settings::clean( 'demo_notes', "One\nTwo <b>x</b> and more" ) );
 	list( $ext_ok, $ext_errs ) = NovaWork\Settings::clean_values( array( 'demo_limit' => 'x', 'demo_mode' => 'a', 'demo_unknown' => 1 ) );
 	$t->ok( array( 'demo_mode' => 'a' ) === $ext_ok && array( 'demo_limit' ) === array_keys( $ext_errs ), 'clean_values() returns clean values and errors by name, skipping unknown names', array( $ext_ok, $ext_errs ) );
 	list( $ext_ok ) = NovaWork\Settings::clean_values( array( 'demo_mode' => 'a', 'poll_seconds' => 5 ), array( 'demo_mode' ) );
