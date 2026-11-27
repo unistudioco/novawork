@@ -204,6 +204,11 @@ test( 'an add-on page under the NovaWork menu gets the settings look and the pag
 	await expect( page.locator( '#nw-t-picked' ) ).toHaveText( 'a' );
 	await page.click( '#nw-t-hello' );
 	await expect( page.locator( '.nw-toasts .nw-toast', { hasText: 'Kit toast works' } ) ).toBeVisible();
+	// NovaWork's tooltips show on the page (data-tip, title), in its look.
+	await page.hover( '#nw-t-help' );
+	const tip = page.locator( '.nw-tip.nw-tip-on' );
+	await expect( tip ).toHaveText( 'Help from the kit' );
+	expect( await tip.evaluate( ( el ) => getComputedStyle( el ).borderRadius ) ).toBe( '8px' );
 	await page.screenshot( { path: 'build/browser/addon-page.png' } );
 	await ctx.close();
 } );

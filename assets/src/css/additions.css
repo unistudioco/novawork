@@ -494,21 +494,7 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
 }
 @media (prefers-reduced-motion: reduce) { .nw-tour-card.nw-tour-swap { opacity: 0; } }
 
-/* Tooltips (owner, 1.1.0): one bubble for every title, data-tip and
-   icon-only button (lib/tooltip.js), in the top layer so it shows over
-   dialogs too. Dark on light, light on dark, a small arrow toward the
-   element, and a quick rise-and-fade. */
-.nw-tip { position: fixed; inset: auto; margin: 0; z-index: 90; display: none; max-width: min(280px, calc(100vw - 16px)); padding: 6px 9px; border: 0; border-radius: 8px; background: var(--nw-fg); color: var(--nw-bg); font: 500 12px/1.35 var(--nw-font-head); letter-spacing: .005em; white-space: pre-line; overflow: visible; pointer-events: none; box-shadow: 0 6px 20px -6px rgb(0 0 0 / .35); opacity: 0; }
-.nw-tip::after { content: ""; position: absolute; left: var(--nw-tip-x, 50%); bottom: -4px; width: 8px; height: 8px; margin-left: -4px; background: inherit; border-radius: 1.5px; transform: rotate(45deg); }
-.nw-tip.nw-tip-below::after { bottom: auto; top: -4px; }
-.nw-tip kbd { margin-left: 7px; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--nw-bg) 18%, transparent); color: inherit; font: 600 10.5px/1.4 var(--nw-font-head); box-shadow: none; }
-.nw-tip kbd[hidden] { display: none; }
-.nw-tip.nw-tip-on { opacity: 1; }
-@media (prefers-reduced-motion: no-preference) {
-  .nw-tip { transform: translateY(3px) scale(.97); transform-origin: var(--nw-tip-x, 50%) 100%; transition: opacity .14s ease, transform .18s cubic-bezier(.2, .9, .25, 1); }
-  .nw-tip.nw-tip-below { transform: translateY(-3px) scale(.97); transform-origin: var(--nw-tip-x, 50%) 0; }
-  .nw-tip.nw-tip-on { transform: none; }
-}
+/* Tooltips: css/tooltip.css (shared with the settings screen and add-on pages). */
 
 /* Edit rights (owner, 1.2.0): someone else's task, project or decision opens
    read only. Locked fields keep their normal look, without the editing cues. */

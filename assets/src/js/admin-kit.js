@@ -10,18 +10,23 @@
  * each select[data-nw-sel] under root into NovaWork's dropdown.
  *
  * Alpine starts once the page has loaded, after every script printed with
- * it has run, so an add-on registers its data first.
+ * it has run, so an add-on registers its data first. NovaWork's tooltips
+ * show inside the page's .nw-admin, as in the app: for anything with a
+ * title or data-tip, and for icon-only buttons from their aria-label.
  */
 import Alpine from 'alpinejs';
 import { ic, icf } from './lib/icons.js';
 import { toast } from './lib/ui.js';
 import { enhance } from './views/select.js';
+import { mountTooltips } from './lib/tooltip.js';
 
 const kit = Object.freeze( { Alpine, toast, ic, icf, enhance } );
 
 window.novawork = window.novawork || {};
 window.novawork.admin = kit;
 window.dispatchEvent( new CustomEvent( 'nw:admin-ready', { detail: kit } ) );
+
+mountTooltips( '.nw-admin' );
 
 let started = false;
 const start = () => {

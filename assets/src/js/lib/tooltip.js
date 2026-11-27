@@ -26,13 +26,15 @@ let keyChip = null;
 let current = null;
 let timer = 0;
 let lastHide = 0;
+// Only elements inside this selector get a tooltip ('' for the whole page).
+let scope = '';
 
 const reduceMotion = () => window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
 
 /** The element that has a tooltip, from an event target. */
 function owner( node ) {
 	const el = node && node.closest ? node.closest( '[title], [data-tip], button[aria-label], a[aria-label], [role="button"][aria-label]' ) : null;
-	if ( ! el || el.closest( '.nw-tip, .nw-tour, [data-no-tip]' ) ) {
+	if ( ! el || el.closest( '.nw-tip, .nw-tour, [data-no-tip]' ) || ( scope && ! el.closest( scope ) ) ) {
 		return null;
 	}
 	if ( el.hasAttribute( 'title' ) || el.hasAttribute( 'data-tip' ) ) {
@@ -173,7 +175,15 @@ function schedule( el, now ) {
 	timer = setTimeout( () => show( el ), warm ? 0 : DELAY );
 }
 
-export function mountTooltips() {
+/**
+ * Start the tooltips.
+ *
+ * @param {string} [within] Only for elements inside this selector (an
+ *                          add-on's page in wp-admin passes '.nw-admin', so
+ *                          WordPress's own buttons keep theirs).
+ */
+export function mountTooltips( within = '' ) {
+	scope = within;
 	document.addEventListener(
 		'pointerover',
 		( e ) => {

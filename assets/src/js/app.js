@@ -8,6 +8,7 @@ import Alpine from 'alpinejs';
 import '../css/tokens.css';
 import '../css/app.css';
 import '../css/additions.css';
+import '../css/tooltip.css';
 import { createStore } from './store.js';
 import { startSync } from './sync.js';
 import shell from './shell.js';

@@ -204,7 +204,7 @@ A page under the NovaWork menu can look like NovaWork's settings: call `NovaWork
 
 Rules may be `int` (`min`, `max`), `bool`, `choice` (`choices`), `text` (one line, `max`), `textarea` (several lines, `max`), `types`, `image` or `color`.
 
-For its behaviour, make the page's script depend on `novawork-admin-kit` (`Assets::ADMIN_KIT`). The kit fires `nw:admin-ready` on `window` and keeps the same object at `window.novawork.admin`: `Alpine` (register your `x-data` with `Alpine.data()`; Alpine starts once the page has loaded), `toast( message, icon )`, `ic` and `icf`, and `enhance( root )`, which turns each `select[data-nw-sel]` under `root` into NovaWork's dropdown.
+For its behaviour, make the page's script depend on `novawork-admin-kit` (`Assets::ADMIN_KIT`). The kit fires `nw:admin-ready` on `window` and keeps the same object at `window.novawork.admin`: `Alpine` (register your `x-data` with `Alpine.data()`; Alpine starts once the page has loaded), `toast( message, icon )`, `ic` and `icf`, and `enhance( root )`, which turns each `select[data-nw-sel]` under `root` into NovaWork's dropdown. NovaWork's tooltips show inside `.nw-admin` too: give an element a `title` or `data-tip` (an icon-only button gets one from its `aria-label`).
 
 ### Your own Vite build (1.3.0)
 

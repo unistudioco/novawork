@@ -103,7 +103,7 @@ function novawork_test_addon_page() {
 			<div class="nw-srow"><div class="nw-srow-l"><label class="nw-slabel" for="nw-t-pick">Pick</label></div><div class="nw-srow-c">
 				<select id="nw-t-pick" data-nw-sel data-block="1" x-model="pick"><option value="a">First</option><option value="b">Second</option></select>
 			</div></div>
-			<p><button type="button" class="nw-btn nw-primary" id="nw-t-hello" @click="hello()">Say hello</button> <span id="nw-t-picked" x-text="pick"></span></p>
+			<p><button type="button" class="nw-btn nw-primary" id="nw-t-hello" @click="hello()">Say hello</button> <span id="nw-t-picked" x-text="pick"></span> <span id="nw-t-help" tabindex="0" data-tip="Help from the kit">?</span></p>
 		</section>
 	</div>
 	<?php

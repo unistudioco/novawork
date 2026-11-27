@@ -6,6 +6,7 @@
  * app's rules (app.css) because that file also styles <body> and <dialog>.
  */
 @import './tokens.css';
+@import './tooltip.css';
 
 [x-cloak] { display: none !important; }
 
