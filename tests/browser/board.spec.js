@@ -91,8 +91,11 @@ test( 'toasts stack, newest at the bottom, and leave one by one', async ( { page
 	await newTask( page, B );
 	const toasts = page.locator( '.nw-toasts .nw-toast' );
 	await expect( toasts ).toHaveCount( 2 );
-	const [ a, b ] = await Promise.all( [ toasts.nth( 0 ).boundingBox(), toasts.nth( 1 ).boundingBox() ] );
-	expect( b.y ).toBeGreaterThan( a.y ); // newest below
+	// Both read in the same frame: two separate reads can straddle the glide
+	// that moves the first toast up as the second rises in, or its exit.
+	const tops = await page.evaluate( () => [ ...document.querySelectorAll( '.nw-toasts .nw-toast' ) ].map( ( t ) => t.getBoundingClientRect().top ) );
+	expect( tops ).toHaveLength( 2 );
+	expect( tops[ 1 ] ).toBeGreaterThan( tops[ 0 ] ); // newest below
 	await page.screenshot( { path: 'build/browser/toasts-stacked.png', clip: { x: 383, y: 1250, width: 600, height: 250 } } );
 	await expect( toasts ).toHaveCount( 0, { timeout: 6000 } );
 	for ( const title of [ A, B ] ) {
