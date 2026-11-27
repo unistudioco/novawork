@@ -38,6 +38,15 @@ trap 'rm -rf "$UNPACKED"' EXIT
 COPY="$UNPACKED/novawork"
 unzip -q "$ZIP" -d "$UNPACKED"
 
+# Plugin Check runs as a WP-CLI command of the Plugin Check plugin: if it is
+# installed but switched off on the site, switch it on for this run and back
+# off at the end, even when the run fails.
+if "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin is-installed plugin-check 2>/dev/null \
+	&& ! "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin is-active plugin-check 2>/dev/null; then
+	"${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin activate plugin-check --quiet
+	trap 'rm -rf "$UNPACKED"; "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin deactivate plugin-check --quiet' EXIT
+fi
+
 REPORT="$OUT/report.csv"
 "${WP[@]}" --path="$NOVAWORK_WP_PATH" plugin check "$COPY" --slug=novawork \
 	--format=csv --fields=file,line,type,code,message > "$REPORT" 2>&1 || true
