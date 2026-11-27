@@ -39,17 +39,25 @@ async function track( page, title, { reported = false } = {} ) {
 		const h = { 'X-WP-Nonce': window.novawork.nonce, 'Content-Type': 'application/json' };
 		return ( await ( await fetch( window.novawork.restUrl + 'tasks', { method: 'POST', headers: h, body: JSON.stringify( { title: t, status: 'now' } ) } ) ).json() ).id;
 	}, title );
+	const isSync = ( url ) => new URL( url ).pathname.endsWith( '/sync' ) || new URL( url ).searchParams.get( 'rest_route' )?.endsWith( '/sync' );
+	// The first poll after loading reports the activity so far, so nothing is
+	// waiting to be sent when Play is clicked.
+	const settled = reported ? page.waitForResponse( ( r ) => isSync( r.url() ), { timeout: 20000 } ) : null;
 	await page.reload();
 	const play = page.locator( `.nw-slot[data-id="${ id }"] [data-act="track"]` );
 	await play.waitFor();
-	const at = await page.evaluate( () => Date.now() );
-	const report = reported
-		? page.waitForResponse( ( r ) => /sync/.test( r.url() ) && Number( new URL( r.url() ).searchParams.get( 'active' ) ) >= at - 250, { timeout: 20000 } )
-		: null;
+	let report = null;
+	if ( reported ) {
+		await settled;
+		// The app sends its latest activity with the next poll, so the next
+		// request that carries `active` carries the click (no clock compared).
+		report = page.waitForRequest( ( r ) => isSync( r.url() ) && new URL( r.url() ).searchParams.has( 'active' ), { timeout: 20000 } );
+	}
 	await play.click();
 	await expect( page.locator( '.nw-now-card.nw-run' ) ).toBeVisible();
 	if ( report ) {
-		await report;
+		const answered = await ( await report ).response();
+		expect( answered && answered.ok() ).toBe( true );
 	}
 }
 
