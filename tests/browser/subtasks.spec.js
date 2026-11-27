@@ -4,7 +4,7 @@
  * board card.
  */
 import { test, expect } from '@playwright/test';
-import { APP, signIn, serverData, unique, cleanUp } from './helpers.js';
+import { APP, signIn, serverData, unique, cleanUp, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {
 	await signIn( context );
@@ -77,4 +77,28 @@ test( 'a new task saves its checklist; tick, rename, assign, remove and Undo on 
 	await page.keyboard.press( 'Escape' );
 	await expect( card.locator( '.nw-subtask-n' ) ).toContainText( '1/3' );
 	expect( errors ).toEqual( [] );
+} );
+
+test( 'an open “Who does” menu stays open when a poll brings the task back unchanged', async ( { page } ) => {
+	// A poll that brings the task (here: its notes changed elsewhere) used to
+	// rebuild the checklist and close the menu under the pointer (1.2.0 fix).
+	const T = unique( 'menu stays' );
+	const id = Number( wpEval( `$r = new NovaWork\\Data\\TaskRepository(); $id = $r->insert( array( 'title' => '${ T }', 'status' => 'next', 'created_by' => get_user_by( 'login', 'alex' )->ID ) ); ( new NovaWork\\Data\\SubtaskRepository() )->insert( array( 'task_id' => $id, 'title' => 'Pick someone', 'sort_order' => 1 ) ); echo $id;` ).trim() );
+	try {
+		await page.reload();
+		await page.evaluate( ( tid ) => window.dispatchEvent( new CustomEvent( 'nw:open', { detail: { kind: 'task', id: tid } } ) ), id );
+		const row = page.locator( '#nw-subtasks .nw-subtask', { hasText: 'Pick someone' } );
+		await row.hover();
+		await row.locator( '.nw-sel-btn' ).click();
+		const menu = page.locator( '#nw-subtasks .nw-sel-menu:visible' );
+		await expect( menu ).toHaveCount( 1 );
+		wpEval( `( new NovaWork\\Data\\TaskRepository() )->update( ${ id }, array( 'notes' => 'Changed elsewhere' ) );` );
+		await expect.poll( () => page.evaluate( ( tid ) => window.Alpine.store( 'nw' ).tasks[ tid ]?.notes, id ), { timeout: 15000 } ).toBe( 'Changed elsewhere' );
+		await expect( menu ).toHaveCount( 1 );
+		// A real change to the checklist still shows.
+		wpEval( `( new NovaWork\\Data\\SubtaskRepository() )->insert( array( 'task_id' => ${ id }, 'title' => 'Added elsewhere', 'sort_order' => 2 ) ); ( new NovaWork\\Data\\TaskRepository() )->touch( ${ id } );` );
+		await expect( page.locator( '#nw-subtasks .nw-subtask', { hasText: 'Added elsewhere' } ) ).toHaveCount( 1, { timeout: 15000 } );
+	} finally {
+		wpEval( `( new NovaWork\\Data\\TaskRepository() )->delete( ${ id } );` );
+	}
 } );

@@ -69,7 +69,9 @@ test( 'the Plugins screen shows the Pro waitlist link on NovaWork\'s row', async
 		// NovaWork's orange, bold, on its own row only.
 		await expect( link ).toHaveCSS( 'color', 'rgb(243, 79, 53)' );
 		await expect( link ).toHaveCSS( 'font-weight', '700' );
-		await expect( page.locator( 'tr[data-slug="novawork"] .row-actions .deactivate a' ) ).not.toHaveCSS( 'color', 'rgb(243, 79, 53)' );
+		// Only on NovaWork's row: another plugin's links keep WordPress's colour.
+		// (NovaWork's own "Deactivate" isn't a link while a plugin requires it.)
+		await expect( page.locator( 'tr:not([data-slug="novawork"]) .row-actions a' ).first() ).not.toHaveCSS( 'color', 'rgb(243, 79, 53)' );
 	} finally {
 		await context.close();
 	}

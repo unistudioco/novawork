@@ -99,7 +99,9 @@ try {
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	$pending = dbDelta( Schema::statements(), false );
 	$t->ok( array() === $pending, 'dbDelta has nothing left to change (schema is idempotent)', $pending );
-	$t->ok( count( Db::TABLES ) === count( $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->prefix . 'novawork_' ) . '%' ) ) ), 'all ' . count( Db::TABLES ) . ' tables exist' );
+	// Each of NovaWork's own tables by name: an add-on may keep tables with a longer prefix.
+	$missing = array_values( array_filter( Db::TABLES, static fn( $name ) => Db::table( $name ) !== $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( Db::table( $name ) ) ) ) ) );
+	$t->ok( array() === $missing, 'all ' . count( Db::TABLES ) . ' tables exist', $missing );
 
 	// ------------------------------------------------------------------
 	$t->section( 'Access' );
