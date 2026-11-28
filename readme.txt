@@ -177,6 +177,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 = 1.4.0 =
 * New for developers: an add-on can create and delete projects, tasks, checklist items and decisions through the write API (NovaWork\Api), with the same checks and rights as the app. An agent works on behalf of a member, with that member's rights; what it makes is marked as made by the agent.
 * New for developers: Api::quietly() runs a batch of work without a notification or a team-feed row for each item, so an add-on can tell each person once.
+* New for developers: window.novawork.app.sync() fetches what changed at once, so items an add-on just created show up without waiting for the next sync.
 
 = 1.3.0 =
 * New: "Away until…". Set a holiday or days off from the team menu, with an optional note: your avatar shows a small moon and Team today says "Away until Fri 5 Dec" until the day you pick, then it ends by itself. Administrators can set it for anyone.

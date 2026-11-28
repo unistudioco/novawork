@@ -40,6 +40,6 @@ Alpine.start();
 // Then add-ons hear that the app is ready (nw:ready, 1.3.0).
 requestAnimationFrame( () => {
 	mountViews( sync );
-	announceReady( live );
+	announceReady( live, sync );
 } );
 mountTooltips();

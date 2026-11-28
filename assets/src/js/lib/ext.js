@@ -267,8 +267,9 @@ export function watchThreadStatus( el, key ) {
  * Tell add-ons the app is ready.
  *
  * @param {Object} store The live (Alpine) store.
+ * @param {Object} [poller] The app's sync loop ({ poll, fresh }).
  */
-export function announceReady( store ) {
+export function announceReady( store, poller ) {
 	const app = Object.freeze( {
 		store,
 		api: Object.freeze( { get, post, patch, del, nonce: currentNonce } ),
@@ -290,6 +291,9 @@ export function announceReady( store ) {
 		addLauncher,
 		addShortcut,
 		renderText,
+		// 1.4.0: fetch what changed now, not at the next poll (after an
+		// add-on wrote through the API, so its new items are in the store).
+		sync: () => ( poller ? poller.fresh() : Promise.resolve() ),
 	} );
 	window.novawork = window.novawork || {};
 	window.novawork.app = app;

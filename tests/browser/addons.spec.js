@@ -63,7 +63,7 @@ test( 'an add-on adds a header button, a team menu row and data on boot and sync
 	await page.goto( APP + '#focus' );
 	await page.waitForFunction( () => !! window.nwTestAddon );
 	const seen = await page.evaluate( () => window.nwTestAddon );
-	expect( seen.keys ).toEqual( [ '__', 'addHeaderButton', 'addLauncher', 'addMenuItem', 'addMessageAction', 'addNoteKind', 'addPanel', 'addShortcut', 'api', 'closePanel', 'esc', 'ic', 'icf', 'isPanelOpen', 'openPanel', 'renderText', 'setThreadStatus', 'sprintf', 'store', 'toast' ] );
+	expect( seen.keys ).toEqual( [ '__', 'addHeaderButton', 'addLauncher', 'addMenuItem', 'addMessageAction', 'addNoteKind', 'addPanel', 'addShortcut', 'api', 'closePanel', 'esc', 'ic', 'icf', 'isPanelOpen', 'openPanel', 'renderText', 'setThreadStatus', 'sprintf', 'store', 'sync', 'toast' ] );
 	expect( seen.same ).toBe( true );
 	expect( seen.boot.hello ).toBe( 'boot' );
 
@@ -80,6 +80,16 @@ test( 'an add-on adds a header button, a team menu row and data on boot and sync
 	await expect( btn.locator( '.nw-dot-alert' ) ).toHaveCount( 0 );
 	wpEval( "update_user_meta( get_user_by( 'login', 'alex' )->ID, 'novawork_test_flag', 1 );" );
 	await expect( btn.locator( '.nw-dot-alert' ) ).toHaveCount( 1, { timeout: 15000 } );
+
+	// sync() (1.4.0): a task the add-on just made is in the store once it resolves, not a poll later.
+	const title = unique( 'synced now' );
+	const id = Number( wpEval( `$t = NovaWork\\Api::create_task( get_user_by( 'login', 'alex' )->ID, array( 'title' => '${ title }' ) ); echo is_wp_error( $t ) ? 0 : (int) $t['id'];` ).trim() );
+	expect( id ).toBeGreaterThan( 0 );
+	expect( await page.evaluate( async ( tid ) => {
+		await window.novawork.app.sync();
+		return !! window.Alpine.store( 'nw' ).tasks[ tid ];
+	}, id ) ).toBe( true );
+	await cleanUp( page );
 
 	// A row in the team menu: first in the menu; picking it closes the menu.
 	await page.click( '#nw-crew-btn' );

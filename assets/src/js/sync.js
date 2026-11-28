@@ -91,6 +91,15 @@ export function startSync( store ) {
 		}
 	} );
 
+	// A poll that starts after now (one in flight may predate a write the
+	// caller just made): app.sync() for add-ons.
+	async function fresh() {
+		if ( inflight ) {
+			await inflight;
+		}
+		return poll();
+	}
+
 	schedule();
-	return { poll };
+	return { poll, fresh };
 }

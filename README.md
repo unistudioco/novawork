@@ -207,6 +207,7 @@ Once the app has started it fires `nw:ready` on `window`; the same object stays 
 - `addLauncher( { id, label, icon | svg, key, onClick } )`: a round button in the bottom-right corner, which moves left of a window docked on the right and hides under dialogs; on phones it is a button in the header instead. It returns `{ setBadge( number | true | 0 ), setHidden( bool ), remove() }`; `key` shows a shortcut in its tooltip.
 - `addShortcut( { key, label, run } )`: a one-letter key with the app's own rules (never while typing, with a modifier or with a dialog open). The app's keys (`/`, `N`, `T`) are refused; it returns a function that removes it.
 - `renderText( { text, mentions, refs } )`: a message's text as HTML, with @mentions and /links drawn as in the team chat (a link opens its item).
+- `sync()` (1.4.0): fetch what changed now instead of at the next poll, for example after an add-on created items through the write API, so links to them resolve at once. It returns a promise.
 
 Decisions can name an agent in "Who decides" (`ownerAgent`): the agent gives its advice and the person who opened the decision records it (administrators once that person is no longer a member). Agents appear in the @ suggestions in chat and comments.
 
