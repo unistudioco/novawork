@@ -537,3 +537,7 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
 /* An add-on's panel (1.3.0): the app's dialog, its body scrolls. */
 .nw-xpanel .nw-xpanel-body { display: grid; gap: 12px; font-size: 14px; line-height: 1.55; color: var(--nw-fg); }
 .nw-xpanel .nw-xpanel-body p { margin: 0; }
+
+/* A notification's text: three lines at most, with an ellipsis; the full
+   text stays in chat or on the item (the time under it always shows). */
+.nw-ntext .nw-nbody { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
