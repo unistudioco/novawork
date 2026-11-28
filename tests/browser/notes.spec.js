@@ -96,6 +96,43 @@ test( 'the bell: your notifications, the team feed, open, mark read', async ( { 
 	await ctxB.close();
 } );
 
+test( 'a long notification shows three lines at most, with an ellipsis', async ( { browser } ) => {
+	const ctxB = await browser.newContext();
+	await signIn( ctxB, 'B' );
+	const pb = await ctxB.newPage();
+	await pb.goto( APP );
+	const start = unique( 'long note' );
+	await pb.evaluate( async ( lead ) => {
+		const nw = window.Alpine.store( 'nw' );
+		const a = nw.members.find( ( m ) => m.id !== nw.me && m.id !== 1 );
+		const text = `@${ a.name } ${ lead } and then a long message that goes on about the launch plan, the copy for the homepage, the checkout bug on Safari, the redirect map and the user interviews we still have to book this week.`;
+		await fetch( window.novawork.restUrl + 'messages', { method: 'POST', headers: { 'X-WP-Nonce': window.novawork.nonce, 'Content-Type': 'application/json' }, body: JSON.stringify( { text, mentions: [ a.id ] } ) } );
+	}, start );
+	await ctxB.close();
+
+	for ( const width of [ 1366, 390 ] ) {
+		const ctx = await browser.newContext( { viewport: { width, height: 900 }, isMobile: width < 500, hasTouch: width < 500 } );
+		await signIn( ctx, 'A' );
+		const page = await ctx.newPage();
+		await page.goto( APP + '#focus' );
+		await page.click( '#nw-bell-btn' );
+		const item = page.locator( '#nw-notes .nw-nitem', { hasText: start } ).first();
+		await expect( item ).toBeVisible();
+		const body = item.locator( '.nw-nbody' );
+		const box = await body.evaluate( ( el ) => {
+			const cs = getComputedStyle( el );
+			return { clamp: cs.webkitLineClamp, lines: el.clientHeight / parseFloat( cs.lineHeight ), cut: el.scrollHeight > el.clientHeight + 1 };
+		} );
+		expect( box.clamp ).toBe( '3' );
+		expect( box.lines ).toBeLessThanOrEqual( 3.05 );
+		expect( box.cut ).toBe( true );
+		// The time still shows under the text.
+		await expect( item.locator( 'time' ) ).toBeVisible();
+		await item.screenshot( { path: `build/browser/bell-clamp-${ width }.png` } );
+		await ctx.close();
+	}
+} );
+
 test( 'a quick search result goes to the item on its page, not its editor', async ( { browser } ) => {
 	const ctx = await browser.newContext( { viewport: { width: 1366, height: 1000 } } );
 	await signIn( ctx, 'A' );

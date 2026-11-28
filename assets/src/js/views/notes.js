@@ -188,7 +188,7 @@ function alertsRow() {
 
 function itemHTML( id, kind, html, at, unread, now ) {
 	const [ icon, color ] = KIND[ kind ] || [ 'bell', 'slate' ];
-	return `<button class="nw-nitem${ unread ? ' nw-unread' : '' }" type="button" data-nid="${ esc( String( id ) ) }"><span class="nw-nic" style="${ cpair( color ) }">${ ic( icon ) }</span><span class="nw-ntext">${ html }<time>${ esc(
+	return `<button class="nw-nitem${ unread ? ' nw-unread' : '' }" type="button" data-nid="${ esc( String( id ) ) }"><span class="nw-nic" style="${ cpair( color ) }">${ ic( icon ) }</span><span class="nw-ntext"><span class="nw-nbody">${ html }</span><time>${ esc(
 		ago( at, now, store().locale )
 	) }</time></span><i class="nw-ndot"></i></button>`;
 }

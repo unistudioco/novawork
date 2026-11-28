@@ -533,3 +533,7 @@ textarea.nw-input.nw-grow { display: block; height: 32px; min-height: 32px; max-
 
 /* "Were you working?" after an automatic stop (owner, 1.2.0). */
 .nw-recover-lead { margin: 0 0 4px; font-size: 14.5px; line-height: 1.5; color: var(--nw-fg); }
+
+/* A notification's text: three lines at most, with an ellipsis; the full
+   text stays in chat or on the item (the time under it always shows). */
+.nw-ntext .nw-nbody { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
