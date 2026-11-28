@@ -184,6 +184,13 @@ Filters:
 - `Api::post_comment( $author, $object_type, $object_id, $text, $args )` on a task or decision.
 - `Api::notify( $user_id, $kind, $data, $author, $args )`: a bell row of your own kind (`objectType`, `objectId`, `dedupeKey`).
 
+Work items (1.4.0). Each runs NovaWork's own route as a member, so the checks, rights (Settings → Who can change work), change log, notifications and actions are the app's. An agent acts on behalf of a member: pass the agent's key as `$author` and the member as `$args['for']`; the member's rights apply, `created_by` is the member, and what it makes carries `createdAgent` (the column `created_agent`, schema 10), and the feed names the agent.
+
+- `Api::create_project( $author, $fields, $args )`, `Api::create_task( … )`, `Api::create_decision( … )`: the fields `POST /projects`, `/tasks` and `/decisions` take; the created item comes back as the API presents it.
+- `Api::add_subtask( $author, $task_id, $fields, $args )`: a checklist item (`POST /tasks/{id}/subtasks`).
+- `Api::delete_item( $author, $type, $id, $args )`: `project`, `task`, `decision` or `subtask` (with `taskId`), with the same rights as deleting it in the app.
+- `Api::quietly( $work )`: runs `$work()` without a notification or a team-feed row for each thing it does (open apps still update and the actions still fire); returns `[ 'result', 'people' => [ member id => notifications held ], 'activity' => rows held ]`, so you can tell each person once with `Api::notify()` and add one feed row with `Services\Activity::record()`.
+
 Errors come back as `WP_Error` with an HTTP status.
 
 ### In the app (1.3.0)

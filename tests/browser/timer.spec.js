@@ -9,7 +9,7 @@
  * Alerts and workers need a secure page: this browser treats the dev site
  * as secure, as alerts.spec.js does.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanUp, wpEval } from './helpers.js';
 
 const BASE = process.env.NOVAWORK_URL || 'http://novawork.local';

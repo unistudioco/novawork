@@ -59,6 +59,14 @@ final class Activity {
 	 * @param string               $agent       Agent key, for add-ons.
 	 */
 	public static function record( string $verb, int $actor, string $object_type, int $object_id, array $data = array(), string $agent = '' ): void {
+		// Held back by Api::quietly() (1.4.0); an agent acting for a member is named.
+		if ( \NovaWork\Api::is_quiet() ) {
+			\NovaWork\Api::hold_activity();
+			return;
+		}
+		if ( '' === $agent ) {
+			$agent = \NovaWork\Api::acting_agent();
+		}
 		$repo = new ActivityRepository();
 		$last = $repo->last_for( $verb, $object_type, $object_id );
 		if ( $last && (int) $last['actor_id'] === $actor && (int) \NovaWork\Data\Db::to_ms( (string) $last['created_at'] ) > ( time() - self::SETTLE ) * 1000 ) {

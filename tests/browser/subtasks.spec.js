@@ -3,7 +3,7 @@
  * saved with a new task or changed live on a saved one, with "2/3" on the
  * board card.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, serverData, unique, cleanUp, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {

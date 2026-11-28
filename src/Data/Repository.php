@@ -154,6 +154,10 @@ abstract class Repository {
 		if ( isset( $formats['updated_at'] ) && ! isset( $data['updated_at'] ) ) {
 			$data['updated_at'] = $now;
 		}
+		// Made by an agent acting for a member (1.4.0): marked as such.
+		if ( isset( $formats['created_agent'] ) && ! isset( $data['created_agent'] ) ) {
+			$data['created_agent'] = \NovaWork\Api::acting_agent();
+		}
 		list( $values, $fmt ) = $this->only_columns( $data );
 		if ( ! $wpdb->insert( $this->table_name(), $values, $fmt ) ) {
 			return 0;

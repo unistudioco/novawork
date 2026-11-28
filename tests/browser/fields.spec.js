@@ -3,7 +3,7 @@
  * message fields take Shift+Enter as a new line, Focus slots print no empty
  * meta row, and a Board card without a project has no empty top row.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, serverData, newTask, unique, cleanUp, cleanChat } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {

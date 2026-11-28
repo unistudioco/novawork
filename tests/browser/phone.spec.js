@@ -3,7 +3,7 @@
  * like every other dialog, and the floating tracker carries the running
  * gradient.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn } from './helpers.js';
 
 test.use( { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } );

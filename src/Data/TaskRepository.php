@@ -42,18 +42,19 @@ final class TaskRepository extends Repository {
 	 */
 	protected function formats(): array {
 		return array(
-			'project_id' => '%d',
-			'title'      => '%s',
-			'notes'      => '%s',
-			'status'     => '%s',
-			'priority'   => '%s',
-			'due_date'   => '%s',
-			'sort_order' => '%d',
-			'done_at'    => '%s',
-			'is_sample'  => '%d',
-			'created_by' => '%d',
-			'created_at' => '%s',
-			'updated_at' => '%s',
+			'project_id'    => '%d',
+			'title'         => '%s',
+			'notes'         => '%s',
+			'status'        => '%s',
+			'priority'      => '%s',
+			'due_date'      => '%s',
+			'sort_order'    => '%d',
+			'done_at'       => '%s',
+			'is_sample'     => '%d',
+			'created_by'    => '%d',
+			'created_agent' => '%s',
+			'created_at'    => '%s',
+			'updated_at'    => '%s',
 		);
 	}
 
@@ -95,22 +96,23 @@ final class TaskRepository extends Repository {
 		foreach ( $rows as $row ) {
 			$id    = (int) $row['id'];
 			$out[] = array(
-				'id'        => $id,
-				'title'     => (string) $row['title'],
-				'notes'     => (string) $row['notes'],
-				'status'    => (string) $row['status'],
-				'priority'  => (string) $row['priority'],
-				'due'       => Db::date_out( $row['due_date'] ),
-				'projectId' => (int) $row['project_id'],
-				'assignees' => $assignees[ $id ] ?? array(),
-				'subtasks'  => $subtasks[ $id ] ?? array(),
-				'order'     => (int) $row['sort_order'],
-				'doneAt'    => Db::to_ms( $row['done_at'] ),
-				'trackedMs' => ( $seconds[ $id ] ?? 0 ) * 1000,
-				'sample'    => (bool) $row['is_sample'],
-				'createdBy' => (int) $row['created_by'],
-				'createdAt' => Db::to_ms( $row['created_at'] ),
-				'updatedAt' => Db::to_ms( $row['updated_at'] ),
+				'id'           => $id,
+				'title'        => (string) $row['title'],
+				'notes'        => (string) $row['notes'],
+				'status'       => (string) $row['status'],
+				'priority'     => (string) $row['priority'],
+				'due'          => Db::date_out( $row['due_date'] ),
+				'projectId'    => (int) $row['project_id'],
+				'assignees'    => $assignees[ $id ] ?? array(),
+				'subtasks'     => $subtasks[ $id ] ?? array(),
+				'order'        => (int) $row['sort_order'],
+				'doneAt'       => Db::to_ms( $row['done_at'] ),
+				'trackedMs'    => ( $seconds[ $id ] ?? 0 ) * 1000,
+				'sample'       => (bool) $row['is_sample'],
+				'createdBy'    => (int) $row['created_by'],
+				'createdAgent' => (string) ( $row['created_agent'] ?? '' ),
+				'createdAt'    => Db::to_ms( $row['created_at'] ),
+				'updatedAt'    => Db::to_ms( $row['updated_at'] ),
 			);
 		}
 		return $out;

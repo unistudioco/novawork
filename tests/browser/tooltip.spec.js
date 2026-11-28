@@ -3,7 +3,7 @@
  * `title` popups. Hover shows it after a short delay, the timer shows its
  * T shortcut, it sits above open dialogs, and touch never shows it.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {

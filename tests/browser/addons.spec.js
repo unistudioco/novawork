@@ -7,7 +7,7 @@
  * tests/fixtures (a must-use plugin, linked for this file only and gated by
  * an option), and checks that nothing changes without it.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { existsSync, mkdirSync, symlinkSync, unlinkSync, readdirSync, rmdirSync, lstatSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { APP, signIn, unique, cleanChat, cleanUp, wpEval } from './helpers.js';

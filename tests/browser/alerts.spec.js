@@ -6,7 +6,7 @@
  * Alerts need a secure page; the dev site is plain http, so this browser
  * treats it as secure. The browser's own alert is replaced by a recorder.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanChat } from './helpers.js';
 
 const BASE = process.env.NOVAWORK_URL || 'http://novawork.local';

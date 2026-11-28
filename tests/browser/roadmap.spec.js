@@ -1,7 +1,7 @@
 /**
  * Roadmap in a real browser, as member A.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {

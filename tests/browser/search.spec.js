@@ -2,7 +2,7 @@
  * Quick search, final pass: the whole chat history is searched (the app only
  * holds the newest messages), and a message result opens the chat on it.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanChat } from './helpers.js';
 
 test.afterAll( () => {

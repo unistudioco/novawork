@@ -3,7 +3,7 @@
  * the message it belongs to, nor the message above (owner, 2026-11-25: it hid
  * the end of a /task link on a message's first line).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanChat, cleanUp } from './helpers.js';
 
 test.afterAll( () => {

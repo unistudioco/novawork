@@ -3,7 +3,7 @@
  * shows on their avatar and in Team today, for everyone; "I'm back" ends it.
  * Administrators can set anyone's (owner, 2026-11-28).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, wpEval } from './helpers.js';
 
 const clear = () => wpEval( "delete_metadata( 'user', 0, 'novawork_away', '', true );" );

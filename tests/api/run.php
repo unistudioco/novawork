@@ -82,6 +82,22 @@ if ( ! $alex || ! $sam || ! $admin ) {
 }
 
 $files_before = glob( Files::dir() . '/*' ) ?: array();
+// No request leaves the site during the tests: each attempt is refused and
+// fails the run (only the site itself and localhost are allowed).
+$outside = array();
+add_filter(
+	'pre_http_request',
+	static function ( $pre, $args, $url ) use ( &$outside ) {
+		$host = (string) wp_parse_url( (string) $url, PHP_URL_HOST );
+		if ( in_array( $host, array( (string) wp_parse_url( home_url(), PHP_URL_HOST ), 'localhost', '127.0.0.1', '::1' ), true ) ) {
+			return $pre;
+		}
+		$outside[] = (string) $url;
+		return new WP_Error( 'novawork_test_offline', 'Tests make no request outside the site.' );
+	},
+	1,
+	3
+);
 $wpdb->query( 'START TRANSACTION' );
 
 try {
@@ -1385,7 +1401,7 @@ try {
 
 	// ------------------------------------------------------------------
 	$t->section( 'Extension points: decisions that name an agent (1.3.0)' );
-	$t->ok( 9 === Schema::VERSION && (int) get_option( NovaWork\Install\Installer::VERSION_OPTION ) >= 9, 'schema version 9 is installed' );
+	$t->ok( Schema::VERSION >= 9 && (int) get_option( NovaWork\Install\Installer::VERSION_OPTION ) >= 9, 'schema version 9 or later is installed' );
 	$t->ok( array( 'owner_agent' ) === $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', Db::table( 'decisions' ), 'owner_agent' ) ), 'decisions have an owner_agent column' );
 	$heard['assigned'] = array();
 	list( $s, $ext_ad ) = $t->call( $alex, 'POST', '/decisions', array( 'question' => 'Which launch date?', 'ownerAgent' => 'helper', 'ownerId' => $sam ) );
@@ -1437,6 +1453,67 @@ try {
 	}
 
 	// ------------------------------------------------------------------
+	$t->section( 'Write API: work items, acting for a member, quietly() (1.4.0)' );
+	add_filter( 'novawork_agents', $agent_filter );
+	$t->ok( 10 === Schema::VERSION && (int) get_option( NovaWork\Install\Installer::VERSION_OPTION ) >= 10, 'schema version 10 is installed' );
+	foreach ( array( 'projects', 'tasks', 'subtasks', 'decisions' ) as $wi_table ) {
+		$t->ok( array( 'created_agent' ) === $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', Db::table( $wi_table ), 'created_agent' ) ), $wi_table . ' have a created_agent column' );
+	}
+	$wi_bad = NovaWork\Api::create_task( 'helper', array( 'title' => 'No member' ) );
+	$t->ok( is_wp_error( $wi_bad ) && 'novawork_needs_member' === $wi_bad->get_error_code(), 'an agent must act for a member' );
+	$wi_bad = NovaWork\Api::create_task( 'helper', array( 'title' => 'Outsider' ), array( 'for' => (int) $outsider ) );
+	$t->ok( is_wp_error( $wi_bad ), 'never for someone who isn’t a member' );
+	$wi_bad = NovaWork\Api::create_task( 'helper', array( 'title' => '' ), array( 'for' => $alex ) );
+	$t->ok( is_wp_error( $wi_bad ) && 400 === ( $wi_bad->get_error_data()['status'] ?? 0 ), 'the route’s own checks apply (a task needs a title)', $wi_bad );
+	wp_set_current_user( 0 );
+	$heard['task'] = array();
+	$wi_hook       = static function ( $task, $actor ) use ( &$heard ) { $heard['task'][] = array( (int) $task['id'], (int) $actor ); };
+	add_action( 'novawork_task_created', $wi_hook, 10, 2 );
+	$wi_floor = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MAX(id) FROM %i', Db::table( 'notifications' ) ) );
+	$wi_task  = NovaWork\Api::create_task( 'helper', array( 'title' => 'Made for Alex', 'status' => 'next', 'assignees' => array( $sam ) ), array( 'for' => $alex ) );
+	$wi_row   = ( new NovaWork\Data\TaskRepository() )->find( (int) $wi_task['id'] );
+	$t->ok( is_array( $wi_task ) && 'helper' === $wi_task['createdAgent'] && $alex === $wi_task['createdBy'] && $alex === (int) $wi_row['created_by'] && 'helper' === $wi_row['created_agent'] && array( $sam ) === $wi_task['assignees'], 'an agent creates a task for a member: created_by is the member, created_agent the agent', $wi_task );
+	$t->ok( array( array( (int) $wi_task['id'], $alex ) ) === $heard['task'] && 0 === get_current_user_id(), 'the same action fires (with the member as actor), and who is signed in is restored', $heard['task'] );
+	$t->ok( 1 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE id > %d AND user_id = %d AND type = %s', Db::table( 'notifications' ), $wi_floor, $sam, 'assign' ) ), 'and the people it concerns are told, as in the app' );
+	$wi_feed = $wpdb->get_row( $wpdb->prepare( 'SELECT actor_id, agent FROM %i WHERE object_type = %s AND object_id = %d ORDER BY id DESC LIMIT 1', Db::table( 'activity' ), 'task', (int) $wi_task['id'] ), ARRAY_A );
+	$t->ok( $wi_feed && $alex === (int) $wi_feed['actor_id'] && 'helper' === $wi_feed['agent'], 'the team feed names the agent, with the member', $wi_feed );
+	$wi_proj = NovaWork\Api::create_project( 'helper', array( 'name' => 'Made project' ), array( 'for' => $alex ) );
+	$wi_dec  = NovaWork\Api::create_decision( 'helper', array( 'question' => 'Made decision?', 'projectId' => (int) $wi_proj['id'] ), array( 'for' => $alex ) );
+	$wi_sub  = NovaWork\Api::add_subtask( 'helper', (int) $wi_task['id'], array( 'title' => 'Made step' ), array( 'for' => $alex ) );
+	$wi_srow = $wpdb->get_row( $wpdb->prepare( 'SELECT created_by, created_agent FROM %i WHERE task_id = %d ORDER BY id DESC LIMIT 1', Db::table( 'subtasks' ), (int) $wi_task['id'] ), ARRAY_A );
+	$t->ok( 'helper' === $wi_proj['createdAgent'] && 'helper' === $wi_dec['createdAgent'] && (int) $wi_proj['id'] === $wi_dec['projectId'] && ! is_wp_error( $wi_sub ) && 'helper' === $wi_srow['created_agent'] && $alex === (int) $wi_srow['created_by'], 'projects, decisions and checklist items are marked the same way', array( $wi_proj, $wi_dec, $wi_srow ) );
+	$wi_mine = NovaWork\Api::create_task( $alex, array( 'title' => 'Made by Alex herself' ) );
+	$t->ok( '' === $wi_mine['createdAgent'] && $alex === $wi_mine['createdBy'], 'a member author: nothing marked' );
+	// Deleting: the member's own rights.
+	// Alex's own task, not assigned to Sam: Sam may not change it.
+	$wi_del = NovaWork\Api::delete_item( 'helper', 'task', (int) $wi_mine['id'], array( 'for' => $sam ) );
+	$t->ok( is_wp_error( $wi_del ) && 403 === ( $wi_del->get_error_data()['status'] ?? 0 ) && null !== ( new NovaWork\Data\TaskRepository() )->find( (int) $wi_mine['id'] ), 'deleting for someone who may not change it is refused (edit rights)', $wi_del );
+	$wi_del = NovaWork\Api::delete_item( 'helper', 'subtask', (int) ( $wi_sub['subtasks'][0]['id'] ?? 0 ), array( 'for' => $alex, 'taskId' => (int) $wi_task['id'] ) );
+	$wi_del2 = NovaWork\Api::delete_item( 'helper', 'task', (int) $wi_task['id'], array( 'for' => $alex ) );
+	$wi_del3 = NovaWork\Api::delete_item( 'helper', 'decision', (int) $wi_dec['id'], array( 'for' => $alex ) );
+	$wi_del4 = NovaWork\Api::delete_item( 'helper', 'project', (int) $wi_proj['id'], array( 'for' => $alex ) );
+	$t->ok( ! is_wp_error( $wi_del ) && ! is_wp_error( $wi_del2 ) && ! is_wp_error( $wi_del3 ) && ! is_wp_error( $wi_del4 ) && null === ( new NovaWork\Data\TaskRepository() )->find( (int) $wi_task['id'] ), 'the member’s own work is deleted through the same routes (open apps hear about it)', array( $wi_del, $wi_del2 ) );
+	$wi_bad = NovaWork\Api::delete_item( $alex, 'comment', 1 );
+	$t->ok( is_wp_error( $wi_bad ), 'only projects, tasks, checklist items and decisions' );
+	// quietly(): one notification per person, from the caller.
+	$wi_floor = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT MAX(id) FROM %i', Db::table( 'notifications' ) ) );
+	$wi_feed0 = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', Db::table( 'activity' ) ) );
+	$wi_q     = NovaWork\Api::quietly(
+		static function () use ( $alex, $sam ) {
+			$a = NovaWork\Api::create_task( 'helper', array( 'title' => 'Quiet one', 'assignees' => array( $sam ) ), array( 'for' => $alex ) );
+			$b = NovaWork\Api::create_task( 'helper', array( 'title' => 'Quiet two', 'assignees' => array( $sam ) ), array( 'for' => $alex ) );
+			$inner = NovaWork\Api::quietly( static fn() => NovaWork\Api::create_task( 'helper', array( 'title' => 'Quiet three', 'assignees' => array( $sam ) ), array( 'for' => $alex ) ) );
+			return array( $a['id'], $b['id'], $inner['result']['id'] );
+		}
+	);
+	$t->ok( 0 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE id > %d', Db::table( 'notifications' ), $wi_floor ) ) && $wi_feed0 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', Db::table( 'activity' ) ) ), 'inside quietly() no bell row and no feed row is written', $wi_q );
+	$t->ok( 3 === count( $wi_q['result'] ) && ( $wi_q['people'][ $sam ] ?? 0 ) >= 3 && $wi_q['activity'] >= 3 && ! NovaWork\Api::is_quiet(), 'it returns the work’s result, who would have been told (nested calls count in the outer one) and the feed rows held', $wi_q );
+	$t->ok( ! empty( ( new NovaWork\Data\TaskRepository() )->find( (int) $wi_q['result'][0] ) ), 'the work itself is done as usual' );
+	$wi_after = NovaWork\Api::notify( $sam, 'helper_batch', array( 'count' => 3 ), 'helper' );
+	$t->ok( $wi_after > 0, 'afterwards, notify() tells each person once' );
+	remove_action( 'novawork_task_created', $wi_hook, 10 );
+	remove_filter( 'novawork_agents', $agent_filter );
+
 	$t->section( 'Away until… (1.3.0)' );
 	$away_heard = array();
 	$on_away    = static function ( $u, $now, $before, $by ) use ( &$away_heard ) {
@@ -1499,6 +1576,9 @@ try {
 		@unlink( $tmp );
 	}
 }
+
+$t->section( 'Nothing outside the site' );
+$t->ok( array() === $outside, 'no test made a request outside the site', $outside );
 
 WP_CLI::log( sprintf( "\n%d passed, %d failed. (Rolled back: the site keeps no test data.)", $t->pass, count( $t->fail ) ) );
 if ( $t->fail ) {

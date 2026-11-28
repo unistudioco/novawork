@@ -1,7 +1,7 @@
 /**
  * Focus and Time in a real browser, as member A. Leaves no timer running.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context } ) => {

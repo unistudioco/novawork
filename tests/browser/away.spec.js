@@ -4,7 +4,7 @@
  * asked "Were you working?" (setting recover_time, on) instead of being told
  * the time wasn't counted; timer.spec.js covers the answers.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanUp, wpEval } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {

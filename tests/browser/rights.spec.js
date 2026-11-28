@@ -3,7 +3,7 @@
  * assigned to, and projects and decisions they created; someone else's work
  * opens read only (comments, votes and tracking stay open).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanUp } from './helpers.js';
 
 async function open( browser, who ) {

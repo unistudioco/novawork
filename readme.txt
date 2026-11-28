@@ -5,7 +5,7 @@ Tags: project management, kanban, time tracking, team chat, roadmap
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -174,6 +174,10 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 
 == Changelog ==
 
+= 1.4.0 =
+* New for developers: an add-on can create and delete projects, tasks, checklist items and decisions through the write API (NovaWork\Api), with the same checks and rights as the app. An agent works on behalf of a member, with that member's rights; what it makes is marked as made by the agent.
+* New for developers: Api::quietly() runs a batch of work without a notification or a team-feed row for each item, so an add-on can tell each person once.
+
 = 1.3.0 =
 * New: "Away until…". Set a holiday or days off from the team menu, with an optional note: your avatar shows a small moon and Team today says "Away until Fri 5 Dec" until the day you pick, then it ends by itself. Administrators can set it for anyone.
 * New for developers: extension points for add-ons. An add-on can post in chat, comment and notify as a member or as its own agent through one write API (NovaWork\Api), and hear about every new notification.
@@ -208,6 +212,9 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 * First release: Focus with a server-side timer, the board with subtasks, projects and the roadmap, decisions with team votes, time analytics, team chat with mentions, links and private files, notifications with desktop alerts, quick search, invites, branding, privacy tools and translations.
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+For developers: add-ons can create and delete work through the write API, on behalf of a member.
 
 = 1.3.0 =
 "Away until…" for holidays and days off, and extension points for add-ons: a write API, agents in mentions and decisions, and places in the app and the settings screen.

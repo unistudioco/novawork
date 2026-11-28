@@ -254,6 +254,220 @@ final class Api {
 		return Notifier::send( $user_id, $fields );
 	}
 
+	/* ---------- work items (1.4.0) ---------- */
+
+	/**
+	 * The agent acting for a member right now, innermost first ('' for none).
+	 *
+	 * @var list<string>
+	 */
+	private static array $acting = array();
+
+	/**
+	 * How deep quietly() calls are, and what they held back.
+	 *
+	 * @var array{depth: int, people: array<int, int>, activity: int}
+	 */
+	private static array $quiet = array(
+		'depth'    => 0,
+		'people'   => array(),
+		'activity' => 0,
+	);
+
+	/**
+	 * Create a project.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int|string           $author A member's id, or an agent's key acting for $args['for'].
+	 * @param array<string, mixed> $fields As POST /projects takes them (name, goal, color, status, start, target, deadline).
+	 * @param array<string, mixed> $args   Optional: 'for', the member an agent acts for.
+	 * @return array<string, mixed>|WP_Error The project as the API presents it.
+	 */
+	public static function create_project( int|string $author, array $fields, array $args = array() ): array|WP_Error {
+		return self::act( $author, $args, 'POST', '/projects', $fields );
+	}
+
+	/**
+	 * Create a task.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int|string           $author A member's id, or an agent's key acting for $args['for'].
+	 * @param array<string, mixed> $fields As POST /tasks takes them (title, notes, status, priority, due, projectId, assignees).
+	 * @param array<string, mixed> $args   Optional: 'for', the member an agent acts for.
+	 * @return array<string, mixed>|WP_Error The task as the API presents it.
+	 */
+	public static function create_task( int|string $author, array $fields, array $args = array() ): array|WP_Error {
+		return self::act( $author, $args, 'POST', '/tasks', $fields );
+	}
+
+	/**
+	 * Add a checklist item (subtask) to a task.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int|string           $author  A member's id, or an agent's key acting for $args['for'].
+	 * @param int                  $task_id The task.
+	 * @param array<string, mixed> $fields  As POST /tasks/{id}/subtasks takes them (title, assigneeId…).
+	 * @param array<string, mixed> $args    Optional: 'for', the member an agent acts for.
+	 * @return array<string, mixed>|WP_Error The answer of that route (the task with its checklist).
+	 */
+	public static function add_subtask( int|string $author, int $task_id, array $fields, array $args = array() ): array|WP_Error {
+		return self::act( $author, $args, 'POST', '/tasks/' . $task_id . '/subtasks', $fields );
+	}
+
+	/**
+	 * Create a decision.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int|string           $author A member's id, or an agent's key acting for $args['for'].
+	 * @param array<string, mixed> $fields As POST /decisions takes them (question, context, projectId, ownerId, ownerAgent, decideBy, voting, options).
+	 * @param array<string, mixed> $args   Optional: 'for', the member an agent acts for.
+	 * @return array<string, mixed>|WP_Error The decision as the API presents it.
+	 */
+	public static function create_decision( int|string $author, array $fields, array $args = array() ): array|WP_Error {
+		return self::act( $author, $args, 'POST', '/decisions', $fields );
+	}
+
+	/**
+	 * Delete a project, task, checklist item or decision, with the same
+	 * rights as the member (or the member an agent acts for) deleting it in
+	 * the app; open apps hear about it on their next poll.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param int|string           $author A member's id, or an agent's key acting for $args['for'].
+	 * @param string               $type   project, task, subtask or decision.
+	 * @param int                  $id     Its id.
+	 * @param array<string, mixed> $args   Optional: 'for', the member an agent acts for; 'taskId', a subtask's task.
+	 * @return array<string, mixed>|WP_Error The route's answer ({ deleted: id }).
+	 */
+	public static function delete_item( int|string $author, string $type, int $id, array $args = array() ): array|WP_Error {
+		$paths = array(
+			'project'  => '/projects/' . $id,
+			'task'     => '/tasks/' . $id,
+			'decision' => '/decisions/' . $id,
+			'subtask'  => '/tasks/' . (int) ( $args['taskId'] ?? 0 ) . '/subtasks/' . $id,
+		);
+		if ( ! isset( $paths[ $type ] ) ) {
+			return new WP_Error( 'novawork_bad_type', __( 'That kind of item can’t be deleted here.', 'novawork' ), array( 'status' => 400 ) );
+		}
+		return self::act( $author, $args, 'DELETE', $paths[ $type ], array() );
+	}
+
+	/**
+	 * Run work without writing a bell row or a feed row for each thing it
+	 * does: items are created and changed as usual (open apps update, the
+	 * same actions fire), but notifications and team-feed rows are only
+	 * counted. The caller then tells people once, with notify() and
+	 * Services\Activity::record() (for example one row for a whole plan).
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param callable $work The work; its return value comes back as "result".
+	 * @return array{result: mixed, people: array<int, int>, activity: int} People who would have been told (member id => how many notifications), and feed rows held back.
+	 */
+	public static function quietly( callable $work ): array {
+		$outer = 0 === self::$quiet['depth'];
+		if ( $outer ) {
+			self::$quiet['people']   = array();
+			self::$quiet['activity'] = 0;
+		}
+		++self::$quiet['depth'];
+		try {
+			$result = $work();
+		} finally {
+			--self::$quiet['depth'];
+		}
+		$held = array(
+			'result'   => $result,
+			'people'   => self::$quiet['people'],
+			'activity' => self::$quiet['activity'],
+		);
+		if ( $outer ) {
+			self::$quiet['people']   = array();
+			self::$quiet['activity'] = 0;
+		}
+		return $held;
+	}
+
+	/**
+	 * Whether quietly() is holding back notifications and feed rows.
+	 *
+	 * @since 1.4.0
+	 */
+	public static function is_quiet(): bool {
+		return self::$quiet['depth'] > 0;
+	}
+
+	/**
+	 * Count a notification quietly() held back (Notifier::send()).
+	 *
+	 * @param int $user_id Who it was for.
+	 */
+	public static function hold_note( int $user_id ): void {
+		self::$quiet['people'][ $user_id ] = ( self::$quiet['people'][ $user_id ] ?? 0 ) + 1;
+	}
+
+	/**
+	 * Count a feed row quietly() held back (Activity::record()).
+	 */
+	public static function hold_activity(): void {
+		++self::$quiet['activity'];
+	}
+
+	/**
+	 * The agent acting for a member right now ('' for none): repositories
+	 * mark what it creates (created_agent), and the feed names it.
+	 *
+	 * @since 1.4.0
+	 */
+	public static function acting_agent(): string {
+		$agent = end( self::$acting );
+		return false === $agent ? '' : (string) $agent;
+	}
+
+	/**
+	 * Run one of NovaWork's own routes as the member (an agent acts for a
+	 * member, with that member's rights): the same validation, rights checks,
+	 * change log, notifications and actions as in the app.
+	 *
+	 * @param int|string           $author A member's id, or an agent's key.
+	 * @param array<string, mixed> $args   Optional: 'for', the member an agent acts for.
+	 * @param string               $method HTTP method.
+	 * @param string               $path   Route under novawork/v1.
+	 * @param array<string, mixed> $body   Fields.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	private static function act( int|string $author, array $args, string $method, string $path, array $body ): array|WP_Error {
+		$who = self::author( $author );
+		if ( $who instanceof WP_Error ) {
+			return $who;
+		}
+		$member = $who['user_id'] > 0 ? $who['user_id'] : (int) ( $args['for'] ?? 0 );
+		if ( '' !== $who['agent'] && ! Capabilities::is_member( $member ) ) {
+			return new WP_Error( 'novawork_needs_member', __( 'An agent creates and deletes work for a member: say which one.', 'novawork' ), array( 'status' => 400 ) );
+		}
+		$before = get_current_user_id();
+		wp_set_current_user( $member );
+		self::$acting[] = $who['agent'];
+		try {
+			$request = new \WP_REST_Request( $method, '/novawork/v1' . $path );
+			$request->set_header( 'content-type', 'application/json' );
+			$request->set_body( (string) wp_json_encode( (object) $body ) );
+			$response = rest_do_request( $request );
+		} finally {
+			array_pop( self::$acting );
+			wp_set_current_user( $before );
+		}
+		if ( $response->is_error() ) {
+			return $response->as_error();
+		}
+		return (array) rest_get_server()->response_to_data( $response, false );
+	}
+
 	/**
 	 * Resolve an author: a member's id, or a registered agent's key.
 	 *

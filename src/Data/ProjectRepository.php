@@ -41,18 +41,19 @@ final class ProjectRepository extends Repository {
 	 */
 	protected function formats(): array {
 		return array(
-			'name'        => '%s',
-			'goal'        => '%s',
-			'color'       => '%s',
-			'status'      => '%s',
-			'start_date'  => '%s',
-			'target_date' => '%s',
-			'deadline'    => '%s',
-			'sort_order'  => '%d',
-			'is_sample'   => '%d',
-			'created_by'  => '%d',
-			'created_at'  => '%s',
-			'updated_at'  => '%s',
+			'name'          => '%s',
+			'goal'          => '%s',
+			'color'         => '%s',
+			'status'        => '%s',
+			'start_date'    => '%s',
+			'target_date'   => '%s',
+			'deadline'      => '%s',
+			'sort_order'    => '%d',
+			'is_sample'     => '%d',
+			'created_by'    => '%d',
+			'created_agent' => '%s',
+			'created_at'    => '%s',
+			'updated_at'    => '%s',
 		);
 	}
 
@@ -76,19 +77,20 @@ final class ProjectRepository extends Repository {
 	 */
 	public function present( array $row ): array {
 		return array(
-			'id'        => (int) $row['id'],
-			'name'      => (string) $row['name'],
-			'goal'      => (string) $row['goal'],
-			'color'     => (string) $row['color'],
-			'status'    => (string) $row['status'],
-			'start'     => Db::date_out( $row['start_date'] ),
-			'target'    => Db::date_out( $row['target_date'] ),
-			'deadline'  => Db::date_out( $row['deadline'] ),
-			'order'     => (int) $row['sort_order'],
-			'sample'    => (bool) $row['is_sample'],
-			'createdBy' => (int) $row['created_by'],
-			'createdAt' => Db::to_ms( $row['created_at'] ),
-			'updatedAt' => Db::to_ms( $row['updated_at'] ),
+			'id'           => (int) $row['id'],
+			'name'         => (string) $row['name'],
+			'goal'         => (string) $row['goal'],
+			'color'        => (string) $row['color'],
+			'status'       => (string) $row['status'],
+			'start'        => Db::date_out( $row['start_date'] ),
+			'target'       => Db::date_out( $row['target_date'] ),
+			'deadline'     => Db::date_out( $row['deadline'] ),
+			'order'        => (int) $row['sort_order'],
+			'sample'       => (bool) $row['is_sample'],
+			'createdBy'    => (int) $row['created_by'],
+			'createdAgent' => (string) ( $row['created_agent'] ?? '' ),
+			'createdAt'    => Db::to_ms( $row['created_at'] ),
+			'updatedAt'    => Db::to_ms( $row['updated_at'] ),
 		);
 	}
 

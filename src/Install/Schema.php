@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Schema {
 
-	public const VERSION = 9;
+	public const VERSION = 10;
 
 	/**
 	 * CREATE TABLE statements for every table.
@@ -50,6 +50,7 @@ deadline date DEFAULT NULL,
 sort_order bigint(20) NOT NULL DEFAULT 0,
 is_sample tinyint(1) NOT NULL DEFAULT 0,
 created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+created_agent varchar(64) NOT NULL DEFAULT '',
 created_at datetime NOT NULL,
 updated_at datetime NOT NULL,
 PRIMARY KEY  (id),
@@ -67,6 +68,7 @@ sort_order bigint(20) NOT NULL DEFAULT 0,
 done_at datetime DEFAULT NULL,
 is_sample tinyint(1) NOT NULL DEFAULT 0,
 created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+created_agent varchar(64) NOT NULL DEFAULT '',
 created_at datetime NOT NULL,
 updated_at datetime NOT NULL,
 PRIMARY KEY  (id),
@@ -88,6 +90,7 @@ done_at datetime DEFAULT NULL,
 assignee_id bigint(20) unsigned NOT NULL DEFAULT 0,
 sort_order bigint(20) NOT NULL DEFAULT 0,
 created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+created_agent varchar(64) NOT NULL DEFAULT '',
 created_at datetime NOT NULL,
 updated_at datetime NOT NULL,
 PRIMARY KEY  (id),
@@ -128,6 +131,7 @@ decided_by bigint(20) unsigned NOT NULL DEFAULT 0,
 sort_order bigint(20) NOT NULL DEFAULT 0,
 is_sample tinyint(1) NOT NULL DEFAULT 0,
 created_by bigint(20) unsigned NOT NULL DEFAULT 0,
+created_agent varchar(64) NOT NULL DEFAULT '',
 created_at datetime NOT NULL,
 updated_at datetime NOT NULL,
 PRIMARY KEY  (id),

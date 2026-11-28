@@ -363,6 +363,11 @@ final class Notifier {
 		if ( ! Capabilities::is_member( $user_id ) ) {
 			return 0;
 		}
+		// Held back by Api::quietly() (1.4.0): counted, not written.
+		if ( \NovaWork\Api::is_quiet() ) {
+			\NovaWork\Api::hold_note( $user_id );
+			return 0;
+		}
 		$fields['user_id'] = $user_id;
 		$fields['data']    = (string) wp_json_encode( $fields['data'] ?? array() );
 		$repo              = new NotificationRepository();

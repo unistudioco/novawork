@@ -1,7 +1,7 @@
 /**
  * Notifications: Mine (only your own) and Workspace (the team's activity).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanChat, cleanUp } from './helpers.js';
 
 test.afterAll( () => {

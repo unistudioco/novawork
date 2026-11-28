@@ -1,7 +1,7 @@
 /**
  * /links and @mentions in chat and comments (owner requests).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanChat, cleanUp } from './helpers.js';
 
 test.afterAll( () => {

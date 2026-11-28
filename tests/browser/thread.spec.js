@@ -1,7 +1,7 @@
 /**
  * Reply, Edit and Delete on chat messages and comments (owner request).
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanChat, cleanUp, newTask } from './helpers.js';
 
 test.afterAll( () => {

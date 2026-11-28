@@ -8,7 +8,7 @@
  * idle threshold is set to its minimum, one minute, so these tests take
  * real minutes.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, unique, cleanUp, wpEval } from './helpers.js';
 
 const setIdle = ( minutes ) => wpEval( `$s = (array) get_option( NovaWork\\Settings::OPTION, array() ); $s['idle_minutes'] = ${ minutes }; update_option( NovaWork\\Settings::OPTION, $s );` );

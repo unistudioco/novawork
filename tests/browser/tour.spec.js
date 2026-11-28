@@ -4,7 +4,7 @@
  * is remembered once finished or skipped, and can be taken again from the
  * menu. Administrators also get "Workspace settings" in that menu.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, wpEval } from './helpers.js';
 
 const login = ( which ) => ( process.env[ 'NOVAWORK_USER_' + which ] || ( which === 'A' ? 'alex:alex' : 'sam:sam' ) ).split( ':' )[ 0 ];

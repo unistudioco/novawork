@@ -3,7 +3,7 @@
  * screen's header, for administrators. It never opens by itself; a click shows
  * a short dialog whose link opens the waitlist page in a new tab.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 
 const BASE = process.env.NOVAWORK_URL || 'http://novawork.local';
 

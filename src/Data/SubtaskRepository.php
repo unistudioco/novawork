@@ -50,14 +50,15 @@ final class SubtaskRepository extends Repository {
 	 */
 	protected function formats(): array {
 		return array(
-			'task_id'     => '%d',
-			'title'       => '%s',
-			'done_at'     => '%s',
-			'assignee_id' => '%d',
-			'sort_order'  => '%d',
-			'created_by'  => '%d',
-			'created_at'  => '%s',
-			'updated_at'  => '%s',
+			'task_id'       => '%d',
+			'title'         => '%s',
+			'done_at'       => '%s',
+			'assignee_id'   => '%d',
+			'sort_order'    => '%d',
+			'created_by'    => '%d',
+			'created_agent' => '%s',
+			'created_at'    => '%s',
+			'updated_at'    => '%s',
 		);
 	}
 
@@ -76,12 +77,14 @@ final class SubtaskRepository extends Repository {
 	 */
 	public function present( array $row ): array {
 		return array(
-			'id'         => (int) $row['id'],
-			'title'      => (string) $row['title'],
-			'done'       => null !== $row['done_at'],
-			'doneAt'     => Db::to_ms( $row['done_at'] ),
-			'assigneeId' => (int) $row['assignee_id'],
-			'order'      => (int) $row['sort_order'],
+			'id'           => (int) $row['id'],
+			'title'        => (string) $row['title'],
+			'done'         => null !== $row['done_at'],
+			'doneAt'       => Db::to_ms( $row['done_at'] ),
+			'assigneeId'   => (int) $row['assignee_id'],
+			'order'        => (int) $row['sort_order'],
+			// Made by an agent for a member (1.4.0), or ''.
+			'createdAgent' => (string) ( $row['created_agent'] ?? '' ),
 		);
 	}
 

@@ -2,7 +2,7 @@
  * Board, editors, Undo and toasts in a real browser, as member A.
  * Everything a test creates it deletes again.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP, signIn, serverData, pointerDrag, newTask, deleteTask, unique, cleanUp } from './helpers.js';
 
 test.beforeEach( async ( { context, page } ) => {

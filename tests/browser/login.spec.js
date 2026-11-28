@@ -3,7 +3,7 @@
  * wrong details never say which part was wrong, signing in returns to the
  * view you asked for, and signing out comes back here.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './offline.js';
 import { APP } from './helpers.js';
 
 const [ USER, PASS ] = ( process.env.NOVAWORK_USER_A || 'alex:alex' ).split( ':' );
