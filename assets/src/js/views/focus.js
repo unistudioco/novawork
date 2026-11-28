@@ -22,7 +22,7 @@ const inviteRow = ( count ) => {
 };
 import { orderTeam } from '../lib/team.js';
 import {
-	canDecide, nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days,
+	canDecide, nowLimit, store, me, people, person, task, tasks, decisions, has, assignees, myRun, runOf, status, tracked, byOrder, days, awayText,
 	projChip, dueHTML, prio, avatars, presAvatar, tbtn, checkBtn, since, subChip,
 } from './model.js';
 
@@ -41,7 +41,7 @@ export function statusLine( uid ) {
 		const t = task( r.taskId );
 		return since( r.start ) + ( t ? ` · <span class="nw-tname" title="${ esc( t.title ) }">${ esc( shortTitle( t.title ) ) }</span>` : '' );
 	}
-	return esc( status( uid ) === 'online' ? __( 'Online', 'novawork' ) : __( 'Away', 'novawork' ) );
+	return esc( awayText( uid ) || ( status( uid ) === 'online' ? __( 'Online', 'novawork' ) : __( 'Away', 'novawork' ) ) );
 }
 
 /** "Team today" in the admin's chosen order (see lib/team.js). */

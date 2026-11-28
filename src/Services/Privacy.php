@@ -225,11 +225,12 @@ final class Privacy {
 						$group,
 						'profile-' . $id,
 						array(
-							__( 'Workspace', 'novawork' ) => Settings::workspace_name(),
-							__( 'Member', 'novawork' )    => \NovaWork\Access\Capabilities::is_member( $id ) ? __( 'Yes', 'novawork' ) : __( 'No', 'novawork' ),
-							__( 'Colour', 'novawork' )    => (string) get_user_meta( $id, Members::COLOR_META, true ),
-							__( 'Last seen', 'novawork' ) => self::ms_date( 1000 * (int) get_user_meta( $id, Members::SEEN_META, true ) ),
+							__( 'Workspace', 'novawork' )  => Settings::workspace_name(),
+							__( 'Member', 'novawork' )     => \NovaWork\Access\Capabilities::is_member( $id ) ? __( 'Yes', 'novawork' ) : __( 'No', 'novawork' ),
+							__( 'Colour', 'novawork' )     => (string) get_user_meta( $id, Members::COLOR_META, true ),
+							__( 'Last seen', 'novawork' )  => self::ms_date( 1000 * (int) get_user_meta( $id, Members::SEEN_META, true ) ),
 							__( 'Last active', 'novawork' ) => self::ms_date( Members::active_at( $id ) ),
+							__( 'Away until', 'novawork' ) => self::away_text( $id ),
 						)
 					);
 				}
@@ -308,7 +309,7 @@ final class Privacy {
 		self::unlink( new NotificationRepository(), 'notifications', array( 'actor_id' ), $id );
 		self::unlink( new InviteRepository(), 'invites', array( 'created_by', 'used_by' ), $id );
 
-		foreach ( array( Members::COLOR_META, Members::SEEN_META, Members::ONLINE_SINCE_META, Members::ACTIVE_META, TimeEdits::PENDING_META ) as $key ) {
+		foreach ( array( Members::COLOR_META, Members::SEEN_META, Members::ONLINE_SINCE_META, Members::ACTIVE_META, TimeEdits::PENDING_META, Away::META ) as $key ) {
 			delete_user_meta( $id, $key );
 		}
 
@@ -463,5 +464,15 @@ final class Privacy {
 		$html .= '<p>' . esc_html__( 'Fonts: when the site loads its typefaces from Fontshare (Indian Type Foundry), the browser requests the font files from Fontshare each time the workspace opens, which shares the visitor’s IP address with Fontshare.', 'novawork' ) . ' <a href="https://www.fontshare.com/licenses/itf-ffl">' . esc_html__( 'Fontshare’s font license', 'novawork' ) . '</a>.</p>';
 		$html .= '<p>' . esc_html__( 'Profile pictures: members’ avatars may come from Gravatar (Automattic), which receives a hashed form of the member’s email address.', 'novawork' ) . ' <a href="https://automattic.com/privacy/">' . esc_html__( 'Automattic privacy policy', 'novawork' ) . '</a>.</p>';
 		wp_add_privacy_policy_content( 'NovaWork', wp_kses_post( $html ) );
+	}
+
+	/**
+	 * A member's "Away until…" status for the export ('' when not away).
+	 *
+	 * @param int $id Member.
+	 */
+	private static function away_text( int $id ): string {
+		$away = Away::get( $id );
+		return $away ? trim( $away['until'] . ' ' . $away['note'] ) : '';
 	}
 }

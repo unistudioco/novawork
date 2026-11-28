@@ -9,7 +9,7 @@
 import { ic } from '../lib/icons.js';
 import { __ } from '../lib/i18n.js';
 import { esc } from '../lib/format.js';
-import { store, people, avatar, agentAvatar, byOrder } from './model.js';
+import { store, people, avatar, agentAvatar, byOrder, awayText } from './model.js';
 import { REF_ICONS } from './rich.js';
 
 const KINDS = () => ( { task: __( 'Task', 'novawork' ), decision: __( 'Decision', 'novawork' ), project: __( 'Project', 'novawork' ) } );
@@ -128,7 +128,9 @@ export function attachComposer( input, { parent, id, seed } ) {
 				( x, i ) =>
 					`<li role="option" id="${ id }-${ i }" data-i="${ i }" aria-selected="${ i === state.act }" class="${ i === state.act ? 'nw-active' : '' }">${
 						x.kind === 'at' ? ( x.agent ? agentAvatar( x.agent ) : avatar( x.id ) ) : ic( REF_ICONS[ x.type ], 16 )
-					}<span class="nw-opt-lbl">${ esc( x.label ) }</span>${ x.kind === 'slash' ? `<small class="nw-ref-kind">${ esc( kinds[ x.type ] ) }</small>` : '' }</li>`
+					}<span class="nw-opt-lbl">${ esc( x.label ) }</span>${ x.kind === 'slash' ? `<small class="nw-ref-kind">${ esc( kinds[ x.type ] ) }</small>` : '' }${
+						x.kind === 'at' && x.id && awayText( x.id, false ) ? `<small class="nw-ref-kind">${ esc( awayText( x.id, false ) ) }</small>` : ''
+					}</li>`
 			)
 			.join( '' );
 		input.setAttribute( 'aria-activedescendant', id + '-' + state.act );

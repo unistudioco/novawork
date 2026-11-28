@@ -1437,6 +1437,43 @@ try {
 	}
 
 	// ------------------------------------------------------------------
+	$t->section( 'Away until… (1.3.0)' );
+	$away_heard = array();
+	$on_away    = static function ( $u, $now, $before, $by ) use ( &$away_heard ) {
+		$away_heard[] = array( $u, $now, $before, $by );
+	};
+	add_action( 'novawork_away_changed', $on_away, 10, 4 );
+	$in_three = wp_date( 'Y-m-d', time() + 3 * DAY_IN_SECONDS );
+	list( $s, $mine ) = $t->call( $alex, 'PUT', '/away', array( 'until' => $in_three, 'note' => 'Holiday in Lisbon' ) );
+	$t->ok( 200 === $s && array( 'until' => $in_three, 'note' => 'Holiday in Lisbon' ) === $mine['away'], 'a member sets their own away status; the answer is them, with “away”', $mine );
+	list( , $snap ) = $t->call( $sam, 'GET', '/sync' );
+	$alex_row = current( array_filter( $snap['members'], fn( $m ) => $alex === $m['id'] ) );
+	$t->ok( array( 'until' => $in_three, 'note' => 'Holiday in Lisbon' ) === $alex_row['away'] && null === current( array_filter( $snap['members'], fn( $m ) => $sam === $m['id'] ) )['away'], 'everyone’s sync shows it on that member (null for the others)' );
+	$t->ok( 1 === count( $away_heard ) && $alex === $away_heard[0][0] && $in_three === $away_heard[0][1]['until'] && null === $away_heard[0][2] && $alex === $away_heard[0][3], 'novawork_away_changed fires with the member, now, before and who changed it', $away_heard );
+	list( $s ) = $t->call( $sam, 'PUT', '/away', array( 'until' => $in_three, 'userId' => $alex ) );
+	$t->ok( 403 === $s, 'a member can’t change someone else’s' );
+	list( $s, $set ) = $t->call( $admin, 'PUT', '/away', array( 'until' => $in_three, 'userId' => $sam ) );
+	$t->ok( 200 === $s && $sam === $set['id'] && $in_three === $set['away']['until'] && '' === $set['away']['note'], 'an administrator sets anyone’s', $set );
+	foreach ( array( array( wp_date( 'Y-m-d', time() - DAY_IN_SECONDS ), 'yesterday' ), array( wp_date( 'Y-m-d', time() + 400 * DAY_IN_SECONDS ), 'more than a year away' ), array( 'next week', 'not a date' ) ) as list( $bad, $why ) ) {
+		list( $s ) = $t->call( $alex, 'PUT', '/away', array( 'until' => $bad ) );
+		$t->ok( 400 === $s, 'refused: ' . $why );
+	}
+	list( $s ) = $t->call( $alex, 'PUT', '/away', array( 'until' => $in_three, 'note' => str_repeat( 'x', 81 ) ) );
+	$t->ok( 400 === $s, 'a note over 80 characters is refused' );
+	list( $s ) = $t->call( $admin, 'PUT', '/away', array( 'until' => $in_three, 'userId' => (int) $outsider ) );
+	$t->ok( 400 === $s, 'a non-member can’t be set away' );
+	update_user_meta( $sam, NovaWork\Services\Away::META, array( 'until' => wp_date( 'Y-m-d', time() - 2 * DAY_IN_SECONDS ), 'note' => 'Old' ) );
+	$t->ok( null === NovaWork\Services\Away::get( $sam ) && null === NovaWork\Members::present( $sam )['away'], 'it ends by itself after its last day' );
+	list( $s, $back ) = $t->call( $alex, 'DELETE', '/away' );
+	$t->ok( 200 === $s && null === $back['away'] && null === end( $away_heard )[1] && $in_three === end( $away_heard )[2]['until'], '“I’m back” ends it, and the hook says so' );
+	NovaWork\Services\Away::set( $sam, $in_three, 'Erase me', $sam );
+	// WordPress calls the eraser page after page until it says it is done.
+	for ( $page = 1, $done = false; ! $done && $page < 100; $page++ ) {
+		$done = ! empty( NovaWork\Services\Privacy::erase( get_userdata( $sam )->user_email, $page )['done'] );
+	}
+	$t->ok( null === NovaWork\Services\Away::get( $sam ), 'the personal-data eraser removes it' );
+	remove_action( 'novawork_away_changed', $on_away, 10 );
+
 	$t->section( 'Removing a member' );
 	$t->call( $alex, 'PATCH', '/tasks/' . $due['id'], array( 'assignees' => array( $sam, $alex ) ) );
 	$t->call( $sam, 'POST', '/timer/start', array( 'taskId' => $due['id'] ) );

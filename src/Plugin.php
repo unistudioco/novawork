@@ -39,6 +39,7 @@ final class Plugin {
 		Rest\TasksController::class,
 		Rest\SubtasksController::class,
 		Rest\TourController::class,
+		Rest\AwayController::class,
 		Rest\DecisionsController::class,
 		Rest\CommentsController::class,
 		Rest\ChatController::class,

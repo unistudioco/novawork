@@ -111,6 +111,8 @@ final class Members {
 			'lastSeen'    => $seen ? $seen * 1000 : null,
 			'online'      => $online,
 			'onlineSince' => $online && $since ? $since * 1000 : null,
+			// "Away until…" (1.3.0): { until: Y-m-d, note } or null.
+			'away'        => Services\Away::get( $user_id ),
 		);
 	}
 

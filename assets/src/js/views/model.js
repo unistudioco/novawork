@@ -47,6 +47,31 @@ export const byOrder = ( a, b ) => ( a.order || 0 ) - ( b.order || 0 );
 export const me = () => S.me;
 export const people = () => S.members.slice();
 export const person = ( id ) => S.members.find( ( m ) => m.id === Number( id ) ) || null;
+/** A member's "Away until…" status (1.3.0): { until, note } or null. */
+export const awayOf = ( id ) => {
+	const p = person( id );
+	return p && p.away && p.away.until ? p.away : null;
+};
+/**
+ * "Away until Fri 5 Dec" (and the note) for an away status, or ''. Pure, so
+ * the shell can use it before the views are bound.
+ *
+ * @param {Object|null} a        { until, note } or null.
+ * @param {boolean}     withNote Add the note.
+ * @param {string}      locale   The member's locale.
+ */
+export function awayLabel( a, withNote = true, locale = '' ) {
+	if ( ! a || ! a.until ) {
+		return '';
+	}
+	const [ y, m, d ] = String( a.until ).split( '-' ).map( Number );
+	const day = new Date( y, m - 1, d ).toLocaleDateString( locale || undefined, { weekday: 'short', day: 'numeric', month: 'short' } );
+	/* translators: %s: a day, like "Fri 5 Dec". */
+	const text = sprintf( __( 'Away until %s', 'novawork' ), day );
+	return withNote && a.note ? text + ' · ' + a.note : text;
+}
+/** The same for a member, by id. */
+export const awayText = ( id, withNote = true ) => awayLabel( awayOf( id ), withNote, S.locale );
 export const projects = () => Object.values( S.projects ).sort( byOrder );
 export const project = ( id ) => S.projects[ id ] || null;
 export const tasks = () => Object.values( S.tasks );
@@ -124,7 +149,8 @@ export function avatar( id, lg ) {
 	if ( ! p ) {
 		return `<span class="nw-avatar nw-none${ lg ? ' nw-lg' : '' }" title="${ esc( __( 'Unassigned', 'novawork' ) ) }">${ icf( 'prohibit-inset' ) }</span>`;
 	}
-	return `<span class="nw-avatar${ lg ? ' nw-lg' : '' }" title="${ esc( p.name ) }" style="${ cpair( p.color ) }">${ esc( initials( p.name ) ) }${ photo( p ) }</span>`;
+	const away = awayText( id, false );
+	return `<span class="nw-avatar${ lg ? ' nw-lg' : '' }${ away ? ' nw-is-off' : '' }" title="${ esc( away ? p.name + ' · ' + away : p.name ) }" style="${ cpair( p.color ) }">${ esc( initials( p.name ) ) }${ photo( p ) }${ away ? `<i class="nw-off-mark" aria-hidden="true">${ ic( 'moon', 9 ) }</i>` : '' }</span>`;
 }
 
 /** An agent an add-on registered (1.3.0), or null. */

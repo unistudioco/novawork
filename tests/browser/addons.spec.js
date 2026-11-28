@@ -47,7 +47,7 @@ test( 'without an add-on the app is unchanged, and still says it is ready', asyn
 	const page = await ctx.newPage();
 	await page.goto( APP + '#focus' );
 	await page.waitForFunction( () => !! ( window.novawork && window.novawork.app ) );
-	await expect( page.locator( '[id^="nw-x-"], [id^="nw-xm-"]' ) ).toHaveCount( 0 );
+	await expect( page.locator( '[id^="nw-x-"], [id^="nw-xm-"], #nw-launchers, .nw-xdock' ) ).toHaveCount( 0 );
 	const state = await page.evaluate( () => ( { addons: window.novawork.addons, agents: window.Alpine.store( 'nw' ).agents.length, store: window.Alpine.store( 'nw' ).addons } ) );
 	expect( state ).toEqual( { addons: {}, agents: 0, store: {} } );
 	// The chat button still sits right after the search, as before.
@@ -63,7 +63,7 @@ test( 'an add-on adds a header button, a team menu row and data on boot and sync
 	await page.goto( APP + '#focus' );
 	await page.waitForFunction( () => !! window.nwTestAddon );
 	const seen = await page.evaluate( () => window.nwTestAddon );
-	expect( seen.keys ).toEqual( [ '__', 'addHeaderButton', 'addMenuItem', 'addMessageAction', 'addNoteKind', 'addPanel', 'api', 'esc', 'ic', 'icf', 'openPanel', 'setThreadStatus', 'sprintf', 'store', 'toast' ] );
+	expect( seen.keys ).toEqual( [ '__', 'addHeaderButton', 'addLauncher', 'addMenuItem', 'addMessageAction', 'addNoteKind', 'addPanel', 'addShortcut', 'api', 'closePanel', 'esc', 'ic', 'icf', 'isPanelOpen', 'openPanel', 'renderText', 'setThreadStatus', 'sprintf', 'store', 'toast' ] );
 	expect( seen.same ).toBe( true );
 	expect( seen.boot.hello ).toBe( 'boot' );
 
@@ -71,7 +71,8 @@ test( 'an add-on adds a header button, a team menu row and data on boot and sync
 	const btn = page.locator( '#nw-x-test' );
 	await expect( btn ).toBeVisible();
 	await expect( btn ).toHaveAttribute( 'aria-label', 'Test add-on' );
-	expect( await page.evaluate( () => document.getElementById( 'nw-x-test' ).nextElementSibling.id ) ).toBe( 'nw-chat-btn' );
+	// Right before the chat button (a launcher's phone button, hidden here, may sit between).
+	expect( await page.evaluate( () => { let n = document.getElementById( 'nw-x-test' ).nextElementSibling; while ( n && n.classList.contains( 'nw-launch-head' ) ) { n = n.nextElementSibling; } return n && n.id; } ) ).toBe( 'nw-chat-btn' );
 	await btn.click();
 	await expect( page.locator( '.nw-toast', { hasText: 'Header button works' } ) ).toBeVisible();
 
@@ -330,3 +331,95 @@ test( 'an add-on’s panel opens like the app’s dialogs and locks the page beh
 		await ctx.close();
 	}
 } );
+
+test( 'an add-on’s launcher opens a docked panel; it docks opposite the chat, floats on narrower screens, and is a sheet on phones', async ( { browser } ) => {
+	addon( true );
+	const ctx = await browser.newContext( { viewport: { width: 1366, height: 900 } } );
+	await signIn( ctx, 'A' );
+	const page = await ctx.newPage();
+	await page.goto( APP + '#focus' );
+	await page.waitForFunction( () => !! window.nwTestLauncher );
+	await page.evaluate( () => window.localStorage.removeItem( 'nw.dock.testdock' ) );
+	const launcher = page.locator( '#nw-launch-test' );
+	await expect( launcher ).toBeVisible();
+	await expect( launcher ).toHaveAttribute( 'aria-label', 'Test launcher' );
+	const box = await launcher.boundingBox();
+	expect( 1366 - ( box.x + box.width ) ).toBeLessThan( 40 );
+	expect( 900 - ( box.y + box.height ) ).toBeLessThan( 40 );
+	// The badge: a count, a dot, none.
+	await page.evaluate( () => window.nwTestLauncher.setBadge( 3 ) );
+	await expect( launcher.locator( '.nw-launch-badge' ) ).toHaveText( '3' );
+	await page.evaluate( () => window.nwTestLauncher.setBadge( true ) );
+	await expect( launcher.locator( '.nw-dot-alert' ) ).toHaveCount( 1 );
+	await page.evaluate( () => window.nwTestLauncher.setBadge( 0 ) );
+	await expect( launcher.locator( '.nw-dot-alert, .nw-launch-badge' ) ).toHaveCount( 0 );
+
+	// Opens docked on the right; the page makes room; the text renders like chat.
+	await launcher.click();
+	const dock = page.locator( '#nw-xdock-testdock' );
+	await expect( dock ).toBeVisible();
+	await expect( dock ).toHaveClass( /nw-dock-right/ );
+	await expect( dock.locator( 'header h2' ) ).toHaveText( 'Test dock' );
+	await expect( dock.locator( '#nw-test-dock-text .nw-mention' ) ).toHaveCount( 1 );
+	expect( await page.evaluate( () => document.body.classList.contains( 'nw-xdocked-right' ) ) ).toBe( true );
+	await expect( dock.locator( '#nw-test-dock-in' ) ).toBeFocused();
+	await expect( launcher ).toBeVisible();
+	// It slides left of the docked panel (a short transition).
+	await expect.poll( async () => { const b = await launcher.boundingBox(); return b.x + b.width; } ).toBeLessThan( 1366 - 376 );
+	// The team chat docked on the right (its default) sends the panel to the left.
+	await page.click( '#nw-chat-btn' );
+	await expect( page.locator( '#nw-chat' ) ).toBeVisible();
+	await expect( dock ).toHaveClass( /nw-dock-left/ );
+	// The page makes room on both sides (after its short transition).
+	await expect.poll( () => page.evaluate( () => [ getComputedStyle( document.body ).paddingLeft, getComputedStyle( document.body ).paddingRight ].join( ' ' ) ) ).toBe( '376px 376px' );
+	await page.screenshot( { path: 'build/browser/dock-both-1366.png' } );
+	await page.click( '#nw-chat-close' );
+	await expect( dock ).toHaveClass( /nw-dock-right/ );
+	// Escape closes it; it was drawn once and keeps its content.
+	await dock.locator( '#nw-test-dock-in' ).fill( 'kept' );
+	await page.keyboard.press( 'Escape' );
+	await expect( dock ).toBeHidden();
+	expect( await page.evaluate( () => document.body.classList.contains( 'nw-xdocked-right' ) ) ).toBe( false );
+	// The H shortcut opens it again; N stays the app's.
+	// Focus went back to the launcher; H works from there.
+	await expect( launcher ).toBeFocused();
+	await page.keyboard.press( 'h' );
+	await expect( dock ).toBeVisible();
+	await expect( dock.locator( '#nw-test-dock-in' ) ).toHaveValue( 'kept' );
+	expect( await page.evaluate( () => [ window.nwTestDockRenders, window.nwTestDockOpens, window.nwTestTaken ] ) ).toEqual( [ 1, 2, null ] );
+	await page.click( '#nw-xdock-testdock [data-close]' );
+	await expect( dock ).toBeHidden();
+	await ctx.close();
+
+	// Below 1100px it floats in a corner.
+	const mid = await browser.newContext( { viewport: { width: 1000, height: 800 } } );
+	await signIn( mid, 'A' );
+	const p2 = await mid.newPage();
+	await p2.goto( APP + '#focus' );
+	await p2.waitForFunction( () => !! window.nwTestLauncher );
+	await p2.locator( '#nw-launch-test' ).click();
+	await expect( p2.locator( '#nw-xdock-testdock' ) ).toHaveClass( /nw-float/ );
+	expect( await p2.evaluate( () => document.body.classList.contains( 'nw-xdocked-right' ) || document.body.classList.contains( 'nw-xdocked-left' ) ) ).toBe( false );
+	await p2.screenshot( { path: 'build/browser/dock-float-1000.png' } );
+	await mid.close();
+
+	// Phones: the launcher is a header button; the panel is a bottom sheet.
+	const phone = await browser.newContext( { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } );
+	await signIn( phone, 'A' );
+	const p3 = await phone.newPage();
+	await p3.goto( APP + '#focus' );
+	await p3.waitForFunction( () => !! window.nwTestLauncher );
+	await expect( p3.locator( '#nw-launch-test' ) ).toBeHidden();
+	await expect( p3.locator( '#nw-launch-h-test' ) ).toBeVisible();
+	await p3.locator( '#nw-launch-h-test' ).click();
+	const sheet = p3.locator( '#nw-xdock-testdock' );
+	await expect( sheet ).toBeVisible();
+	const sb = await sheet.boundingBox();
+	expect( Math.round( sb.y + sb.height ) ).toBeGreaterThanOrEqual( 843 );
+	await expect( p3.locator( '.nw-xdock-scrim' ) ).toBeVisible();
+	await p3.screenshot( { path: 'build/browser/dock-sheet-390.png' } );
+	await p3.locator( '.nw-xdock-scrim' ).click( { position: { x: 20, y: 20 } } );
+	await expect( sheet ).toBeHidden();
+	await phone.close();
+} );
+

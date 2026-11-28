@@ -5,7 +5,10 @@
  * kept at window.novawork.app for a script that runs later) holds the live
  * store, the API helpers, a few helpers for building markup, and the places
  * to add to: a header button, a row in the team menu, a notification kind, a
- * button on messages and comments, a status line under a thread, and a panel.
+ * button on messages and comments, a status line under a thread, a panel
+ * (a dialog, or a docked window like the team chat), a launcher in the
+ * corner, and a keyboard shortcut; and renderText() to show a message's
+ * mentions and /links as chat does.
  * Nothing is added unless an add-on asks, so the app looks exactly the same
  * without one.
  */
@@ -15,7 +18,9 @@ import { esc } from './format.js';
 import { __, sprintf } from './i18n.js';
 import { get, post, patch, del, currentNonce } from './api.js';
 import { toast } from './ui.js';
-import { addPanel, openPanel } from './panel.js';
+import { addPanel, openPanel, closePanel, isPanelOpen } from './panel.js';
+import { addLauncher } from './launcher.js';
+import { richText } from '../views/rich.js';
 
 const kinds = new Map();
 const actions = new Map();
@@ -156,6 +161,52 @@ export const runMessageAction = ( id, item, kind ) => {
 	return def ? Promise.resolve( def.onClick( item, kind ) ) : Promise.resolve();
 };
 
+/* ---------- keyboard shortcuts (1.3.0) ---------- */
+
+/** Keys the app itself uses (/ search, N new task, T timer). */
+const TAKEN = new Set( [ '/', 'n', 't' ] );
+const shortcuts = new Map();
+
+/**
+ * A one-letter keyboard shortcut, with the same rules as the app's own: never
+ * while typing, with a modifier key, or while a dialog is open.
+ *
+ * @param {Object}   def       Shortcut.
+ * @param {string}   def.key   One letter or digit (case doesn't matter); the app's keys are refused.
+ * @param {string}   def.label What it does.
+ * @param {Function} def.run   Called when the key is pressed.
+ * @return {Function|null} Removes the shortcut; null when the key is taken.
+ */
+export function addShortcut( def ) {
+	const key = String( ( def && def.key ) || '' ).toLowerCase();
+	if ( ! /^[a-z0-9]$/.test( key ) || TAKEN.has( key ) || shortcuts.has( key ) || typeof def.run !== 'function' ) {
+		return null;
+	}
+	shortcuts.set( key, def );
+	return () => shortcuts.delete( key );
+}
+
+/** Run an add-on's shortcut for a key; whether one ran. */
+export function runShortcut( key ) {
+	const def = shortcuts.get( String( key || '' ).toLowerCase() );
+	if ( ! def ) {
+		return false;
+	}
+	def.run();
+	return true;
+}
+
+/**
+ * A message's text as HTML, with its @mentions and /links drawn as in the
+ * team chat (links open their item).
+ *
+ * @param {Object} m { text, mentions: [{ id, name } | { agent, name }], refs: [{ type, id, label }] }.
+ * @return {string} HTML.
+ */
+export function renderText( m ) {
+	return richText( { text: String( ( m && m.text ) || '' ), mentions: ( m && m.mentions ) || [], refs: ( m && m.refs ) || [] }, '' );
+}
+
 /** The key of a thread: the team chat, or one object's comments. */
 const whereKey = ( where ) => ( where === 'chat' ? 'chat' : where && where.objectType && where.objectId ? `${ where.objectType }:${ Number( where.objectId ) }` : '' );
 
@@ -234,6 +285,11 @@ export function announceReady( store ) {
 		setThreadStatus,
 		addPanel,
 		openPanel,
+		closePanel,
+		isPanelOpen,
+		addLauncher,
+		addShortcut,
+		renderText,
 	} );
 	window.novawork = window.novawork || {};
 	window.novawork.app = app;

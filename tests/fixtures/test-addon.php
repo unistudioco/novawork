@@ -44,6 +44,21 @@ window.addEventListener( 'nw:ready', ( e ) => {
 	app.addMessageAction( { id: 'test', icon: 'sparkle', label: 'Test action', when: ( m ) => m.agent === 'helper', pressed: ( m, kind ) => pressed.has( kind + ':' + m.id ), onClick: ( m, kind ) => { const k = kind + ':' + m.id; if ( pressed.has( k ) ) { pressed.delete( k ); } else { pressed.add( k ); } } } );
 	app.addPanel( { id: 'test', title: 'Test panel', render: ( body ) => { body.innerHTML = '<p id="nw-test-panel-text">Panel works</p>'; } } );
 	window.nwTestStatus = ( where, text ) => app.setThreadStatus( where, text );
+	// A docked panel, a launcher that opens it, and a shortcut (1.3.0).
+	app.addPanel( {
+		id: 'testdock',
+		title: 'Test dock',
+		style: 'docked',
+		render: ( body ) => {
+			window.nwTestDockRenders = ( window.nwTestDockRenders || 0 ) + 1;
+			const me = app.store.members.find( ( m ) => m.id === app.store.me );
+			body.innerHTML = '<div id="nw-test-dock-text">' + app.renderText( { text: 'Hello @' + me.name + ', see /Docked link', mentions: [ { id: me.id, name: me.name } ], refs: [] } ) + '</div><textarea id="nw-test-dock-in" aria-label="Test field"></textarea>';
+		},
+		onOpen: () => { window.nwTestDockOpens = ( window.nwTestDockOpens || 0 ) + 1; },
+	} );
+	window.nwTestLauncher = app.addLauncher( { id: 'test', icon: 'sparkle', label: 'Test launcher', key: 'H', onClick: () => ( app.isPanelOpen( 'testdock' ) ? app.closePanel( 'testdock' ) : app.openPanel( 'testdock' ) ) } );
+	window.nwTestTaken = app.addShortcut( { key: 'n', label: 'Taken', run: () => {} } );
+	app.addShortcut( { key: 'h', label: 'Test dock', run: () => app.openPanel( 'testdock' ) } );
 } );
 JS
 		);

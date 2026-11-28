@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-26T20:44:34+00:00\n"
+"POT-Creation-Date: 2026-11-28T02:38:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: novawork\n"
@@ -106,27 +106,27 @@ msgstr ""
 msgid "Those files are no longer available. Add them again."
 msgstr ""
 
-#: src/Api.php:160
+#: src/Api.php:162
 msgid "Write a comment first."
 msgstr ""
 
-#: src/Api.php:168
+#: src/Api.php:170
 #: src/Rest/Controller.php:139
 #: src/Services/TimeEdits.php:127
 #: src/Services/TimeEdits.php:161
 msgid "That item no longer exists."
 msgstr ""
 
-#: src/Api.php:188
+#: src/Api.php:190
 msgid "The comment wasn’t saved. Try again."
 msgstr ""
 
-#: src/Api.php:277
+#: src/Api.php:279
 msgid "Only a member or a registered agent can write in NovaWork."
 msgstr ""
 
 #. translators: %d: most characters allowed.
-#: src/Api.php:291
+#: src/Api.php:293
 #, php-format
 msgid "Keep it under %d characters."
 msgstr ""
@@ -182,12 +182,21 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
+#: src/Rest/AwayController.php:93
+msgid "Only administrators can change someone else’s away status."
+msgstr ""
+
+#: src/Rest/AwayController.php:96
+#: src/Services/Away.php:70
+msgid "That person isn’t a member of the workspace."
+msgstr ""
+
 #: src/Rest/ChatController.php:145
 msgid "You can’t edit this message."
 msgstr ""
 
 #: src/Rest/ChatController.php:149
-#: assets/src/js/views/thread.js:223
+#: assets/src/js/views/thread.js:232
 msgid "A message needs some text. To remove it, delete it."
 msgstr ""
 
@@ -204,7 +213,7 @@ msgid "You can’t edit this comment."
 msgstr ""
 
 #: src/Rest/CommentsController.php:100
-#: assets/src/js/views/thread.js:223
+#: assets/src/js/views/thread.js:232
 msgid "A comment needs some text. To remove it, delete it."
 msgstr ""
 
@@ -333,9 +342,19 @@ msgstr ""
 msgid "Ask for a year or less at a time."
 msgstr ""
 
+#: src/Services/Away.php:75
+msgid "Pick a day from today to a year from now."
+msgstr ""
+
+#. translators: %d: a number of characters.
+#: src/Services/Away.php:79
+#, php-format
+msgid "The note can be %d characters at most."
+msgstr ""
+
 #: src/Services/Files.php:83
 #: src/Services/Files.php:136
-#: assets/src/js/views/chat.js:313
+#: assets/src/js/views/chat.js:316
 msgid "The file did not upload. Try again."
 msgstr ""
 
@@ -374,12 +393,12 @@ msgstr ""
 
 #. translators: 1: a person's name, 2: the workspace's name.
 #: src/Services/Invites.php:105
-#: assets/src/js/views/editors.js:44
-#: assets/src/js/views/model.js:136
+#: assets/src/js/views/editors.js:45
+#: assets/src/js/views/model.js:162
 #: assets/src/js/views/notes.js:64
 #: assets/src/js/views/notes.js:67
-#: assets/src/js/views/thread.js:52
-#: assets/src/js/views/thread.js:55
+#: assets/src/js/views/thread.js:53
+#: assets/src/js/views/thread.js:56
 msgid "Someone"
 msgstr ""
 
@@ -459,7 +478,7 @@ msgid "NovaWork profile"
 msgstr ""
 
 #: src/Services/Privacy.php:134
-#: views/app.php:133
+#: views/app.php:136
 msgid "Message"
 msgstr ""
 
@@ -473,7 +492,7 @@ msgid "Files"
 msgstr ""
 
 #: src/Services/Privacy.php:149
-#: assets/src/js/views/editors.js:68
+#: assets/src/js/views/editors.js:70
 msgid "Comment"
 msgstr ""
 
@@ -488,9 +507,9 @@ msgstr ""
 
 #: src/Services/Privacy.php:165
 #: assets/src/js/views/composer.js:15
-#: assets/src/js/views/editors.js:201
-#: assets/src/js/views/editors.js:202
-#: assets/src/js/views/editors.js:529
+#: assets/src/js/views/editors.js:204
+#: assets/src/js/views/editors.js:205
+#: assets/src/js/views/editors.js:532
 msgid "Task"
 msgstr ""
 
@@ -512,7 +531,7 @@ msgstr ""
 
 #: src/Services/Privacy.php:181
 #: assets/src/js/views/composer.js:15
-#: assets/src/js/views/editors.js:419
+#: assets/src/js/views/editors.js:422
 msgid "Decision"
 msgstr ""
 
@@ -522,7 +541,7 @@ msgstr ""
 
 #: src/Services/Privacy.php:183
 #: src/Services/Privacy.php:216
-#: views/app.php:122
+#: views/app.php:124
 msgid "When"
 msgstr ""
 
@@ -562,7 +581,7 @@ msgid "Yes"
 msgstr ""
 
 #: src/Services/Privacy.php:230
-#: assets/src/js/views/editors.js:287
+#: assets/src/js/views/editors.js:290
 msgid "Colour"
 msgstr ""
 
@@ -574,51 +593,55 @@ msgstr ""
 msgid "Last active"
 msgstr ""
 
-#: src/Services/Privacy.php:330
+#: src/Services/Privacy.php:233
+msgid "Away until"
+msgstr ""
+
+#: src/Services/Privacy.php:331
 msgid "NovaWork: tasks, projects and decisions this person created stay with the team, no longer linked to them."
 msgstr ""
 
-#: src/Services/Privacy.php:445
+#: src/Services/Privacy.php:446
 msgid "(deleted)"
 msgstr ""
 
-#: src/Services/Privacy.php:457
+#: src/Services/Privacy.php:458
 msgid "Suggested text for a site that uses NovaWork. Edit it to match how you use the workspace."
 msgstr ""
 
-#: src/Services/Privacy.php:458
+#: src/Services/Privacy.php:459
 msgid "Team workspace"
 msgstr ""
 
-#: src/Services/Privacy.php:459
+#: src/Services/Privacy.php:460
 msgid "Members of our team workspace use it to plan work, track time and talk. It stores what members write and do there: tasks and projects, decisions and votes, comments, chat messages and shared files, time tracked, notifications, and when a member was last online. Only signed-in members can see the workspace; files are private to it and never public."
 msgstr ""
 
-#: src/Services/Privacy.php:460
+#: src/Services/Privacy.php:461
 msgid "Notifications are kept for a time set by the site administrator once read; the team activity feed and the change history are kept for a set number of days. Members can ask for an export or erasure of their data through the site administrator."
 msgstr ""
 
-#: src/Services/Privacy.php:461
+#: src/Services/Privacy.php:462
 msgid "The workspace remembers some preferences in the browser (local storage), such as light or dark appearance and the last filters used. These never leave the device."
 msgstr ""
 
-#: src/Services/Privacy.php:462
+#: src/Services/Privacy.php:463
 msgid "Services from other companies"
 msgstr ""
 
-#: src/Services/Privacy.php:463
+#: src/Services/Privacy.php:464
 msgid "Fonts: when the site loads its typefaces from Fontshare (Indian Type Foundry), the browser requests the font files from Fontshare each time the workspace opens, which shares the visitor’s IP address with Fontshare."
 msgstr ""
 
-#: src/Services/Privacy.php:463
+#: src/Services/Privacy.php:464
 msgid "Fontshare’s font license"
 msgstr ""
 
-#: src/Services/Privacy.php:464
+#: src/Services/Privacy.php:465
 msgid "Profile pictures: members’ avatars may come from Gravatar (Automattic), which receives a hashed form of the member’s email address."
 msgstr ""
 
-#: src/Services/Privacy.php:464
+#: src/Services/Privacy.php:465
 msgid "Automattic privacy policy"
 msgstr ""
 
@@ -694,39 +717,39 @@ msgid "The timer didn’t start. Try again."
 msgstr ""
 
 #: src/Settings.php:209
-#: src/Settings.php:327
+#: src/Settings.php:331
 msgid "Unknown setting."
 msgstr ""
 
-#: src/Settings.php:284
+#: src/Settings.php:285
 msgid "Enter a number."
 msgstr ""
 
-#: src/Settings.php:291
+#: src/Settings.php:292
 msgid "Choose one of the options."
 msgstr ""
 
-#: src/Settings.php:303
+#: src/Settings.php:307
 msgid "Allow at least one type of file."
 msgstr ""
 
-#: src/Settings.php:307
+#: src/Settings.php:311
 msgid "Enter an address, such as “work”."
 msgstr ""
 
-#: src/Settings.php:310
+#: src/Settings.php:314
 msgid "WordPress already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:314
+#: src/Settings.php:318
 msgid "A page of this site already uses this address. Choose another."
 msgstr ""
 
-#: src/Settings.php:320
+#: src/Settings.php:324
 msgid "Choose an image from the media library."
 msgstr ""
 
-#: src/Settings.php:325
+#: src/Settings.php:329
 #: assets/src/js/settings.js:92
 msgid "Enter a colour as #hex or rgb(r, g, b)."
 msgstr ""
@@ -740,6 +763,8 @@ msgid "Open the workspace"
 msgstr ""
 
 #: views/admin-settings.php:66
+#: assets/src/js/lib/panel.js:36
+#: assets/src/js/lib/panel.js:184
 #: assets/src/js/views/dialog.js:142
 #: assets/src/js/views/dialog.js:164
 msgid "Close"
@@ -834,7 +859,7 @@ msgid "No thanks"
 msgstr ""
 
 #: views/admin-settings.php:100
-#: assets/src/js/views/editors.js:281
+#: assets/src/js/views/editors.js:284
 msgid "Name"
 msgstr ""
 
@@ -939,7 +964,7 @@ msgid "The colour of words and icons on accent buttons and badges. Auto uses whi
 msgstr ""
 
 #: views/admin-settings.php:158
-#: assets/src/js/shell.js:54
+#: assets/src/js/shell.js:56
 msgid "Auto"
 msgstr ""
 
@@ -948,7 +973,7 @@ msgid "White"
 msgstr ""
 
 #: views/admin-settings.php:160
-#: assets/src/js/shell.js:53
+#: assets/src/js/shell.js:55
 msgid "Dark"
 msgstr ""
 
@@ -1100,7 +1125,7 @@ msgid "Any member"
 msgstr ""
 
 #: views/admin-settings.php:237
-#: assets/src/js/views/editors.js:416
+#: assets/src/js/views/editors.js:419
 msgid "Team votes"
 msgstr ""
 
@@ -1341,8 +1366,9 @@ msgid "Search tasks, projects, decisions and messages"
 msgstr ""
 
 #: views/app.php:32
+#: assets/src/js/views/away.js:61
 #: assets/src/js/views/dialog.js:184
-#: assets/src/js/views/thread.js:169
+#: assets/src/js/views/thread.js:178
 msgid "Cancel"
 msgstr ""
 
@@ -1353,14 +1379,14 @@ msgstr ""
 
 #: views/app.php:41
 #: views/app.php:60
-#: views/app.php:117
 #: views/app.php:119
+#: views/app.php:121
 #: assets/src/js/views/tour.js:83
 msgid "Team chat"
 msgstr ""
 
 #: views/app.php:43
-#: assets/src/js/shell.js:308
+#: assets/src/js/shell.js:330
 #: assets/src/js/views/notes.js:268
 #: assets/src/js/views/tour.js:90
 msgid "Notifications"
@@ -1381,53 +1407,53 @@ msgstr ""
 msgid "Sign out"
 msgstr ""
 
-#: views/app.php:73
 #: views/app.php:74
+#: views/app.php:75
 msgid "Theme"
 msgstr ""
 
-#: views/app.php:83
+#: views/app.php:85
 msgid "Take the tour"
 msgstr ""
 
-#: views/app.php:85
+#: views/app.php:87
 msgid "Workspace settings"
 msgstr ""
 
-#: views/app.php:90
-#: views/app.php:104
+#: views/app.php:92
+#: views/app.php:106
 msgid "Views"
 msgstr ""
 
-#: views/app.php:100
+#: views/app.php:102
 msgid "Remove them"
 msgstr ""
 
-#: views/app.php:111
-#: views/app.php:139
-#: views/app.php:141
+#: views/app.php:113
+#: views/app.php:142
+#: views/app.php:144
 msgid "Create"
 msgstr ""
 
-#: views/app.php:119
+#: views/app.php:121
 msgid "Drag to move. Drop at an edge to dock."
 msgstr ""
 
-#: views/app.php:119
 #: views/app.php:121
+#: views/app.php:123
 msgid "Search messages"
 msgstr ""
 
-#: views/app.php:119
+#: views/app.php:121
 msgid "Close chat"
 msgstr ""
 
-#: views/app.php:122
+#: views/app.php:124
 msgid "Any time"
 msgstr ""
 
-#: views/app.php:122
-#: assets/src/js/views/chat.js:127
+#: views/app.php:124
+#: assets/src/js/views/chat.js:130
 #: assets/src/js/views/notes.js:214
 #: assets/src/js/views/roadmap.js:113
 #: assets/src/js/views/roadmap.js:116
@@ -1435,89 +1461,89 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: views/app.php:122
-#: assets/src/js/views/chat.js:132
+#: views/app.php:124
+#: assets/src/js/views/chat.js:135
 msgid "Yesterday"
 msgstr ""
 
-#: views/app.php:122
+#: views/app.php:124
 msgid "Last 7 days"
 msgstr ""
 
-#: views/app.php:122
+#: views/app.php:124
 msgid "Last 30 days"
 msgstr ""
 
-#: views/app.php:122
+#: views/app.php:124
 msgid "On a date…"
 msgstr ""
 
-#: views/app.php:123
+#: views/app.php:125
 msgid "Date"
 msgstr ""
 
-#: views/app.php:131
+#: views/app.php:134
 msgid "Attach files"
 msgstr ""
 
-#: views/app.php:133
-#: views/app.php:146
+#: views/app.php:136
+#: views/app.php:149
 msgid "Message the team"
 msgstr ""
 
-#: views/app.php:134
+#: views/app.php:137
 msgid "Send"
 msgstr ""
 
-#: views/app.php:143
-#: assets/src/js/views/editors.js:201
+#: views/app.php:146
+#: assets/src/js/views/editors.js:204
 msgid "New task"
 msgstr ""
 
-#: views/app.php:143
+#: views/app.php:146
 msgid "Goes to Now, assigned to you"
 msgstr ""
 
-#: views/app.php:144
-#: assets/src/js/views/editors.js:280
+#: views/app.php:147
+#: assets/src/js/views/editors.js:283
 #: assets/src/js/views/roadmap.js:47
 msgid "New project"
 msgstr ""
 
-#: views/app.php:144
+#: views/app.php:147
 msgid "With dates for the roadmap"
 msgstr ""
 
-#: views/app.php:145
+#: views/app.php:148
 #: assets/src/js/views/decisions.js:44
-#: assets/src/js/views/editors.js:400
+#: assets/src/js/views/editors.js:403
 msgid "New decision"
 msgstr ""
 
-#: views/app.php:145
+#: views/app.php:148
 msgid "A question that blocks work"
 msgstr ""
 
-#: views/app.php:146
+#: views/app.php:149
 msgid "Opens the team chat"
 msgstr ""
 
-#: views/app.php:150
+#: views/app.php:153
 #: assets/src/js/views/alerts.js:148
 msgid "Still working?"
 msgstr ""
 
 #. translators: 1: time without activity, e.g. "10m"; 2: seconds left.
-#: views/app.php:155
+#: views/app.php:158
 #, php-format
 msgid "No activity for %1$s. The timer pauses in %2$ss, and the time you were away won’t be counted."
 msgstr ""
 
-#: views/app.php:162
+#: views/app.php:165
 msgid "Pause now"
 msgstr ""
 
-#: views/app.php:162
+#: views/app.php:165
 #: assets/src/js/views/alerts.js:157
 msgid "I’m still working"
 msgstr ""
@@ -1691,6 +1717,16 @@ msgstr ""
 msgid "%dd ago"
 msgstr ""
 
+#: assets/src/js/lib/panel.js:253
+#: assets/src/js/views/chat.js:68
+msgid "Dock on the right"
+msgstr ""
+
+#: assets/src/js/lib/panel.js:253
+#: assets/src/js/views/chat.js:68
+msgid "Dock on the left"
+msgstr ""
+
 #: assets/src/js/settings.js:37
 msgid "Choose image"
 msgstr ""
@@ -1763,7 +1799,8 @@ msgstr ""
 #: assets/src/js/settings.js:357
 #: assets/src/js/views/actions.js:37
 #: assets/src/js/views/actions.js:158
-#: assets/src/js/views/thread.js:233
+#: assets/src/js/views/away.js:78
+#: assets/src/js/views/thread.js:242
 msgid "Could not save. Check your connection and try again."
 msgstr ""
 
@@ -1776,12 +1813,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/src/js/settings.js:175
-#: assets/src/js/shell.js:289
+#: assets/src/js/shell.js:311
 msgid "Sample items removed."
 msgstr ""
 
 #: assets/src/js/settings.js:177
-#: assets/src/js/shell.js:291
+#: assets/src/js/shell.js:313
 msgid "Could not remove them. Try again."
 msgstr ""
 
@@ -1833,81 +1870,93 @@ msgstr ""
 msgid "Settings saved."
 msgstr ""
 
-#: assets/src/js/shell.js:45
+#: assets/src/js/shell.js:47
 #: assets/src/js/views/focus.js:151
 msgid "Focus"
 msgstr ""
 
-#: assets/src/js/shell.js:46
+#: assets/src/js/shell.js:48
 #: assets/src/js/views/board.js:107
 msgid "Board"
 msgstr ""
 
-#: assets/src/js/shell.js:47
+#: assets/src/js/shell.js:49
 #: assets/src/js/views/roadmap.js:45
 #: assets/src/js/views/tour.js:66
 msgid "Roadmap"
 msgstr ""
 
-#: assets/src/js/shell.js:48
+#: assets/src/js/shell.js:50
 #: assets/src/js/views/recover.js:77
 #: assets/src/js/views/time.js:111
 #: assets/src/js/views/tour.js:78
 msgid "Time"
 msgstr ""
 
-#: assets/src/js/shell.js:49
-#: assets/src/js/shell.js:536
+#: assets/src/js/shell.js:51
+#: assets/src/js/shell.js:561
 #: assets/src/js/views/decisions.js:41
 #: assets/src/js/views/tour.js:72
 msgid "Decisions"
 msgstr ""
 
-#: assets/src/js/shell.js:52
+#: assets/src/js/shell.js:54
 msgid "Light"
 msgstr ""
 
-#: assets/src/js/shell.js:57
+#: assets/src/js/shell.js:59
 msgid "Install app"
 msgstr ""
 
-#: assets/src/js/shell.js:58
+#: assets/src/js/shell.js:60
 msgid "Add to Home Screen"
 msgstr ""
 
-#: assets/src/js/shell.js:59
+#: assets/src/js/shell.js:61
 msgid "Add to Dock"
 msgstr ""
 
-#: assets/src/js/shell.js:60
+#: assets/src/js/shell.js:62
 msgid "Start tracking"
 msgstr ""
 
-#: assets/src/js/shell.js:61
+#: assets/src/js/shell.js:63
 #: assets/src/js/views/focus.js:68
 msgid "Pause tracking"
 msgstr ""
 
-#: assets/src/js/shell.js:62
+#: assets/src/js/shell.js:64
 msgid "Timer running. Open Time"
 msgstr ""
 
-#: assets/src/js/shell.js:63
+#: assets/src/js/shell.js:65
 msgid "Tracked today. Open Time"
 msgstr ""
 
-#: assets/src/js/shell.js:64
+#: assets/src/js/shell.js:66
 #: assets/src/js/views/focus.js:44
 msgid "Online"
 msgstr ""
 
-#: assets/src/js/shell.js:65
+#: assets/src/js/shell.js:67
 #: assets/src/js/views/focus.js:44
 msgid "Away"
 msgstr ""
 
+#: assets/src/js/shell.js:68
+#: assets/src/js/views/away.js:51
+msgid "Away until…"
+msgstr ""
+
+#. translators: %s: a person's name.
+#: assets/src/js/shell.js:69
+#: assets/src/js/views/away.js:51
+#, js-format
+msgid "Away status for %s"
+msgstr ""
+
 #. translators: %d: number of other members online.
-#: assets/src/js/shell.js:218
+#: assets/src/js/shell.js:222
 #, js-format
 msgid "%d more here"
 msgid_plural "%d more here"
@@ -1915,13 +1964,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: time tracked today, e.g. "2h 5m".
-#: assets/src/js/shell.js:262
+#: assets/src/js/shell.js:284
 #, js-format
 msgid "Online · %s today"
 msgstr ""
 
 #. translators: %d: number of sample items.
-#: assets/src/js/shell.js:275
+#: assets/src/js/shell.js:297
 #, js-format
 msgid "%d sample item shows where to start."
 msgid_plural "%d sample items show where to start."
@@ -1929,53 +1978,53 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of unread notifications.
-#: assets/src/js/shell.js:308
+#: assets/src/js/shell.js:330
 #, js-format
 msgid "%d unread notifications"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/shell.js:316
+#: assets/src/js/shell.js:338
 #, js-format
 msgid "Pause: %s"
 msgstr ""
 
-#: assets/src/js/shell.js:522
+#: assets/src/js/shell.js:547
 msgid "active"
 msgstr ""
 
-#: assets/src/js/shell.js:522
+#: assets/src/js/shell.js:547
 msgid "paused"
 msgstr ""
 
-#: assets/src/js/shell.js:522
+#: assets/src/js/shell.js:547
 msgid "done"
 msgstr ""
 
-#: assets/src/js/shell.js:534
+#: assets/src/js/shell.js:559
 msgid "Tasks"
 msgstr ""
 
-#: assets/src/js/shell.js:535
+#: assets/src/js/shell.js:560
 msgid "Projects"
 msgstr ""
 
-#: assets/src/js/shell.js:536
+#: assets/src/js/shell.js:561
 #: assets/src/js/views/decisions.js:48
 msgid "Decided"
 msgstr ""
 
-#: assets/src/js/shell.js:536
+#: assets/src/js/shell.js:561
 #: assets/src/js/views/decisions.js:45
 msgid "Open"
 msgstr ""
 
-#: assets/src/js/shell.js:538
+#: assets/src/js/shell.js:563
 msgid "Messages"
 msgstr ""
 
 #. translators: %s: what was searched for.
-#: assets/src/js/shell.js:552
+#: assets/src/js/shell.js:577
 #, js-format
 msgid "Nothing matches “%s”."
 msgstr ""
@@ -2008,6 +2057,68 @@ msgstr ""
 msgid "Pause"
 msgstr ""
 
+#: assets/src/js/views/away.js:47
+msgid "Tomorrow"
+msgstr ""
+
+#: assets/src/js/views/away.js:48
+msgid "End of the week"
+msgstr ""
+
+#: assets/src/js/views/away.js:49
+msgid "Next week"
+msgstr ""
+
+#: assets/src/js/views/away.js:53
+msgid "Holidays or days off: your avatar and Team today show it until the day you pick, then it ends by itself."
+msgstr ""
+
+#: assets/src/js/views/away.js:53
+msgid "Their avatar and Team today show it until the day you pick, then it ends by itself."
+msgstr ""
+
+#: assets/src/js/views/away.js:54
+msgid "Away until (the last day off)"
+msgstr ""
+
+#: assets/src/js/views/away.js:57
+msgid "Note (optional)"
+msgstr ""
+
+#: assets/src/js/views/away.js:58
+msgid "Holiday, a day off…"
+msgstr ""
+
+#: assets/src/js/views/away.js:60
+msgid "I’m back"
+msgstr ""
+
+#: assets/src/js/views/away.js:60
+msgid "End it"
+msgstr ""
+
+#: assets/src/js/views/away.js:62
+#: assets/src/js/views/dialog.js:184
+#: assets/src/js/views/thread.js:178
+msgid "Save"
+msgstr ""
+
+#: assets/src/js/views/away.js:72
+msgid "Welcome back."
+msgstr ""
+
+#. translators: %s: a person's name.
+#: assets/src/js/views/away.js:72
+#, js-format
+msgid "%s is back."
+msgstr ""
+
+#. translators: %s: "Away until Fri 5 Dec".
+#: assets/src/js/views/away.js:74
+#, js-format
+msgid "You’re set: %s."
+msgstr ""
+
 #: assets/src/js/views/board.js:35
 msgid "All projects"
 msgstr ""
@@ -2018,7 +2129,7 @@ msgid "Everyone"
 msgstr ""
 
 #: assets/src/js/views/board.js:44
-#: assets/src/js/views/model.js:125
+#: assets/src/js/views/model.js:150
 msgid "Unassigned"
 msgstr ""
 
@@ -2073,66 +2184,58 @@ msgid "Filter by person"
 msgstr ""
 
 #: assets/src/js/views/board.js:199
-#: assets/src/js/views/index.js:209
+#: assets/src/js/views/index.js:210
 msgid "Done. Nice work."
 msgstr ""
 
-#: assets/src/js/views/chat.js:67
-msgid "Dock on the right"
-msgstr ""
-
-#: assets/src/js/views/chat.js:67
-msgid "Dock on the left"
-msgstr ""
-
-#: assets/src/js/views/chat.js:164
+#: assets/src/js/views/chat.js:167
 msgid "No messages match."
 msgstr ""
 
-#: assets/src/js/views/chat.js:165
+#: assets/src/js/views/chat.js:168
 msgid "Say hello. Messages here are for the team only."
 msgstr ""
 
 #. translators: %d: number of messages.
-#: assets/src/js/views/chat.js:167
+#: assets/src/js/views/chat.js:170
 #, js-format
 msgid "%d message"
 msgid_plural "%d messages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/src/js/views/chat.js:283
+#: assets/src/js/views/chat.js:286
 msgid "Uploading…"
 msgstr ""
 
 #. translators: %s: file name.
 #. translators: %s: subtask.
-#: assets/src/js/views/chat.js:284
+#: assets/src/js/views/chat.js:287
 #: assets/src/js/views/subtasks.js:65
 #, js-format
 msgid "Remove %s"
 msgstr ""
 
 #. translators: %s: file name.
-#: assets/src/js/views/chat.js:296
+#: assets/src/js/views/chat.js:299
 #, js-format
 msgid "%s: this type of file can’t be shared here."
 msgstr ""
 
 #. translators: 1: file name, 2: size limit.
-#: assets/src/js/views/chat.js:300
+#: assets/src/js/views/chat.js:303
 #, js-format
 msgid "%1$s is too big. Files can be up to %2$s."
 msgstr ""
 
-#: assets/src/js/views/chat.js:346
+#: assets/src/js/views/chat.js:349
 msgid "Could not send. Check your connection and try again."
 msgstr ""
 
 #: assets/src/js/views/composer.js:15
-#: assets/src/js/views/editors.js:210
-#: assets/src/js/views/editors.js:280
-#: assets/src/js/views/editors.js:405
+#: assets/src/js/views/editors.js:213
+#: assets/src/js/views/editors.js:283
+#: assets/src/js/views/editors.js:408
 msgid "Project"
 msgstr ""
 
@@ -2165,7 +2268,7 @@ msgid "Decide"
 msgstr ""
 
 #: assets/src/js/views/decisions.js:32
-#: assets/src/js/views/editors.js:400
+#: assets/src/js/views/editors.js:403
 msgid "Edit decision"
 msgstr ""
 
@@ -2187,275 +2290,270 @@ msgstr ""
 
 #: assets/src/js/views/dialog.js:118
 #: assets/src/js/views/dialog.js:184
-#: assets/src/js/views/thread.js:99
+#: assets/src/js/views/thread.js:107
 msgid "Delete"
 msgstr ""
 
-#: assets/src/js/views/dialog.js:184
-#: assets/src/js/views/thread.js:169
-msgid "Save"
-msgstr ""
-
-#: assets/src/js/views/editors.js:56
+#: assets/src/js/views/editors.js:57
 msgid "edited"
 msgstr ""
 
-#: assets/src/js/views/editors.js:64
-#: assets/src/js/views/editors.js:89
+#: assets/src/js/views/editors.js:65
+#: assets/src/js/views/editors.js:91
 msgid "Comments"
 msgstr ""
 
-#: assets/src/js/views/editors.js:65
-#: assets/src/js/views/editors.js:88
+#: assets/src/js/views/editors.js:66
+#: assets/src/js/views/editors.js:90
 msgid "No comments yet."
 msgstr ""
 
-#: assets/src/js/views/editors.js:68
+#: assets/src/js/views/editors.js:70
 msgid "Write a comment"
 msgstr ""
 
-#: assets/src/js/views/editors.js:68
+#: assets/src/js/views/editors.js:70
 msgid "Send comment"
 msgstr ""
 
-#: assets/src/js/views/editors.js:147
+#: assets/src/js/views/editors.js:150
 #: assets/src/js/views/time.js:176
 msgid "No project"
 msgstr ""
 
-#: assets/src/js/views/editors.js:160
+#: assets/src/js/views/editors.js:163
 msgid "Anyone"
 msgstr ""
 
-#: assets/src/js/views/editors.js:201
+#: assets/src/js/views/editors.js:204
 msgid "Edit task"
 msgstr ""
 
-#: assets/src/js/views/editors.js:202
+#: assets/src/js/views/editors.js:205
 msgid "What needs to happen?"
 msgstr ""
 
-#: assets/src/js/views/editors.js:203
-#: assets/src/js/views/editors.js:284
+#: assets/src/js/views/editors.js:206
+#: assets/src/js/views/editors.js:287
 msgid "Status"
 msgstr ""
 
-#: assets/src/js/views/editors.js:206
+#: assets/src/js/views/editors.js:209
 msgid "Priority"
 msgstr ""
 
-#: assets/src/js/views/editors.js:209
+#: assets/src/js/views/editors.js:212
 msgid "Due date"
 msgstr ""
 
-#: assets/src/js/views/editors.js:211
+#: assets/src/js/views/editors.js:214
 msgid "Assigned to"
 msgstr ""
 
-#: assets/src/js/views/editors.js:214
+#: assets/src/js/views/editors.js:217
 msgid "Notes"
 msgstr ""
 
-#: assets/src/js/views/editors.js:214
+#: assets/src/js/views/editors.js:217
 msgid "Links, context, what done looks like"
 msgstr ""
 
-#: assets/src/js/views/editors.js:217
+#: assets/src/js/views/editors.js:220
 msgid "Time tracked"
 msgstr ""
 
-#: assets/src/js/views/editors.js:217
+#: assets/src/js/views/editors.js:220
 msgid "across all sessions"
 msgstr ""
 
-#: assets/src/js/views/editors.js:220
-#: assets/src/js/views/index.js:134
+#: assets/src/js/views/editors.js:223
+#: assets/src/js/views/index.js:135
 msgid "Only the people on this task, its creator or an administrator can change it."
 msgstr ""
 
-#: assets/src/js/views/editors.js:241
-#: assets/src/js/views/editors.js:302
-#: assets/src/js/views/editors.js:439
-#: assets/src/js/views/editors.js:471
+#: assets/src/js/views/editors.js:244
+#: assets/src/js/views/editors.js:305
+#: assets/src/js/views/editors.js:442
+#: assets/src/js/views/editors.js:474
 msgid "Saved"
 msgstr ""
 
-#: assets/src/js/views/editors.js:241
+#: assets/src/js/views/editors.js:244
 msgid "Task added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:275
+#: assets/src/js/views/editors.js:278
 #: assets/src/js/views/roadmap.js:29
 msgid "Active"
 msgstr ""
 
-#: assets/src/js/views/editors.js:276
+#: assets/src/js/views/editors.js:279
 #: assets/src/js/views/roadmap.js:29
 msgid "Paused"
 msgstr ""
 
-#: assets/src/js/views/editors.js:277
+#: assets/src/js/views/editors.js:280
 #: assets/src/js/views/model.js:34
 #: assets/src/js/views/roadmap.js:29
 msgid "Done"
 msgstr ""
 
-#: assets/src/js/views/editors.js:280
+#: assets/src/js/views/editors.js:283
 msgid "Edit project"
 msgstr ""
 
-#: assets/src/js/views/editors.js:281
+#: assets/src/js/views/editors.js:284
 msgid "Project name"
 msgstr ""
 
-#: assets/src/js/views/editors.js:282
+#: assets/src/js/views/editors.js:285
 msgid "Goal"
 msgstr ""
 
-#: assets/src/js/views/editors.js:282
+#: assets/src/js/views/editors.js:285
 msgid "What does done look like?"
 msgstr ""
 
-#: assets/src/js/views/editors.js:283
+#: assets/src/js/views/editors.js:286
 #: assets/src/js/views/focus.js:113
 msgid "Start"
 msgstr ""
 
-#: assets/src/js/views/editors.js:283
+#: assets/src/js/views/editors.js:286
 msgid "Target"
 msgstr ""
 
-#: assets/src/js/views/editors.js:284
+#: assets/src/js/views/editors.js:287
 msgid "Hard deadline"
 msgstr ""
 
-#: assets/src/js/views/editors.js:288
+#: assets/src/js/views/editors.js:291
 msgid "Only its creator or an administrator can change this project."
 msgstr ""
 
-#: assets/src/js/views/editors.js:302
+#: assets/src/js/views/editors.js:305
 msgid "Project added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:400
+#: assets/src/js/views/editors.js:403
 msgid "Record decision"
 msgstr ""
 
-#: assets/src/js/views/editors.js:401
+#: assets/src/js/views/editors.js:404
 msgid "Question"
 msgstr ""
 
-#: assets/src/js/views/editors.js:402
+#: assets/src/js/views/editors.js:405
 msgid "What needs deciding?"
 msgstr ""
 
-#: assets/src/js/views/editors.js:404
+#: assets/src/js/views/editors.js:407
 msgid "Options and context"
 msgstr ""
 
-#: assets/src/js/views/editors.js:406
+#: assets/src/js/views/editors.js:409
 msgid "Decide by"
 msgstr ""
 
-#: assets/src/js/views/editors.js:408
+#: assets/src/js/views/editors.js:411
 msgid "Who decides"
 msgstr ""
 
-#: assets/src/js/views/editors.js:410
+#: assets/src/js/views/editors.js:413
 msgid "Ask the team to vote"
 msgstr ""
 
-#: assets/src/js/views/editors.js:411
+#: assets/src/js/views/editors.js:414
 msgid "Options, one per line"
 msgstr ""
 
-#: assets/src/js/views/editors.js:412
+#: assets/src/js/views/editors.js:415
 msgid "Up to eight short options"
 msgstr ""
 
-#: assets/src/js/views/editors.js:420
+#: assets/src/js/views/editors.js:423
 msgid "What we decided, and why"
 msgstr ""
 
-#: assets/src/js/views/editors.js:422
+#: assets/src/js/views/editors.js:425
 msgid "Reopen this decision"
 msgstr ""
 
-#: assets/src/js/views/editors.js:425
+#: assets/src/js/views/editors.js:428
 msgid "Only its creator or an administrator can change this decision."
 msgstr ""
 
-#: assets/src/js/views/editors.js:439
-#: assets/src/js/views/editors.js:471
+#: assets/src/js/views/editors.js:442
+#: assets/src/js/views/editors.js:474
 msgid "Decision recorded"
 msgstr ""
 
-#: assets/src/js/views/editors.js:471
+#: assets/src/js/views/editors.js:474
 msgid "Decision added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:523
+#: assets/src/js/views/editors.js:526
 #: assets/src/js/views/time.js:280
 msgid "Edit session"
 msgstr ""
 
-#: assets/src/js/views/editors.js:523
+#: assets/src/js/views/editors.js:526
 #: assets/src/js/views/time.js:269
 msgid "Add time"
 msgstr ""
 
-#: assets/src/js/views/editors.js:525
-#: assets/src/js/views/editors.js:526
+#: assets/src/js/views/editors.js:528
+#: assets/src/js/views/editors.js:529
 msgid "Tracked by"
 msgstr ""
 
-#: assets/src/js/views/editors.js:530
+#: assets/src/js/views/editors.js:533
 #: assets/src/js/views/time.js:261
 #: assets/src/js/views/time.js:277
 msgid "Deleted task"
 msgstr ""
 
-#: assets/src/js/views/editors.js:532
+#: assets/src/js/views/editors.js:535
 msgid "Day"
 msgstr ""
 
-#: assets/src/js/views/editors.js:533
+#: assets/src/js/views/editors.js:536
 msgid "From"
 msgstr ""
 
-#: assets/src/js/views/editors.js:534
+#: assets/src/js/views/editors.js:537
 msgid "To"
 msgstr ""
 
-#: assets/src/js/views/editors.js:536
+#: assets/src/js/views/editors.js:539
 #: assets/src/js/views/focus.js:66
 msgid "Running"
 msgstr ""
 
-#: assets/src/js/views/editors.js:539
+#: assets/src/js/views/editors.js:542
 msgid "An end earlier than the start counts as the next day. Sessions of one person can’t overlap."
 msgstr ""
 
-#: assets/src/js/views/editors.js:546
+#: assets/src/js/views/editors.js:549
 msgid "Pick a task and a day."
 msgstr ""
 
-#: assets/src/js/views/editors.js:559
+#: assets/src/js/views/editors.js:562
 msgid "Session saved"
 msgstr ""
 
-#: assets/src/js/views/editors.js:559
+#: assets/src/js/views/editors.js:562
 msgid "Time added"
 msgstr ""
 
-#: assets/src/js/views/editors.js:577
-#: assets/src/js/views/subtasks.js:166
+#: assets/src/js/views/editors.js:580
+#: assets/src/js/views/subtasks.js:181
 #: assets/src/js/views/undo.js:55
 msgid "Deleted."
 msgstr ""
 
-#: assets/src/js/views/editors.js:578
-#: assets/src/js/views/subtasks.js:167
+#: assets/src/js/views/editors.js:581
+#: assets/src/js/views/subtasks.js:182
 #: assets/src/js/views/undo.js:56
 msgid "Undo"
 msgstr ""
@@ -2595,7 +2693,7 @@ msgid "Your timer stopped at %1$s, when this device went quiet. The %2$s after t
 msgstr ""
 
 #: assets/src/js/views/idle.js:80
-#: assets/src/js/views/index.js:297
+#: assets/src/js/views/index.js:298
 msgid "OK"
 msgstr ""
 
@@ -2625,15 +2723,15 @@ msgstr ""
 msgid "No activity for %s. Your timer is still running."
 msgstr ""
 
-#: assets/src/js/views/index.js:262
+#: assets/src/js/views/index.js:263
 msgid "That item was deleted."
 msgstr ""
 
-#: assets/src/js/views/index.js:266
+#: assets/src/js/views/index.js:267
 msgid "Showing everyone’s tasks so you can see it."
 msgstr ""
 
-#: assets/src/js/views/index.js:297
+#: assets/src/js/views/index.js:298
 msgid "You’re offline. The timer keeps counting here, and Stop still works."
 msgstr ""
 
@@ -2692,62 +2790,68 @@ msgstr ""
 msgid "No priority"
 msgstr ""
 
+#. translators: %s: a day, like "Fri 5 Dec".
+#: assets/src/js/views/model.js:70
+#, js-format
+msgid "Away until %s"
+msgstr ""
+
 #. translators: 1: subtasks done, 2: all subtasks.
-#: assets/src/js/views/model.js:161
+#: assets/src/js/views/model.js:187
 #, js-format
 msgid "%1$d of %2$d subtasks done"
 msgstr ""
 
 #. translators: %d: days late.
-#: assets/src/js/views/model.js:175
+#: assets/src/js/views/model.js:201
 #, js-format
 msgid "%dd late"
 msgstr ""
 
-#: assets/src/js/views/model.js:178
+#: assets/src/js/views/model.js:204
 msgid "today"
 msgstr ""
 
 #. translators: %d: days left.
-#: assets/src/js/views/model.js:181
+#: assets/src/js/views/model.js:207
 #, js-format
 msgid "%dd"
 msgstr ""
 
 #. translators: %s: priority, e.g. "High".
-#: assets/src/js/views/model.js:206
+#: assets/src/js/views/model.js:232
 #, js-format
 msgid "%s priority"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/views/model.js:214
+#: assets/src/js/views/model.js:240
 #, js-format
 msgid "Pause %s"
 msgstr ""
 
 #. translators: %s: task title.
-#: assets/src/js/views/model.js:214
+#: assets/src/js/views/model.js:240
 #, js-format
 msgid "Track time on %s"
 msgstr ""
 
 #. translators: %s: task title.
 #. translators: %s: subtask.
-#: assets/src/js/views/model.js:219
+#: assets/src/js/views/model.js:245
 #: assets/src/js/views/subtasks.js:45
 #, js-format
 msgid "Mark %s done"
 msgstr ""
 
 #. translators: 1: option, 2: number of votes.
-#: assets/src/js/views/model.js:280
+#: assets/src/js/views/model.js:306
 #, js-format
 msgid "%1$s, %2$d votes"
 msgstr ""
 
 #. translators: 1: members who voted, 2: all members.
-#: assets/src/js/views/model.js:286
+#: assets/src/js/views/model.js:312
 #, js-format
 msgid "%1$d of %2$d voted"
 msgstr ""
@@ -3134,60 +3238,60 @@ msgstr ""
 msgid "Who does %s"
 msgstr ""
 
-#: assets/src/js/views/subtasks.js:215
+#: assets/src/js/views/subtasks.js:230
 msgid "Subtask"
 msgstr ""
 
-#: assets/src/js/views/thread.js:86
+#: assets/src/js/views/thread.js:87
 msgid "The comment this replied to was deleted."
 msgstr ""
 
-#: assets/src/js/views/thread.js:86
+#: assets/src/js/views/thread.js:87
 msgid "The message this replied to was deleted."
 msgstr ""
 
-#: assets/src/js/views/thread.js:88
-#: assets/src/js/views/thread.js:137
+#: assets/src/js/views/thread.js:89
+#: assets/src/js/views/thread.js:146
 msgid "A file"
 msgstr ""
 
 #. translators: %s: a person's name.
-#: assets/src/js/views/thread.js:89
+#: assets/src/js/views/thread.js:90
 #, js-format
 msgid "Go to the message from %s"
 msgstr ""
 
-#: assets/src/js/views/thread.js:96
+#: assets/src/js/views/thread.js:104
 msgid "Message actions"
 msgstr ""
 
-#: assets/src/js/views/thread.js:97
+#: assets/src/js/views/thread.js:105
 msgid "Reply"
 msgstr ""
 
-#: assets/src/js/views/thread.js:98
+#: assets/src/js/views/thread.js:106
 msgid "Edit"
 msgstr ""
 
 #. translators: %s: a person's name.
-#: assets/src/js/views/thread.js:129
+#: assets/src/js/views/thread.js:138
 #, js-format
 msgid "Replying to %s"
 msgstr ""
 
-#: assets/src/js/views/thread.js:131
+#: assets/src/js/views/thread.js:140
 msgid "Cancel reply"
 msgstr ""
 
-#: assets/src/js/views/thread.js:167
+#: assets/src/js/views/thread.js:176
 msgid "Edit message"
 msgstr ""
 
-#: assets/src/js/views/thread.js:168
+#: assets/src/js/views/thread.js:177
 msgid "Enter to save · Esc to cancel"
 msgstr ""
 
-#: assets/src/js/views/thread.js:244
+#: assets/src/js/views/thread.js:253
 msgid "That message is no longer here."
 msgstr ""
 

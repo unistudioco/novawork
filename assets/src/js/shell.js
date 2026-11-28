@@ -14,6 +14,8 @@ import { serverNow } from './store.js';
 import { orderTeam } from './lib/team.js';
 import { get, del } from './lib/api.js';
 import { plainText } from './views/rich.js';
+import { awayLabel } from './views/model.js';
+import { runShortcut } from './lib/ext.js';
 import { startTracking, stopTracking, defaultTaskId } from './views/actions.js';
 import { installWay, installApp, themeColor } from './views/webapp.js';
 import { isPhone, PHONE, placeInd, lockBgScroll, unlockBgScroll, sheetOut, swipeToClose, toast } from './lib/ui.js';
@@ -63,6 +65,8 @@ export default () => ( {
 		trackedTodayOpen: __( 'Tracked today. Open Time', 'novawork' ),
 		online: __( 'Online', 'novawork' ),
 		away: __( 'Away', 'novawork' ),
+		setAway: __( 'Away until…', 'novawork' ),
+		awayFor: /* translators: %s: a person's name. */ __( 'Away status for %s', 'novawork' ),
 	},
 
 	stuck: false,
@@ -225,7 +229,25 @@ export default () => ( {
 			return '';
 		}
 		const photo = m.avatar ? `<img src="${ esc( m.avatar ) }" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
-		return esc( initials( m.name ) ) + photo;
+		return esc( initials( m.name ) ) + photo + ( m.away && m.away.until ? `<i class="nw-off-mark" aria-hidden="true">${ ic( 'moon', 9 ) }</i>` : '' );
+	},
+	/** A member's line: "Away until Fri 5 Dec · note" (1.3.0), Online or Away. */
+	presence( m ) {
+		return awayLabel( m.away, true, this.$store.nw.locale ) || ( this.status( m.id ) === 'online' ? this.t.online : this.t.away );
+	},
+	/** The menu's away row: your status, or "Away until…" to set one. */
+	myAwayLabel() {
+		const mine = this.member( this.$store.nw.me );
+		return awayLabel( mine && mine.away, false, this.$store.nw.locale ) || this.t.setAway;
+	},
+	/** The label of an administrator's away button on a member's row. */
+	awayFor( m ) {
+		return sprintf( this.t.awayFor, m.name );
+	},
+	/** Open the away dialog for you, or (administrators) another member. */
+	setAway( userId ) {
+		this.closePop( true );
+		window.dispatchEvent( new CustomEvent( 'nw:away', { detail: { userId: userId || this.$store.nw.me } } ) );
 	},
 	runOf( uid ) {
 		return Object.values( this.$store.nw.timeEntries ).find( ( e ) => e.running && e.by === uid ) || null;
@@ -499,6 +521,9 @@ export default () => ( {
 		} else if ( e.key === 't' || e.key === 'T' ) {
 			e.preventDefault();
 			this.toggleTracking();
+		} else if ( runShortcut( e.key ) ) {
+			// An add-on's shortcut (1.3.0).
+			e.preventDefault();
 		}
 	},
 

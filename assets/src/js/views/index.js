@@ -27,6 +27,7 @@ import { mountRecover } from './recover.js';
 import { mountChat } from './chat.js';
 import { mountNotes } from './notes.js';
 import { mountTour } from './tour.js';
+import { mountAway } from './away.js';
 import { patch } from '../lib/api.js';
 
 const VIEWS = {
@@ -302,6 +303,7 @@ export function mountViews( sync ) {
 	mountChat();
 	mountNotes();
 	mountTour();
+	mountAway();
 	main = document.getElementById( 'nw-main' );
 	main.addEventListener( 'nw:painted', tick );
 

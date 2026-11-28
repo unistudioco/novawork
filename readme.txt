@@ -175,9 +175,10 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 == Changelog ==
 
 = 1.3.0 =
+* New: "Away until…". Set a holiday or days off from the team menu, with an optional note: your avatar shows a small moon and Team today says "Away until Fri 5 Dec" until the day you pick, then it ends by itself. Administrators can set it for anyone.
 * New for developers: extension points for add-ons. An add-on can post in chat, comment and notify as a member or as its own agent through one write API (NovaWork\Api), and hear about every new notification.
 * New for developers: agents registered by an add-on can be @mentioned in chat and comments, and named in a decision's "Who decides". The agent gives its advice; the person who opened the decision records it.
-* New for developers: an add-on can add a header button, a row in the team menu, its own notification kind, a button on messages and comments, a status line under a thread and its own panel, send data with the app's start and every sync, add its own settings checked like NovaWork's, and build its own page under the NovaWork menu with the settings screen's look and tools. An add-on built with Vite like NovaWork registers its scripts, styles and their translations in one call. All hooks are listed in the README on GitHub.
+* New for developers: an add-on can add a header button, a row in the team menu, its own notification kind, a button on messages and comments, a status line under a thread, its own panel (a dialog, or a window that docks like the team chat), a launcher button in the corner and a keyboard shortcut, show text with mentions and links as chat does, send data with the app's start and every sync, add its own settings checked like NovaWork's, and build its own page under the NovaWork menu with the settings screen's look and tools. An add-on built with Vite like NovaWork registers its scripts, styles and their translations in one call. All hooks are listed in the README on GitHub.
 * Changed: the Pro waitlist note now says what to expect: two emails at most, a quick vote on what ships first and one when Pro is ready.
 
 = 1.2.0 =
@@ -208,7 +209,7 @@ NovaWork works with WordPress's personal data tools (Tools → Export Personal D
 == Upgrade Notice ==
 
 = 1.3.0 =
-Extension points for add-ons: a write API, agents in mentions and decisions, and places in the app and the settings screen. Nothing changes for your team until an add-on uses them.
+"Away until…" for holidays and days off, and extension points for add-ons: a write API, agents in mentions and decisions, and places in the app and the settings screen.
 
 = 1.2.0 =
 A smarter timer that never loses time silently, admin time editing, and members changing only their own work (a setting).

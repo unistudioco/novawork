@@ -164,6 +164,7 @@ Actions (`@since 1.0.0` unless noted):
 - `novawork_agent_mentioned( string $agent_key, string $kind, array $row )` (1.3.0): a message (`$kind` "message") or comment ("comment") mentions an agent with "@Name"; on an edit only for newly mentioned agents, and never for an agent's own post.
 - `novawork_decision_assigned( array $decision, int $owner_id, string $owner_agent )` (1.3.0): a decision is opened with someone in "Who decides", or that changes.
 - `novawork_read_moved( int $user_id, int $last_id, int $before, string $channel )` (1.3.0): a member's read position in the chat moved forward (they opened it, read new messages, or posted one); `$before` is where it was.
+- `novawork_away_changed( int $user_id, ?array $away, ?array $before, int $by )` (1.3.0): a member's "Away until…" status was set, changed or ended (`$away` = `{ until: Y-m-d, note }`, or null when they are back; `$by` is the member or an administrator). Each member's `away` is in the app's members and in `NovaWork\Members::present()`; `NovaWork\Services\Away::get( $user_id )` reads it.
 - `novawork_app_enqueue` (1.3.0): enqueue your scripts and styles on the workspace page. Only what is enqueued here is printed, after NovaWork's own; mark an ES-module build with `wp_script_add_data( $handle, 'novawork_module', true )`.
 
 Filters:
@@ -187,7 +188,7 @@ Errors come back as `WP_Error` with an HTTP status.
 
 ### In the app (1.3.0)
 
-Once the app has started it fires `nw:ready` on `window`; the same object stays at `window.novawork.app` for a script that runs later. It holds `store` (live), `api` (`get`, `post`, `patch`, `del`, `nonce()` for NovaWork's REST routes), `ic`, `icf`, `esc`, `toast`, `__`, `sprintf`, and three places to add to:
+Once the app has started it fires `nw:ready` on `window`; the same object stays at `window.novawork.app` for a script that runs later. It holds `store` (live), `api` (`get`, `post`, `patch`, `del`, `nonce()` for NovaWork's REST routes), `ic`, `icf`, `esc`, `toast`, `__`, `sprintf`, `renderText()`, and these places to add to:
 
 - `addHeaderButton( { id, icon | svg, label, onClick, badge } )`: an icon button before the chat button; `badge()` may read the store and shows the unread dot.
 - `addMenuItem( { id, icon | svg, label, onClick } )`: a row at the top of the team menu.
@@ -195,6 +196,10 @@ Once the app has started it fires `nw:ready` on `window`; the same object stays 
 - `addMessageAction( { id, label, icon | svg + svgPressed, when( item, kind ), pressed( item, kind ), onClick( item, kind ) } )`: a button in the toolbar of chat messages and comments (`kind` is `message` or `comment`), after Reply, Edit and Delete. With `pressed()` it is a toggle (`aria-pressed`, the icon's fill weight or `svgPressed`); the list redraws once `onClick` returns.
 - `setThreadStatus( where, text )`: a quiet line above the text field of the team chat (`where` = `'chat'`) or of one object's comments (`{ objectType, objectId }`), such as "Helper is thinking…". `null` clears it.
 - `addPanel( { id, title, render( body ) } )` and `openPanel( id )`: a panel in the app's dialog style (a bottom sheet on phones), with the page behind it locked; `render()` draws it each time it opens.
+- `addPanel( { id, title, style: 'docked', render( body ), onOpen( body ), onClose() } )`: a window like the team chat. On wide screens it docks on the right or left and the page makes room (on the other side when the team chat is docked there; a button swaps sides); below 1100px it floats in a corner; on phones it is a bottom sheet. `render()` draws it once and its content stays (a conversation keeps its place); `onOpen()` runs at each open. `closePanel( id )` and `isPanelOpen( id )` work for both styles.
+- `addLauncher( { id, label, icon | svg, key, onClick } )`: a round button in the bottom-right corner, which moves left of a window docked on the right and hides under dialogs; on phones it is a button in the header instead. It returns `{ setBadge( number | true | 0 ), setHidden( bool ), remove() }`; `key` shows a shortcut in its tooltip.
+- `addShortcut( { key, label, run } )`: a one-letter key with the app's own rules (never while typing, with a modifier or with a dialog open). The app's keys (`/`, `N`, `T`) are refused; it returns a function that removes it.
+- `renderText( { text, mentions, refs } )`: a message's text as HTML, with @mentions and /links drawn as in the team chat (a link opens its item).
 
 Decisions can name an agent in "Who decides" (`ownerAgent`): the agent gives its advice and the person who opened the decision records it (administrators once that person is no longer a member). Agents appear in the @ suggestions in chat and comments.
 

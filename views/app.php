@@ -64,7 +64,8 @@ defined( 'ABSPATH' ) || exit;
 						<template x-for="m in others()" :key="m.id">
 							<div class="nw-row">
 								<span class="nw-pres" :class="'nw-is-' + status(m.id)"><span class="nw-avatar nw-lg" :title="m.name" :style="cpair(m.color)" x-html="avatarInner(m)"></span><i class="nw-st-dot"></i></span>
-								<div class="nw-tm"><b x-text="m.name"></b><span><template x-if="runOf(m.id)"><span><span data-since x-text="clock($store.nw.now - runOf(m.id).start)"></span><template x-if="taskOf(runOf(m.id))"><span> · <span class="nw-tname" :title="taskOf(runOf(m.id)).title" x-text="shortTitle(taskOf(runOf(m.id)).title)"></span></span></template></span></template><template x-if="!runOf(m.id)"><span x-text="status(m.id) === 'online' ? t.online : t.away"></span></template></span></div>
+								<div class="nw-tm"><b x-text="m.name"></b><span><template x-if="runOf(m.id)"><span><span data-since x-text="clock($store.nw.now - runOf(m.id).start)"></span><template x-if="taskOf(runOf(m.id))"><span> · <span class="nw-tname" :title="taskOf(runOf(m.id)).title" x-text="shortTitle(taskOf(runOf(m.id)).title)"></span></span></template></span></template><template x-if="!runOf(m.id)"><span x-text="presence(m)"></span></template></span></div>
+								<template x-if="$store.nw.canManage"><button class="nw-iconbtn nw-sm nw-off-btn" type="button" :aria-label="awayFor(m)" x-html="ic('moon', 15)" @click="setAway(m.id)"></button></template>
 								<span class="nw-tstat" x-text="dur(tracked(m.id, dayStart()))"></span>
 							</div>
 						</template>
@@ -80,6 +81,7 @@ defined( 'ABSPATH' ) || exit;
 					</div>
 					<div class="nw-sep"></div>
 					<div class="nw-pmenu">
+						<button class="nw-pmenu-item" type="button" id="nw-away-item" @click="setAway()"><span x-html="ic('moon', 18)"></span><span x-text="myAwayLabel()"></span></button>
 						<button class="nw-pmenu-item" type="button" @click="startTour()"><span x-html="ic('compass', 18)"></span><?php esc_html_e( 'Take the tour', 'novawork' ); ?></button>
 						<template x-if="installWay"><button class="nw-pmenu-item" type="button" @click="install()"><span x-html="ic('download-simple', 18)"></span><span x-text="installWay === 'ios' ? t.addHome : ( installWay === 'mac' ? t.addDock : t.installApp )"></span></button></template>
 						<template x-if="settingsUrl"><a class="nw-pmenu-item" :href="settingsUrl"><span x-html="ic('gear-six', 18)"></span><?php esc_html_e( 'Workspace settings', 'novawork' ); ?></a></template>

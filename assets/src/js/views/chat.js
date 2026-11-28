@@ -77,11 +77,13 @@ function apply() {
 		locked = false;
 		unlockBgScroll();
 	}
+	// Whether the window is open and where (left, right or float): the header
+	// button and docked add-on panels (1.3.0) follow it.
+	window.dispatchEvent( new CustomEvent( 'nw:chat-state', { detail: { open, side: pos.mode } } ) );
 }
 
 function setOpen( value ) {
 	open = value;
-	window.dispatchEvent( new CustomEvent( 'nw:chat-state', { detail: { open } } ) );
 }
 
 export function openChat( searchText ) {
