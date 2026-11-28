@@ -1197,6 +1197,12 @@ try {
 	$t->ok( 1 === count( $notes_for( $sam, 'mention', 'message', $ext_am['id'] ) ) && 'helper' === $notes_for( $sam, 'mention', 'message', $ext_am['id'] )[0]['note']['agent'], 'the mentioned member gets a mention from the agent' );
 	$t->ok( 1 === count( $notes_for( $alex, 'chat', 'message', $ext_am['id'] ) ), 'every other member gets the chat notification' );
 	$t->ok( 1 === count( $notes_for( $admin, 'link', 'task', $ext_task['id'] ) ) && 'helper' === $notes_for( $admin, 'link', 'task', $ext_task['id'] )[0]['note']['agent'], 'a linked task’s assignee gets a link, through the same writer' );
+	// Mention wins over link: one notification per message for a person both
+	// mentioned and behind a linked item (owner, 2026-11-28).
+	$ext_name  = get_userdata( $admin )->display_name;
+	$ext_links = count( $notes_for( $admin, 'link', 'task', $ext_task['id'] ) );
+	$ext_both  = NovaWork\Api::post_message( 'helper', "@{$ext_name} /Ship the extension points waits on you.", array( 'mentions' => array( $admin ), 'refs' => array( array( 'type' => 'task', 'id' => $ext_task['id'] ) ) ) );
+	$t->ok( 1 === count( $notes_for( $admin, 'mention', 'message', $ext_both['id'] ) ) && $ext_links === count( $notes_for( $admin, 'link', 'task', $ext_task['id'] ) ) && ! array_filter( $heard['note'], fn( $h ) => $admin === $h['user'] && 'chat' === $h['note']['type'] && $ext_both['id'] === $h['note']['objectId'] ), 'mentioned and assigned to the linked task: one “mentioned you”, no “linked”, no chat notification' );
 	foreach ( array( array( 'nobody', 'an unknown agent' ), array( (string) $sam, 'a user id passed as text' ) ) as list( $ext_who, $ext_label ) ) {
 		$ext_bad = NovaWork\Api::post_message( $ext_who, 'Hi' );
 		$t->ok( is_wp_error( $ext_bad ) && 'novawork_bad_author' === $ext_bad->get_error_code(), $ext_label . ' can’t write' );
@@ -1218,6 +1224,9 @@ try {
 	$ext_ac = NovaWork\Api::post_comment( 'helper', 'task', $ext_task['id'], 'Looks ready to me.' );
 	$t->ok( is_array( $ext_ac ) && 'helper' === $ext_ac['agent'] && 'task' === $ext_ac['objectType'], 'an agent comments on a task', $ext_ac );
 	$t->ok( 1 === count( $heard['comment'] ) && 1 === count( $notes_for( $alex, 'comment', 'task', $ext_task['id'] ) ), 'novawork_comment_created fires; the task’s people are told' );
+	$ext_mentions = count( $notes_for( $admin, 'mention', 'task', $ext_task['id'] ) );
+	NovaWork\Api::post_comment( 'helper', 'task', $ext_task['id'], "@{$ext_name} see /Ship the extension points.", array( 'mentions' => array( $admin ), 'refs' => array( array( 'type' => 'task', 'id' => $ext_task['id'] ) ) ) );
+	$t->ok( $ext_mentions + 1 === count( $notes_for( $admin, 'mention', 'task', $ext_task['id'] ) ) && $ext_links === count( $notes_for( $admin, 'link', 'task', $ext_task['id'] ) ), 'the same in a comment: “mentioned you” once, no “linked”' );
 	list( , $ext_other ) = $t->call( $alex, 'POST', '/tasks', array( 'title' => 'Another task' ) );
 	$ext_other = NovaWork\Api::post_comment( $alex, 'task', $ext_other['id'], 'Elsewhere' );
 	$ext_re    = NovaWork\Api::post_comment( 'helper', 'task', $ext_task['id'], 'A reply', array( 'replyTo' => $ext_other['id'] ) );
