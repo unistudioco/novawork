@@ -105,14 +105,16 @@ final class Api {
 			ReadState::set( $who['user_id'], $id );
 		}
 		$message = (array) $repo->find( $id );
-		Notifier::chatted( $message );
-		References::notify_links(
+		// One notification per person for a message: a mention wins over a
+		// link, and a link over the plain chat notification.
+		$linked = References::notify_links(
 			References::decode( $message['refs'] ),
 			$who['user_id'],
 			$text,
 			array_column( References::decode( $message['mentions'] ), 'id' ),
 			$who['agent']
 		);
+		Notifier::chatted( $message, $linked );
 
 		/**
 		 * Fires after a message is posted in team chat, by a member or (since

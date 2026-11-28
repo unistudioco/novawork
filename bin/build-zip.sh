@@ -12,7 +12,12 @@
 # file that must ship is missing, or when something that must never ship
 # slipped in.
 #
-# Usage: bin/build-zip.sh [--no-build]   (--no-build skips npm run build)
+# Usage: bin/build-zip.sh [--no-build] [--beta=N]
+#   --no-build  skips npm run build
+#   --beta=N    an internal build for our own workspace: the zip's plugin
+#               header and NOVAWORK_VERSION say <version>-beta.N (only in the
+#               zip), so WordPress still offers the real <version> when it
+#               ships. The repository keeps <version>.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -34,15 +39,25 @@ for pair in "NOVAWORK_VERSION:$constant" "readme.txt Stable tag:$stable" "packag
 	[[ "${pair##*:}" == "$header" ]] || fail "${pair%:*} is ${pair##*:}, the plugin header says $header"
 done
 VERSION="$header"
+BUILD=1
+BETA=""
+for arg in "$@"; do
+	case "$arg" in
+		--no-build) BUILD=0 ;;
+		--beta=*) BETA="${arg#--beta=}"; [[ "$BETA" =~ ^[0-9]+$ ]] || fail "--beta needs a number, like --beta=1" ;;
+		*) fail "unknown option $arg" ;;
+	esac
+done
+SHIP="$VERSION${BETA:+-beta.$BETA}"
 
-if [[ "${1:-}" != "--no-build" ]]; then
+if [[ "$BUILD" == 1 ]]; then
 	npm run build --silent
 fi
 [[ -f assets/dist/manifest.json ]] || fail "assets/dist/manifest.json is missing: run npm run build"
 
 OUT="$ROOT/build/release"
 COPY="$OUT/novawork"
-ZIP="$ROOT/build/novawork-$VERSION.zip"
+ZIP="$ROOT/build/novawork-$SHIP.zip"
 rm -rf "$OUT" "$ZIP"
 mkdir -p "$COPY"
 
@@ -53,6 +68,12 @@ composer install --no-dev --optimize-autoloader --no-interaction --quiet --worki
 rm -f "$COPY/composer.lock"
 # Finder can write .DS_Store into a folder it shows, even during the copy.
 find "$COPY" -name .DS_Store -delete
+# An internal build says so in the copy only.
+if [[ -n "$BETA" ]]; then
+	sed -i.bak -e "s/^ \* Version:\([[:space:]]*\)$VERSION\$/ * Version:\1$SHIP/" -e "s/^define( 'NOVAWORK_VERSION', '$VERSION' );/define( 'NOVAWORK_VERSION', '$SHIP' );/" "$COPY/novawork.php"
+	rm -f "$COPY/novawork.php.bak"
+	grep -q "^define( 'NOVAWORK_VERSION', '$SHIP' );" "$COPY/novawork.php" || fail "could not set $SHIP in the zip's novawork.php"
+fi
 
 # What must ship.
 for f in novawork.php uninstall.php readme.txt LICENSE vendor/autoload.php assets/dist/manifest.json assets/dist/i18n.json assets/alerts-worker.js assets/app-worker.js assets/app-icons/shape.png assets/app-icons/flag.png assets/app-icons/icon-512.png languages/novawork.pot package.json vite.config.js vite-i18n-map.js assets/src/js/app.js assets/src/js/admin-kit.js; do
@@ -81,4 +102,4 @@ entries() { node -e 'const m=require(process.argv[1]);console.log(Object.keys(m)
 
 files=$(find "$COPY" -type f | wc -l | tr -d ' ')
 size=$(du -h "$ZIP" | cut -f1)
-echo "Built ${ZIP#"$ROOT"/} (version $VERSION, $files files, $size)."
+echo "Built ${ZIP#"$ROOT"/} (version $SHIP, $files files, $size)."

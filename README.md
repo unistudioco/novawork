@@ -267,7 +267,11 @@ composer run plugin-check  # Plugin Check on the release zip
 
 ## Roadmap
 
-**1.2** (this release)
+**1.3** (this release)
+- **Add-on support**: a write API, agents in mentions and decisions, and places in the app and on the settings screen, all listed in [Extending NovaWork](#extending-novawork).
+- **"Away until…"**: a date (and a note) on holidays and days off, shown on the avatar and in Team today.
+
+**1.2**
 - **A smarter timer**: "Were you working?" after an automatic stop, "Still working?" as an alert with its answers, and Stop that works offline.
 - **Time editing** for administrators on the Time page.
 - **Edit rights**: members change their own work; administrators everything (a setting).
@@ -277,7 +281,9 @@ composer run plugin-check  # Plugin Check on the release zip
 - **Vote order**: the leading option rises to the top (a setting: most votes first, or as written).
 - **Installable app**: a web app manifest, icons and an offline page, so the workspace installs on Android, iPhone, iPad and desktop with its own icon and window.
 
-**After that**
+**Planned**
+- **1.4**: right-to-left support and Arabic.
+- **1.5**: reactions and announcements.
 
 New features follow what teams ask for: some come to the free plugin, others to a future add-on. Ideas and requests are welcome in [GitHub issues](https://github.com/unistudioco/novawork/issues) or the [support forum](https://wordpress.org/support/plugin/novawork/).
 

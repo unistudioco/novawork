@@ -185,8 +185,9 @@ final class References {
 	 * @param string                                            $excerpt What was said.
 	 * @param int[]                                             $skip    Already notified.
 	 * @param string                                            $agent   Agent key when an agent linked (1.3.0).
+	 * @return int[] The members told (1.3.0).
 	 */
-	public static function notify_links( array $links, int $author, string $excerpt, array $skip, string $agent = '' ): void {
+	public static function notify_links( array $links, int $author, string $excerpt, array $skip, string $agent = '' ): array {
 		$tasks     = new TaskRepository();
 		$decisions = new DecisionRepository();
 		$told      = array_merge( array( $author ), array_map( 'intval', $skip ) );
@@ -219,6 +220,7 @@ final class References {
 				);
 			}
 		}
+		return array_values( array_diff( $told, array( $author ), array_map( 'intval', $skip ) ) );
 	}
 
 	/**

@@ -186,8 +186,9 @@ final class Notifier {
 	 * A new chat message.
 	 *
 	 * @param array<string, mixed> $message Message row.
+	 * @param int[]                $linked  Members already told about a link in it (1.3.0): no chat notification for them.
 	 */
-	public static function chatted( array $message ): void {
+	public static function chatted( array $message, array $linked = array() ): void {
 		$author    = (int) $message['user_id'];
 		$mentioned = array_column( \NovaWork\Data\MessageRepository::mentions( $message ), 'id' );
 		// What was said, and the files shared (a message can be files only).
@@ -198,7 +199,7 @@ final class Notifier {
 			'count'   => count( $files ),
 		);
 		foreach ( Members::ids() as $user_id ) {
-			if ( $user_id === $author ) {
+			if ( $user_id === $author || ( in_array( $user_id, $linked, true ) && ! in_array( $user_id, $mentioned, true ) ) ) {
 				continue;
 			}
 			if ( in_array( $user_id, $mentioned, true ) ) {

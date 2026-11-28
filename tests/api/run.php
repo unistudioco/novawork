@@ -1197,6 +1197,7 @@ try {
 	$t->ok( 1 === count( $notes_for( $sam, 'mention', 'message', $ext_am['id'] ) ) && 'helper' === $notes_for( $sam, 'mention', 'message', $ext_am['id'] )[0]['note']['agent'], 'the mentioned member gets a mention from the agent' );
 	$t->ok( 1 === count( $notes_for( $alex, 'chat', 'message', $ext_am['id'] ) ), 'every other member gets the chat notification' );
 	$t->ok( 1 === count( $notes_for( $admin, 'link', 'task', $ext_task['id'] ) ) && 'helper' === $notes_for( $admin, 'link', 'task', $ext_task['id'] )[0]['note']['agent'], 'a linked task’s assignee gets a link, through the same writer' );
+	$t->ok( 0 === count( $notes_for( $admin, 'chat', 'message', $ext_am['id'] ) ), 'and no chat notification on top: one notification per message (a link wins over chat)' );
 	// Mention wins over link: one notification per message for a person both
 	// mentioned and behind a linked item (owner, 2026-11-28).
 	$ext_name  = get_userdata( $admin )->display_name;
