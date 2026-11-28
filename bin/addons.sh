@@ -6,7 +6,8 @@
 # WP_Plugin_Dependencies), and switches them back on afterwards.
 #
 #   bin/addons.sh off    deactivate them; adds them to build/addons-off.txt
-#   bin/addons.sh on     reactivate everything in that file, then remove it
+#   bin/addons.sh on     reactivate everything in that file, then remove it,
+#                        and undo an offline test mode left on (bin/offline.sh off)
 #   bin/addons.sh skip   print them as a --skip-plugins value (no change)
 #
 # The file outlives an interrupted run, so the next "on" (or the next run's
@@ -45,6 +46,8 @@ case "${1:-}" in
 			echo "Add-ons back on: $(tr '\n' ' ' < "$STATE")"
 		fi
 		rm -f "$STATE"
+		# An interrupted run can also leave the offline test mode on.
+		bash "$ROOT/bin/offline.sh" off
 		;;
 	skip)
 		active_addons | paste -sd, -

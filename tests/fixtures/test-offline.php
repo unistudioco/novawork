@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: NovaWork test offline (browser tests only)
- * Description: Linked into mu-plugins for a browser run (setup.js) and removed after it (teardown.js). While option novawork_test_offline is "1", the site makes no request outside itself: each attempt is refused and noted in novawork_test_outside, and teardown fails the run with the list. WordPress's own update checks are answered from here, so they don't try. Never ships (tests/ is in .distignore).
+ * Plugin Name: NovaWork test offline (browser and HTTP tests)
+ * Description: Linked into mu-plugins by bin/offline.sh for the browser run (setup.js, teardown.js) and bin/test-http.sh, and removed after them (bin/offline.sh off, also run by bin/addons.sh on after an interrupted run). While option novawork_test_offline is "1", the site makes no request outside itself: each attempt is refused and noted in novawork_test_outside, and the run fails with the list. WordPress's own update checks are answered from here, so they don't try. Never ships (tests/ is in .distignore).
  *
  * @package NovaWork
  */

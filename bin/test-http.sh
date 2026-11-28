@@ -27,13 +27,10 @@ trap 'rm -r "$TMP"' EXIT
 # at the end, even when it fails (bin/addons.sh).
 if [[ -n "${NOVAWORK_WP_PATH:-}" ]]; then
 	bash "$ROOT/bin/addons.sh" off
-	# The site makes no request outside itself during this run
-	# (tests/fixtures/test-offline.php); any attempt fails it at the end.
-	OFFLINE_LINK="$NOVAWORK_WP_PATH/wp-content/mu-plugins/novawork-test-offline.php"
-	mkdir -p "$NOVAWORK_WP_PATH/wp-content/mu-plugins"
-	[[ -e "$OFFLINE_LINK" ]] || ln -s "$ROOT/tests/fixtures/test-offline.php" "$OFFLINE_LINK"
-	wpcli "update_option( 'novawork_test_offline', '1', false ); delete_option( 'novawork_test_outside' );" >/dev/null
-	trap 'rm -r "$TMP"; wpcli "delete_option( '"'"'novawork_test_offline'"'"' );" >/dev/null 2>&1; rm -f "$OFFLINE_LINK"; bash "$ROOT/bin/addons.sh" on' EXIT
+	# The site makes no request outside itself during this run; any attempt
+	# fails it at the end (bin/offline.sh).
+	bash "$ROOT/bin/offline.sh" on
+	trap 'rm -r "$TMP"; bash "$ROOT/bin/offline.sh" off --quiet; bash "$ROOT/bin/addons.sh" on' EXIT
 fi
 pass=0; fail=0
 ok() { if [[ "$1" == "$2" ]]; then echo "  ✓ $3"; pass=$((pass+1)); else echo "  ✗ $3 (got: $1, want: $2)"; fail=$((fail+1)); fi; }
@@ -100,7 +97,7 @@ if [[ -n "${NOVAWORK_WP_PATH:-}" && -n "${TASK:-}" ]]; then
 		"global \$wpdb; \$r = new NovaWork\\Data\\ActivityRepository(); foreach ( \$wpdb->get_col( \$wpdb->prepare( 'SELECT id FROM %i WHERE object_type = %s AND object_id = %d', \$r->table_name(), 'task', (int) '$TASK' ) ) as \$id ) { \$r->delete( (int) \$id ); }" >/dev/null 2>&1
 fi
 if [[ -n "${NOVAWORK_WP_PATH:-}" ]]; then
-	ok "$(wpcli "echo count( (array) get_option( 'novawork_test_outside', array() ) );" 2>/dev/null)" 0 "the site made no request outside itself"
+	ok "$(bash "$ROOT/bin/offline.sh" outside 2>/dev/null)" "[]" "the site made no request outside itself"
 fi
 echo; echo "$pass passed, $fail failed."
 [[ $fail -eq 0 ]]
